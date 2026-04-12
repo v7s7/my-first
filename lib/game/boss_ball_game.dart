@@ -1,32 +1,40 @@
 import 'dart:math';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
-import 'game_state.dart';
+import '../orbs/orb_behavior.dart';
+import '../modes/game_mode.dart';
 import 'arena_wall.dart';
 import 'boss_component.dart';
 import 'player_orb.dart';
 import 'hud_component.dart';
 
 class BossBallGame extends FlameGame {
-  final OrbType orbType;
+  final OrbBehavior orbBehavior;
+  final GameMode mode;
 
-  static const int bossMaxHp = 1000000;
   static const double wallThickness = 14.0;
 
-  int bossHp = bossMaxHp;
-  double timeLeft = 60.0;
+  late int bossMaxHp;
+  late int bossHp;
+  late double timeLeft;
+
   bool playing = false;
   bool bossDestroyed = false;
+
+  /// Cumulative damage this round — used for score-based modes.
+  int totalDamage = 0;
+
+  /// Elapsed game time — used for DPS calculation.
+  double totalTime = 0.0;
 
   late BossComponent boss;
   late PlayerOrb orb;
 
-  // Screen shake state
   double _shakeIntensity = 0.0;
   double _shakeTimer = 0.0;
   final Random _rng = Random();
 
-  BossBallGame({required this.orbType});
+  BossBallGame({required this.orbBehavior, required this.mode});
 
   @override
   Color backgroundColor() => const Color(0xFF080812);
@@ -34,6 +42,13 @@ class BossBallGame extends FlameGame {
   @override
   Future<void> onLoad() async {
     await super.onLoad();
+
+    bossMaxHp = mode.bossMaxHp;
+    bossHp = bossMaxHp;
+    timeLeft = mode.timeLimitSeconds;
+    totalDamage = 0;
+    totalTime = 0.0;
+
     _buildArena();
     _buildBoss();
     _buildOrb();
@@ -59,14 +74,15 @@ class BossBallGame extends FlameGame {
   }
 
   void _buildOrb() {
-    orb = PlayerOrb(orbType: orbType, gameRef: this);
+    orb = PlayerOrb(behavior: orbBehavior, gameRef: this);
     add(orb);
   }
 
-  // Called by PlayerOrb when it deals damage.
-  // [isLaserTick] suppresses heavy screen shake for rapid laser ticks.
+  /// Called by OrbBehavior subclasses when they deal damage.
+  /// [isLaserTick] dampens screen shake for rapid tick-based damage.
   void onOrbHitBoss(int damage, {bool isLaserTick = false}) {
     bossHp = (bossHp - damage).clamp(0, bossMaxHp);
+    totalDamage += damage;
 
     if (!isLaserTick) {
       final normalizedPower = damage / bossMaxHp;
@@ -78,7 +94,7 @@ class BossBallGame extends FlameGame {
       triggerShake(intensity: 1.8, duration: 0.04);
     }
 
-    if (bossHp <= 0 && !bossDestroyed) {
+    if (mode.winOnBossKill && bossHp <= 0 && !bossDestroyed) {
       bossDestroyed = true;
       playing = false;
       Future.delayed(Duration.zero, () => overlays.add('GameOver'));
@@ -99,12 +115,18 @@ class BossBallGame extends FlameGame {
       super.update(dt);
       return;
     }
-    timeLeft -= dt;
-    if (timeLeft <= 0) {
-      timeLeft = 0;
-      playing = false;
-      Future.delayed(Duration.zero, () => overlays.add('GameOver'));
+
+    totalTime += dt;
+
+    if (mode.timeLimitSeconds > 0) {
+      timeLeft -= dt;
+      if (timeLeft <= 0) {
+        timeLeft = 0;
+        playing = false;
+        Future.delayed(Duration.zero, () => overlays.add('GameOver'));
+      }
     }
+
     super.update(dt);
   }
 

@@ -3,42 +3,38 @@ import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 import 'boss_ball_game.dart';
 import 'boss_component.dart';
-import 'game_state.dart';
-import 'laser_beam.dart';
+import '../orbs/orb_behavior.dart';
 
+/// Physics shell for the player's bouncing orb.
+///
+/// This class owns ONLY what is universal to every orb:
+///   - position, velocity, speed ramp
+///   - elastic wall-bounce geometry
+///   - boss-collision geometry (distance check, push-out, cooldown)
+///   - shared base-sphere rendering (glow, body, shine, rim)
+///   - bounce squash animation
+///
+/// Everything that varies per orb type is delegated to [behavior].
+/// To add a new orb, create a new [OrbBehavior] subclass — no edits here.
 class PlayerOrb extends PositionComponent {
-  final OrbType orbType;
+  final OrbBehavior behavior;
   final BossBallGame gameRef;
 
   static const double radius = 18.0;
   static const double baseSpeed = 280.0;
-  static const double speedGrowthPerBounce = 0.03; // +3% per bounce
+  static const double speedGrowthPerBounce = 0.03;
   static const double maxSpeed = 900.0;
-  static const double laserDuration = 1.0;
-  static const double laserTickRate = 0.05; // damage every 50ms
-  static const int laserTickDamage = 500;   // 20 ticks × 500 = 10K total
   static const double hitCooldown = 0.3;
 
-  double _speed = baseSpeed;
-  late Vector2 _velocity;
+  // Package-accessible so OrbBehavior subclasses can read/mutate if needed.
+  double speed = baseSpeed;
+  late Vector2 velocity;
+
   final Random _rng = Random();
-
-  // Combo orb: wall bounces since last boss hit
-  int _wallBounces = 0;
-
-  // Laser orb state
-  bool _laserActive = false;
-  double _laserTimer = 0.0;
-  double _laserTickTimer = 0.0;
-  LaserBeam? _activeLaser;
-
-  // Boss hit cooldown
   double _hitCooldownTimer = 0.0;
-
-  // Bounce squash animation
   double _bounceSquashTimer = 0.0;
 
-  PlayerOrb({required this.orbType, required this.gameRef})
+  PlayerOrb({required this.behavior, required this.gameRef})
       : super(
           size: Vector2.all(radius * 2),
           anchor: Anchor.center,
@@ -47,15 +43,14 @@ class PlayerOrb extends PositionComponent {
 
   @override
   Future<void> onLoad() async {
-    // Start near top-left quadrant, clear of boss
     position = Vector2(
       gameRef.size.x * (0.15 + _rng.nextDouble() * 0.15),
       gameRef.size.y * (0.12 + _rng.nextDouble() * 0.12),
     );
-
-    // Random launch angle roughly aimed toward center-right
     final angle = (pi * 0.25) + _rng.nextDouble() * (pi * 0.5);
-    _velocity = Vector2(cos(angle), sin(angle)) * _speed;
+    velocity = Vector2(cos(angle), sin(angle)) * speed;
+
+    behavior.onAttach(this);
   }
 
   @override
@@ -66,36 +61,12 @@ class PlayerOrb extends PositionComponent {
     if (_hitCooldownTimer > 0) _hitCooldownTimer -= dt;
     if (_bounceSquashTimer > 0) _bounceSquashTimer -= dt;
 
-    // Laser tick damage
-    if (_laserActive) {
-      _laserTimer -= dt;
-      _laserTickTimer -= dt;
+    behavior.onUpdate(dt, this);
 
-      // Update beam position each frame
-      _activeLaser?.startPos = position;
-      _activeLaser?.endPos = gameRef.boss.position;
-      _activeLaser?.timeLeft = _laserTimer;
-
-      if (_laserTickTimer <= 0) {
-        _laserTickTimer = laserTickRate;
-        gameRef.onOrbHitBoss(laserTickDamage, isLaserTick: true);
-      }
-
-      if (_laserTimer <= 0) {
-        _laserActive = false;
-        _activeLaser?.removeFromParent();
-        _activeLaser = null;
-      }
-    }
-
-    // Physics: move and bounce
-    position += _velocity * dt;
+    position += velocity * dt;
     _handleWallBounce();
 
-    // Boss collision
-    if (_hitCooldownTimer <= 0) {
-      _checkBossCollision();
-    }
+    if (_hitCooldownTimer <= 0) _checkBossCollision();
   }
 
   void _handleWallBounce() {
@@ -109,33 +80,30 @@ class PlayerOrb extends PositionComponent {
 
     if (position.x <= minX) {
       position.x = minX;
-      _velocity.x = _velocity.x.abs();
+      velocity.x = velocity.x.abs();
       bounced = true;
     } else if (position.x >= maxX) {
       position.x = maxX;
-      _velocity.x = -_velocity.x.abs();
+      velocity.x = -velocity.x.abs();
       bounced = true;
     }
 
     if (position.y <= minY) {
       position.y = minY;
-      _velocity.y = _velocity.y.abs();
+      velocity.y = velocity.y.abs();
       bounced = true;
     } else if (position.y >= maxY) {
       position.y = maxY;
-      _velocity.y = -_velocity.y.abs();
+      velocity.y = -velocity.y.abs();
       bounced = true;
     }
 
     if (bounced) {
-      // Accelerate
-      _speed = min(_speed * (1.0 + speedGrowthPerBounce), maxSpeed);
-      _velocity = _velocity.normalized() * _speed;
-
-      if (orbType == OrbType.combo) _wallBounces++;
+      speed = min(speed * (1.0 + speedGrowthPerBounce), maxSpeed);
+      velocity = velocity.normalized() * speed;
       _bounceSquashTimer = 0.08;
-
       gameRef.triggerShake(intensity: 1.5, duration: 0.05);
+      behavior.onWallBounce(this);
     }
   }
 
@@ -143,95 +111,52 @@ class PlayerOrb extends PositionComponent {
     final dist = position.distanceTo(gameRef.boss.position);
     if (dist >= BossComponent.radius + radius) return;
 
-    // Push orb away from boss surface
     final dir = (position - gameRef.boss.position).normalized();
     position = gameRef.boss.position + dir * (BossComponent.radius + radius + 1.0);
-    _velocity = dir * _speed;
+    velocity = dir * speed;
 
     _hitCooldownTimer = hitCooldown;
-    _onBossHit();
-  }
-
-  void _onBossHit() {
     gameRef.boss.triggerHitAnimation();
-
-    switch (orbType) {
-      case OrbType.basic:
-        gameRef.onOrbHitBoss(1000);
-
-      case OrbType.laser:
-        if (!_laserActive) {
-          _laserActive = true;
-          _laserTimer = laserDuration;
-          _laserTickTimer = 0;
-          _activeLaser = LaserBeam(
-            startPos: position.clone(),
-            endPos: gameRef.boss.position.clone(),
-            totalDuration: laserDuration,
-            timeLeft: laserDuration,
-          );
-          gameRef.add(_activeLaser!);
-        }
-
-      case OrbType.combo:
-        final bounces = _wallBounces.clamp(0, 10);
-        final multiplier = bounces > 0 ? pow(2, bounces).toInt() : 1;
-        gameRef.onOrbHitBoss(500 * multiplier);
-        _wallBounces = 0;
-    }
-  }
-
-  Color get _color {
-    switch (orbType) {
-      case OrbType.basic: return const Color(0xFF00FFEE);
-      case OrbType.laser: return const Color(0xFFFF4400);
-      case OrbType.combo: return const Color(0xFFCC44FF);
-    }
+    behavior.onBossHit(this);
   }
 
   @override
   void render(Canvas canvas) {
     final squash = _bounceSquashTimer > 0 ? 1.15 : 1.0;
     final stretch = _bounceSquashTimer > 0 ? 0.88 : 1.0;
-    final laserFlash = _laserActive ? 1.3 : 1.0;
-    final drawRadius = radius * laserFlash;
-    final cx = radius;
-    final cy = radius;
+    const cx = radius;
+    const cy = radius;
 
     canvas.save();
     canvas.translate(cx, cy);
     canvas.scale(squash, stretch);
     canvas.translate(-cx, -cy);
 
-    final color = _color;
+    final color = behavior.color;
 
     // Outer glow
     canvas.drawCircle(
-      Offset(cx, cy),
-      drawRadius + 10,
+      const Offset(cx, cy),
+      radius + 10,
       Paint()
         ..color = Color.fromARGB(100, color.red, color.green, color.blue)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 14),
     );
 
     // Core body
-    canvas.drawCircle(
-      Offset(cx, cy),
-      drawRadius,
-      Paint()..color = color,
-    );
+    canvas.drawCircle(const Offset(cx, cy), radius, Paint()..color = color);
 
     // Shine
     canvas.drawCircle(
-      Offset(cx - drawRadius * 0.32, cy - drawRadius * 0.32),
-      drawRadius * 0.32,
+      const Offset(cx - radius * 0.32, cy - radius * 0.32),
+      radius * 0.32,
       Paint()..color = const Color(0x88FFFFFF),
     );
 
     // Rim
     canvas.drawCircle(
-      Offset(cx, cy),
-      drawRadius,
+      const Offset(cx, cy),
+      radius,
       Paint()
         ..color = const Color(0x66FFFFFF)
         ..style = PaintingStyle.stroke
@@ -240,21 +165,7 @@ class PlayerOrb extends PositionComponent {
 
     canvas.restore();
 
-    // Combo multiplier badge
-    if (orbType == OrbType.combo && _wallBounces > 0) {
-      final multi = pow(2, _wallBounces.clamp(0, 10)).toInt();
-      final tp = TextPainter(
-        text: TextSpan(
-          text: 'x$multi',
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 11,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout();
-      tp.paint(canvas, Offset(cx + drawRadius + 3, cy - 7));
-    }
+    // Orb-specific overlay (combo badge, laser ring, etc.)
+    behavior.renderOverlay(canvas, radius, cx, cy);
   }
 }

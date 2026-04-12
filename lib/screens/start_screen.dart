@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import '../game/game_state.dart';
+import '../orbs/orb_behavior.dart';
+import '../orbs/orb_registry.dart';
+import '../modes/game_mode.dart';
+import '../modes/mode_registry.dart';
 import 'game_screen.dart';
 
 class StartScreen extends StatefulWidget {
@@ -11,7 +14,9 @@ class StartScreen extends StatefulWidget {
 
 class _StartScreenState extends State<StartScreen>
     with SingleTickerProviderStateMixin {
-  OrbType _selected = OrbType.basic;
+  OrbBehavior _selectedOrb = OrbRegistry.all.first;
+  GameMode _selectedMode = ModeRegistry.all.first;
+
   late AnimationController _pulseCtrl;
   late Animation<double> _pulseAnim;
 
@@ -38,105 +43,151 @@ class _StartScreenState extends State<StartScreen>
     return Scaffold(
       backgroundColor: const Color(0xFF080812),
       body: SafeArea(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Title
-              ShaderMask(
-                shaderCallback: (bounds) => const LinearGradient(
-                  colors: [Color(0xFF00FFEE), Color(0xFF0088FF)],
-                ).createShader(bounds),
-                child: const Text(
-                  'BOSS BALL\nBLITZ',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 52,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 5,
-                    height: 1.1,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'DESTROY THE BOSS IN 60 SECONDS',
-                style: TextStyle(
-                  color: Color(0x88FFFFFF),
-                  fontSize: 11,
-                  letterSpacing: 3,
-                ),
-              ),
-              const SizedBox(height: 48),
-
-              // Orb selector label
-              const Text(
-                'SELECT ORB',
-                style: TextStyle(
-                  color: Color(0xAAFFFFFF),
-                  fontSize: 13,
-                  letterSpacing: 4,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 18),
-
-              // Orb cards
-              Row(
+        child: SingleChildScrollView(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 32),
+              child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: OrbType.values
-                    .map((t) => _OrbCard(
-                          type: t,
-                          selected: _selected == t,
-                          onTap: () => setState(() => _selected = t),
-                        ))
-                    .toList(),
-              ),
-              const SizedBox(height: 52),
-
-              // Start button
-              AnimatedBuilder(
-                animation: _pulseAnim,
-                builder: (_, child) => Transform.scale(
-                  scale: _pulseAnim.value,
-                  child: child,
-                ),
-                child: GestureDetector(
-                  onTap: () => Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => GameScreen(orbType: _selected),
-                    ),
-                  ),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 52, vertical: 18),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: const Color(0xFF00FFEE), width: 2),
-                      borderRadius: BorderRadius.circular(4),
-                      color: const Color(0x1400FFEE),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color(0x4400FFEE),
-                          blurRadius: 24,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
+                children: [
+                  // Title
+                  ShaderMask(
+                    shaderCallback: (bounds) => const LinearGradient(
+                      colors: [Color(0xFF00FFEE), Color(0xFF0088FF)],
+                    ).createShader(bounds),
                     child: const Text(
-                      'START',
+                      'BOSS BALL\nBLITZ',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Color(0xFF00FFEE),
-                        fontSize: 26,
+                        color: Colors.white,
+                        fontSize: 52,
                         fontWeight: FontWeight.w900,
-                        letterSpacing: 8,
+                        letterSpacing: 5,
+                        height: 1.1,
                       ),
                     ),
                   ),
-                ),
+                  const SizedBox(height: 8),
+
+                  // Live subtitle from selected mode
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    child: Text(
+                      _selectedMode.subtitle.toUpperCase(),
+                      key: ValueKey(_selectedMode.id),
+                      style: const TextStyle(
+                        color: Color(0x88FFFFFF),
+                        fontSize: 11,
+                        letterSpacing: 3,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 36),
+
+                  // ── Orb selector ──────────────────────────────────────────
+                  const Text(
+                    'SELECT ORB',
+                    style: TextStyle(
+                      color: Color(0xAAFFFFFF),
+                      fontSize: 13,
+                      letterSpacing: 4,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Auto-populated from OrbRegistry — add an orb class and
+                  // register it; a card appears here automatically.
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: OrbRegistry.all
+                          .map((b) => _OrbCard(
+                                behavior: b,
+                                selected: _selectedOrb.id == b.id,
+                                onTap: () => setState(() => _selectedOrb = b),
+                              ))
+                          .toList(),
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+
+                  // ── Mode selector ─────────────────────────────────────────
+                  const Text(
+                    'SELECT MODE',
+                    style: TextStyle(
+                      color: Color(0xAAFFFFFF),
+                      fontSize: 13,
+                      letterSpacing: 4,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Auto-populated from ModeRegistry.
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: ModeRegistry.all
+                          .map((m) => _ModeCard(
+                                mode: m,
+                                selected: _selectedMode.id == m.id,
+                                onTap: () =>
+                                    setState(() => _selectedMode = m),
+                              ))
+                          .toList(),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+
+                  // ── Start button ──────────────────────────────────────────
+                  AnimatedBuilder(
+                    animation: _pulseAnim,
+                    builder: (_, child) =>
+                        Transform.scale(scale: _pulseAnim.value, child: child),
+                    child: GestureDetector(
+                      onTap: () => Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => GameScreen(
+                            orbBehavior: _selectedOrb,
+                            mode: _selectedMode,
+                          ),
+                        ),
+                      ),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 52, vertical: 18),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                              color: const Color(0xFF00FFEE), width: 2),
+                          borderRadius: BorderRadius.circular(4),
+                          color: const Color(0x1400FFEE),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x4400FFEE),
+                              blurRadius: 24,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: const Text(
+                          'START',
+                          style: TextStyle(
+                            color: Color(0xFF00FFEE),
+                            fontSize: 26,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 8,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -144,43 +195,42 @@ class _StartScreenState extends State<StartScreen>
   }
 }
 
+// ── Orb card ────────────────────────────────────────────────────────────────
+
 class _OrbCard extends StatelessWidget {
-  final OrbType type;
+  final OrbBehavior behavior;
   final bool selected;
   final VoidCallback onTap;
 
   const _OrbCard({
-    required this.type,
+    required this.behavior,
     required this.selected,
     required this.onTap,
   });
 
-  Color get _color => Color(OrbConfig.configs[type]!.color);
-  String get _name => OrbConfig.configs[type]!.name;
-  String get _desc => OrbConfig.configs[type]!.description;
-
   @override
   Widget build(BuildContext context) {
+    final color = behavior.color;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        margin: const EdgeInsets.symmetric(horizontal: 8),
+        margin: const EdgeInsets.symmetric(horizontal: 6),
         padding: const EdgeInsets.all(14),
         width: 96,
         decoration: BoxDecoration(
           border: Border.all(
-            color: selected ? _color : const Color(0x44FFFFFF),
+            color: selected ? color : const Color(0x44FFFFFF),
             width: selected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(8),
           color: selected
-              ? Color.fromARGB(28, _color.red, _color.green, _color.blue)
+              ? Color.fromARGB(28, color.red, color.green, color.blue)
               : Colors.transparent,
           boxShadow: selected
               ? [
                   BoxShadow(
-                    color: Color.fromARGB(80, _color.red, _color.green, _color.blue),
+                    color: Color.fromARGB(80, color.red, color.green, color.blue),
                     blurRadius: 16,
                   )
                 ]
@@ -191,13 +241,13 @@ class _OrbCard extends StatelessWidget {
           children: [
             CustomPaint(
               size: const Size(38, 38),
-              painter: _OrbIconPainter(color: _color),
+              painter: _GlowCirclePainter(color: color),
             ),
             const SizedBox(height: 8),
             Text(
-              _name,
+              behavior.name,
               style: TextStyle(
-                color: _color,
+                color: color,
                 fontSize: 11,
                 fontWeight: FontWeight.w900,
                 letterSpacing: 1,
@@ -205,7 +255,7 @@ class _OrbCard extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              _desc,
+              behavior.description,
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: Color(0x88FFFFFF),
@@ -220,15 +270,87 @@ class _OrbCard extends StatelessWidget {
   }
 }
 
-class _OrbIconPainter extends CustomPainter {
+// ── Mode card ────────────────────────────────────────────────────────────────
+
+class _ModeCard extends StatelessWidget {
+  final GameMode mode;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _ModeCard({
+    required this.mode,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = mode.accentColor;
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        margin: const EdgeInsets.symmetric(horizontal: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        width: 96,
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: selected ? color : const Color(0x44FFFFFF),
+            width: selected ? 2 : 1,
+          ),
+          borderRadius: BorderRadius.circular(8),
+          color: selected
+              ? Color.fromARGB(28, color.red, color.green, color.blue)
+              : Colors.transparent,
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                    color: Color.fromARGB(80, color.red, color.green, color.blue),
+                    blurRadius: 16,
+                  )
+                ]
+              : [],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              mode.name,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: color,
+                fontSize: 10,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              mode.subtitle,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Color(0x88FFFFFF),
+                fontSize: 9,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Shared orb-icon painter ──────────────────────────────────────────────────
+
+class _GlowCirclePainter extends CustomPainter {
   final Color color;
-  const _OrbIconPainter({required this.color});
+  const _GlowCirclePainter({required this.color});
 
   @override
   void paint(Canvas canvas, Size size) {
     final c = Offset(size.width / 2, size.height / 2);
     final r = size.width / 2 - 3;
-
     canvas.drawCircle(
       c,
       r + 6,
@@ -245,5 +367,6 @@ class _OrbIconPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _OrbIconPainter old) => old.color != color;
+  bool shouldRepaint(covariant _GlowCirclePainter old) =>
+      old.color != color;
 }
