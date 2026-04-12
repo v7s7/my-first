@@ -7,6 +7,7 @@ import '../modes/game_mode.dart';
 import 'arena_config.dart';
 import 'arena_wall.dart';
 import 'boss_component.dart';
+import 'damage_number.dart';
 import 'player_orb.dart';
 import 'hud_component.dart';
 
@@ -14,6 +15,7 @@ class BossBallGame extends FlameGame {
   final OrbBehavior orbBehavior;
   final GameMode mode;
   final ArenaPreset arenaPreset;
+  final int? customBossHp; // overrides mode.bossMaxHp when set
 
   late ArenaConfig arenaConfig;
 
@@ -38,6 +40,7 @@ class BossBallGame extends FlameGame {
     required this.orbBehavior,
     required this.mode,
     this.arenaPreset = ArenaPreset.normal,
+    this.customBossHp,
   });
 
   @override
@@ -49,7 +52,7 @@ class BossBallGame extends FlameGame {
 
     arenaConfig = ArenaConfig.fromScreen(size, arenaPreset);
 
-    bossMaxHp = mode.bossMaxHp;
+    bossMaxHp = customBossHp ?? mode.bossMaxHp;
     bossHp = bossMaxHp;
     timeLeft = mode.timeLimitSeconds;
     totalDamage = 0;
@@ -92,6 +95,9 @@ class BossBallGame extends FlameGame {
   void _buildBoss() {
     boss = BossComponent(position: arenaConfig.center, arena: arenaConfig);
     add(boss);
+    // HP fields are set here so they're ready before the first frame.
+    boss.maxHp = bossMaxHp;
+    boss.currentHp = bossMaxHp;
   }
 
   void _buildOrb() {
@@ -103,7 +109,20 @@ class BossBallGame extends FlameGame {
 
   void onOrbHitBoss(int damage, {bool isLaserTick = false}) {
     bossHp = (bossHp - damage).clamp(0, bossMaxHp);
+    boss.currentHp = bossHp; // keep boss HP ring in sync
     totalDamage += damage;
+
+    // Spawn a floating damage number near the top of the boss
+    add(DamageNumber(
+      damage: damage,
+      position: boss.position +
+          Vector2(
+            (_rng.nextDouble() - 0.5) * BossComponent.radius * 0.8,
+            -BossComponent.radius * 0.55,
+          ),
+      isSmall: isLaserTick,
+      driftX: (_rng.nextDouble() - 0.5) * 55,
+    ));
 
     if (!isLaserTick) {
       final ratio = damage / bossMaxHp;

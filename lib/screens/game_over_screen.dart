@@ -67,6 +67,7 @@ class GameOverScreen extends StatelessWidget {
                         orbBehavior: game.orbBehavior,
                         mode: game.mode,
                         arenaPreset: game.arenaPreset,
+                        customBossHp: game.customBossHp,
                       ),
                     ),
                   ),

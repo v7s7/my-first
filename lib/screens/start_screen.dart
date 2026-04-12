@@ -18,6 +18,15 @@ class _StartScreenState extends State<StartScreen>
   OrbBehavior _selectedOrb = OrbRegistry.all.first;
   GameMode _selectedMode = ModeRegistry.all.first;
   ArenaPreset _selectedArena = ArenaPreset.normal;
+  int _selectedHp = 1000000;
+
+  static const List<int> _hpPresets = [
+    100000,
+    500000,
+    1000000,
+    5000000,
+    10000000,
+  ];
 
   late AnimationController _pulseCtrl;
   late Animation<double> _pulseAnim;
@@ -170,6 +179,33 @@ class _StartScreenState extends State<StartScreen>
                           .toList(),
                     ),
                   ),
+                  const SizedBox(height: 28),
+
+                  // ── Boss HP selector ──────────────────────────────────────
+                  const Text(
+                    'BOSS HP',
+                    style: TextStyle(
+                      color: Color(0xAAFFFFFF),
+                      fontSize: 13,
+                      letterSpacing: 4,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _hpPresets
+                        .map((hp) => _HpChip(
+                              hp: hp,
+                              selected: _selectedHp == hp,
+                              onTap: () => setState(() => _selectedHp = hp),
+                            ))
+                        .toList(),
+                  ),
+
                   const SizedBox(height: 40),
 
                   // ── Start button ──────────────────────────────────────────
@@ -185,6 +221,7 @@ class _StartScreenState extends State<StartScreen>
                             orbBehavior: _selectedOrb,
                             mode: _selectedMode,
                             arenaPreset: _selectedArena,
+                            customBossHp: _selectedHp,
                           ),
                         ),
                       ),
@@ -503,6 +540,66 @@ class _ArenaCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Boss HP chip ─────────────────────────────────────────────────────────────
+
+class _HpChip extends StatelessWidget {
+  final int hp;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _HpChip({
+    required this.hp,
+    required this.selected,
+    required this.onTap,
+  });
+
+  static const Color _accent = Color(0xFFFF6633);
+
+  static String _fmt(int n) {
+    if (n >= 1000000) return '${(n / 1000000).toStringAsFixed(0)}M';
+    if (n >= 1000) return '${(n / 1000).toStringAsFixed(0)}K';
+    return '$n';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: selected ? _accent : const Color(0x44FFFFFF),
+            width: selected ? 2 : 1,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          color: selected
+              ? const Color(0x22FF6633)
+              : Colors.transparent,
+          boxShadow: selected
+              ? const [
+                  BoxShadow(
+                    color: Color(0x44FF6633),
+                    blurRadius: 12,
+                  )
+                ]
+              : [],
+        ),
+        child: Text(
+          _fmt(hp),
+          style: TextStyle(
+            color: selected ? _accent : const Color(0x88FFFFFF),
+            fontSize: 13,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 1,
+          ),
         ),
       ),
     );

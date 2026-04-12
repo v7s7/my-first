@@ -27,6 +27,10 @@ class BossComponent extends PositionComponent {
   final ArenaConfig arena;
   Vector2 velocity = Vector2.zero();
 
+  // ── HP state (set by BossBallGame after creation) ──────────────────────────
+  int maxHp = 0;
+  int currentHp = 0;
+
   // ── Visual animation state ─────────────────────────────────────────────────
   double _scaleX = 1.0;
   double _scaleY = 1.0;
@@ -201,5 +205,80 @@ class BossComponent extends PositionComponent {
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
       );
     }
+
+    // HP ring + text (only when HP is initialised)
+    if (maxHp > 0) {
+      _drawHpRing(canvas, cx, cy);
+      _drawHpText(canvas, cx, cy);
+    }
+  }
+
+  void _drawHpRing(Canvas canvas, double cx, double cy) {
+    final ratio = (currentHp / maxHp).clamp(0.0, 1.0);
+    const ringR = radius + 9.0;
+    const strokeW = 4.5;
+
+    // Background ring (translucent white)
+    canvas.drawArc(
+      Rect.fromCircle(center: Offset(cx, cy), radius: ringR),
+      -pi / 2,
+      2 * pi,
+      false,
+      Paint()
+        ..color = const Color(0x33FFFFFF)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeW,
+    );
+
+    // Filled HP arc — colour shifts green → yellow → red
+    final hpColor = _hpColor(ratio);
+    if (ratio > 0) {
+      canvas.drawArc(
+        Rect.fromCircle(center: Offset(cx, cy), radius: ringR),
+        -pi / 2,
+        2 * pi * ratio,
+        false,
+        Paint()
+          ..color = hpColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = strokeW
+          ..strokeCap = StrokeCap.round,
+      );
+    }
+  }
+
+  void _drawHpText(Canvas canvas, double cx, double cy) {
+    final tp = TextPainter(
+      text: TextSpan(
+        text: _fmtHp(currentHp),
+        style: TextStyle(
+          color: _hpColor((currentHp / maxHp.toDouble()).clamp(0.0, 1.0)),
+          fontSize: 13,
+          fontWeight: FontWeight.w900,
+          height: 1.0,
+          shadows: const [
+            Shadow(
+              color: Color(0xCC000000),
+              offset: Offset(1, 1),
+              blurRadius: 3,
+            ),
+          ],
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tp.paint(canvas, Offset(cx - tp.width / 2, cy - tp.height / 2));
+  }
+
+  static Color _hpColor(double ratio) {
+    if (ratio > 0.6) return const Color(0xFF44FF88);
+    if (ratio > 0.3) return const Color(0xFFFFBB00);
+    return const Color(0xFFFF3311);
+  }
+
+  static String _fmtHp(int n) {
+    if (n >= 1000000) return '${(n / 1000000).toStringAsFixed(1)}M';
+    if (n >= 1000) return '${(n / 1000).toStringAsFixed(0)}K';
+    return '$n';
   }
 }

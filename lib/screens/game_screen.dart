@@ -10,12 +10,14 @@ class GameScreen extends StatelessWidget {
   final OrbBehavior orbBehavior;
   final GameMode mode;
   final ArenaPreset arenaPreset;
+  final int? customBossHp;
 
   const GameScreen({
     super.key,
     required this.orbBehavior,
     required this.mode,
     this.arenaPreset = ArenaPreset.normal,
+    this.customBossHp,
   });
 
   @override
@@ -24,6 +26,7 @@ class GameScreen extends StatelessWidget {
       orbBehavior: orbBehavior,
       mode: mode,
       arenaPreset: arenaPreset,
+      customBossHp: customBossHp,
     );
     return GameWidget(
       game: game,

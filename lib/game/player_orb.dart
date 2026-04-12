@@ -141,16 +141,19 @@ class PlayerOrb extends PositionComponent {
     boss.position = arena.clamp(boss.position, BossComponent.radius);
 
     // ── Step 2: Impulse exchange (elastic collision) ──────────────────────────
+    // n = boss→orb (outward). relVel < 0 means orb and boss are approaching.
     final relVel = (velocity - boss.velocity).dot(n);
-    if (relVel > 0) {
-      // j = impulse scalar
-      final j = 2.0 * m1 * m2 * relVel / total;
-      velocity = velocity - n * (j / m1);
-      boss.applyImpulse(n * (j / m2));
+    if (relVel < 0) {
+      // j = impulse scalar (positive)
+      final j = 2.0 * m1 * m2 * (-relVel) / total;
+      velocity = velocity + n * (j / m1);       // push orb away from boss (+n)
+      boss.applyImpulse(-n * (j / m2));          // push boss in -n direction
 
       // Keep the orb from going dead (minimum speed guarantee)
-      if (velocity.length < speed * 0.35) {
-        velocity = n * -(speed * 0.6); // bounce back at minimum speed
+      if (velocity.length < speed * 0.3) {
+        velocity = velocity.length < 0.01
+            ? n * (speed * 0.5)
+            : velocity.normalized() * (speed * 0.45);
       }
     }
 
