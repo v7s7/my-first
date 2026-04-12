@@ -109,6 +109,15 @@ class PlayerOrb extends PositionComponent {
       gameRef.triggerShake(intensity: 1.5, duration: 0.05);
       behavior.onWallBounce(this);
     }
+
+    // Obstacle collision (pillars / maze walls)
+    if (arena.bounceOffObstacles(position, velocity, radius)) {
+      speed = min(speed * (1.0 + speedGrowthPerBounce), maxSpeed);
+      if (velocity.length > 0.01) velocity = velocity.normalized() * speed;
+      _bounceSquashTimer = 0.08;
+      gameRef.triggerShake(intensity: 1.5, duration: 0.05);
+      behavior.onWallBounce(this);
+    }
   }
 
   /// Two-body elastic collision between orb (mass 1) and boss (mass [BossComponent.mass]).
@@ -160,7 +169,6 @@ class PlayerOrb extends PositionComponent {
     // ── Step 3: Damage event (cooldown-gated) ────────────────────────────────
     if (_hitCooldownTimer <= 0) {
       _hitCooldownTimer = hitCooldown;
-      boss.triggerHitAnimation();
       behavior.onBossHit(this);
     }
   }

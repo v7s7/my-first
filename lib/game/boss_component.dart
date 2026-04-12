@@ -5,37 +5,33 @@ import 'arena_config.dart';
 
 /// The boss ball.
 ///
-/// Physics behaviour:
+/// Physics:
 ///   - Moves autonomously at [baseSpeed] in a random direction.
-///   - Bounces elastically off all four arena walls.
+///   - Bounces off arena border walls and internal obstacle rects.
 ///   - Receives velocity impulses from the player orb via [applyImpulse].
-///   - Excess speed decays back toward [baseSpeed] at rate [drag].
+///   - Excess speed decays back toward [baseSpeed] via drag.
 ///
-/// Visual behaviour:
+/// Visual:
 ///   - Idle sine-pulse (gentle size breathe).
-///   - Squash-and-stretch spring animation on each hit.
-///   - Speed-reactive glow: the faster the boss moves, the brighter its aura.
+///   - Speed-reactive glow aura (brighter when faster).
+///   - HP arc ring + centred HP text drawn over the sphere.
 class BossComponent extends PositionComponent {
   static const double radius = 55.0;
 
   // ── Physics constants ──────────────────────────────────────────────────────
-  static const double mass = 8.0;
-  static const double baseSpeed = 95.0;   // px/s autonomous cruise speed
-  static const double maxSpeed = 700.0;
-  static const double drag = 1.2;         // excess-speed decay (units/s per unit)
+  static const double mass      = 8.0;
+  static const double baseSpeed = 95.0;  // px/s autonomous cruise speed
+  static const double maxSpeed  = 700.0;
+  static const double drag      = 1.2;   // excess-speed decay rate
 
   final ArenaConfig arena;
   Vector2 velocity = Vector2.zero();
 
-  // ── HP state (set by BossBallGame after creation) ──────────────────────────
-  int maxHp = 0;
+  // ── HP state (set by BossBallGame immediately after construction) ──────────
+  int maxHp     = 0;
   int currentHp = 0;
 
-  // ── Visual animation state ─────────────────────────────────────────────────
-  double _scaleX = 1.0;
-  double _scaleY = 1.0;
-  double _hitTimer = 0.0;
-  static const double _hitDuration = 0.22;
+  // ── Visual ─────────────────────────────────────────────────────────────────
   double _pulseTimer = 0.0;
 
   final Random _rng = Random();
@@ -46,25 +42,15 @@ class BossComponent extends PositionComponent {
           size: Vector2.all(radius * 2),
           anchor: Anchor.center,
         ) {
-    // Launch in a random direction at cruise speed
     final angle = _rng.nextDouble() * 2 * pi;
     velocity = Vector2(cos(angle), sin(angle)) * baseSpeed;
   }
 
   // ── Public API ─────────────────────────────────────────────────────────────
 
-  /// Called by PlayerOrb's elastic collision resolver.
-  /// [impulse] is already scaled by mass ratio — just add it to velocity.
   void applyImpulse(Vector2 impulse) {
     velocity += impulse;
-    final len = velocity.length;
-    if (len > maxSpeed) velocity = velocity.normalized() * maxSpeed;
-  }
-
-  void triggerHitAnimation() {
-    _hitTimer = _hitDuration;
-    _scaleX = 1.38;
-    _scaleY = 0.72;
+    if (velocity.length > maxSpeed) velocity = velocity.normalized() * maxSpeed;
   }
 
   // ── Flame lifecycle ────────────────────────────────────────────────────────
@@ -74,53 +60,27 @@ class BossComponent extends PositionComponent {
     super.update(dt);
     _pulseTimer += dt;
 
-    // Move
     position += velocity * dt;
-
-    // Bounce off arena walls
     _bounceOffWalls();
+    arena.bounceOffObstacles(position, velocity, radius);
 
-    // Speed drag: bleed excess speed back toward cruise speed
+    // Drag: bleed excess speed back toward cruise
     final spd = velocity.length;
     if (spd > baseSpeed) {
-      final newSpd = max(baseSpeed, spd - spd * drag * dt);
-      velocity = velocity.normalized() * newSpd;
-    }
-
-    // Squash-and-stretch spring recovery
-    if (_hitTimer > 0) {
-      _hitTimer -= dt;
-      final p = 1.0 - (_hitTimer / _hitDuration); // 0 → 1
-      final spring = 1.0 + cos(p * pi * 2.6) * (1.0 - p);
-      _scaleX = 1.0 + 0.38 * spring * (1.0 - p);
-      _scaleY = 1.0 - 0.28 * spring * (1.0 - p);
-      if (_hitTimer <= 0) {
-        _scaleX = 1.0;
-        _scaleY = 1.0;
-      }
+      velocity = velocity.normalized() * max(baseSpeed, spd - spd * drag * dt);
     }
   }
 
   void _bounceOffWalls() {
-    final mnX = arena.minX(radius);
-    final mxX = arena.maxX(radius);
-    final mnY = arena.minY(radius);
-    final mxY = arena.maxY(radius);
-
-    if (position.x <= mnX) {
-      position.x = mnX;
-      velocity.x = velocity.x.abs();
-    } else if (position.x >= mxX) {
-      position.x = mxX;
-      velocity.x = -velocity.x.abs();
+    if (position.x <= arena.minX(radius)) {
+      position.x = arena.minX(radius); velocity.x =  velocity.x.abs();
+    } else if (position.x >= arena.maxX(radius)) {
+      position.x = arena.maxX(radius); velocity.x = -velocity.x.abs();
     }
-
-    if (position.y <= mnY) {
-      position.y = mnY;
-      velocity.y = velocity.y.abs();
-    } else if (position.y >= mxY) {
-      position.y = mxY;
-      velocity.y = -velocity.y.abs();
+    if (position.y <= arena.minY(radius)) {
+      position.y = arena.minY(radius); velocity.y =  velocity.y.abs();
+    } else if (position.y >= arena.maxY(radius)) {
+      position.y = arena.maxY(radius); velocity.y = -velocity.y.abs();
     }
   }
 
@@ -133,17 +93,12 @@ class BossComponent extends PositionComponent {
     final pulse = 1.0 + sin(_pulseTimer * 1.8) * 0.035;
     final sr = radius * pulse;
 
-    // Speed-reactive glow intensity (0.0 at cruise, 1.0 at maxSpeed)
-    final speedRatio = ((velocity.length - baseSpeed) / (maxSpeed - baseSpeed))
-        .clamp(0.0, 1.0);
+    // Speed-reactive glow (0 at cruise, 1 at max)
+    final speedRatio =
+        ((velocity.length - baseSpeed) / (maxSpeed - baseSpeed)).clamp(0.0, 1.0);
     final glowExtra = speedRatio * 18;
 
-    canvas.save();
-    canvas.translate(cx, cy);
-    canvas.scale(_scaleX, _scaleY);
-    canvas.translate(-cx, -cy);
-
-    // Outer aura — brightens with speed
+    // Outer aura
     canvas.drawCircle(
       Offset(cx, cy),
       sr + 24 + glowExtra,
@@ -162,7 +117,7 @@ class BossComponent extends PositionComponent {
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 14),
     );
 
-    // Core body with radial gradient
+    // Core body
     canvas.drawCircle(
       Offset(cx, cy),
       sr,
@@ -182,16 +137,14 @@ class BossComponent extends PositionComponent {
         ..strokeWidth = 2.5,
     );
 
-    // Shine spot
+    // Shine
     canvas.drawCircle(
       Offset(cx - sr * 0.3, cy - sr * 0.3),
       sr * 0.28,
       Paint()..color = const Color(0x55FFFFFF),
     );
 
-    canvas.restore();
-
-    // Velocity arrow (debug feel — a faint directional streak)
+    // Velocity trail
     if (velocity.length > baseSpeed * 1.5) {
       final dir = velocity.normalized();
       final trailLen = (velocity.length / maxSpeed * 30).clamp(6.0, 30.0);
@@ -206,7 +159,7 @@ class BossComponent extends PositionComponent {
       );
     }
 
-    // HP ring + text (only when HP is initialised)
+    // HP ring + text
     if (maxHp > 0) {
       _drawHpRing(canvas, cx, cy);
       _drawHpText(canvas, cx, cy);
@@ -215,31 +168,26 @@ class BossComponent extends PositionComponent {
 
   void _drawHpRing(Canvas canvas, double cx, double cy) {
     final ratio = (currentHp / maxHp).clamp(0.0, 1.0);
-    const ringR = radius + 9.0;
+    const ringR  = radius + 9.0;
     const strokeW = 4.5;
 
-    // Background ring (translucent white)
+    // Background ring
     canvas.drawArc(
       Rect.fromCircle(center: Offset(cx, cy), radius: ringR),
-      -pi / 2,
-      2 * pi,
-      false,
+      -pi / 2, 2 * pi, false,
       Paint()
         ..color = const Color(0x33FFFFFF)
         ..style = PaintingStyle.stroke
         ..strokeWidth = strokeW,
     );
 
-    // Filled HP arc — colour shifts green → yellow → red
-    final hpColor = _hpColor(ratio);
+    // HP arc
     if (ratio > 0) {
       canvas.drawArc(
         Rect.fromCircle(center: Offset(cx, cy), radius: ringR),
-        -pi / 2,
-        2 * pi * ratio,
-        false,
+        -pi / 2, 2 * pi * ratio, false,
         Paint()
-          ..color = hpColor
+          ..color = _hpColor(ratio)
           ..style = PaintingStyle.stroke
           ..strokeWidth = strokeW
           ..strokeCap = StrokeCap.round,
@@ -248,20 +196,17 @@ class BossComponent extends PositionComponent {
   }
 
   void _drawHpText(Canvas canvas, double cx, double cy) {
+    final ratio = (currentHp / maxHp.toDouble()).clamp(0.0, 1.0);
     final tp = TextPainter(
       text: TextSpan(
         text: _fmtHp(currentHp),
         style: TextStyle(
-          color: _hpColor((currentHp / maxHp.toDouble()).clamp(0.0, 1.0)),
+          color: _hpColor(ratio),
           fontSize: 13,
           fontWeight: FontWeight.w900,
           height: 1.0,
           shadows: const [
-            Shadow(
-              color: Color(0xCC000000),
-              offset: Offset(1, 1),
-              blurRadius: 3,
-            ),
+            Shadow(color: Color(0xCC000000), offset: Offset(1, 1), blurRadius: 3),
           ],
         ),
       ),
@@ -278,7 +223,7 @@ class BossComponent extends PositionComponent {
 
   static String _fmtHp(int n) {
     if (n >= 1000000) return '${(n / 1000000).toStringAsFixed(1)}M';
-    if (n >= 1000) return '${(n / 1000).toStringAsFixed(0)}K';
+    if (n >= 1000)    return '${(n / 1000).toStringAsFixed(0)}K';
     return '$n';
   }
 }

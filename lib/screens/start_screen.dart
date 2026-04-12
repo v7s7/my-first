@@ -439,7 +439,7 @@ class _GlowCirclePainter extends CustomPainter {
       old.color != color;
 }
 
-// ── Arena size card ──────────────────────────────────────────────────────────
+// ── Arena size / shape card ───────────────────────────────────────────────────
 
 class _ArenaCard extends StatelessWidget {
   final ArenaPreset preset;
@@ -452,30 +452,29 @@ class _ArenaCard extends StatelessWidget {
     required this.onTap,
   });
 
-  // Accent color per preset
   Color get _color {
     switch (preset) {
-      case ArenaPreset.tiny:   return const Color(0xFFFF4444);
-      case ArenaPreset.small:  return const Color(0xFFFFAA00);
-      case ArenaPreset.normal: return const Color(0xFF00FFEE);
-      case ArenaPreset.full:   return const Color(0xFF8844FF);
+      case ArenaPreset.tiny:         return const Color(0xFFFF4444);
+      case ArenaPreset.small:        return const Color(0xFFFFAA00);
+      case ArenaPreset.normal:       return const Color(0xFF00FFEE);
+      case ArenaPreset.full:         return const Color(0xFF8844FF);
+      case ArenaPreset.pillarsSmall: return const Color(0xFF44BBFF);
+      case ArenaPreset.pillarsBig:   return const Color(0xFF0088FF);
+      case ArenaPreset.corridors:    return const Color(0xFFFF44AA);
+      case ArenaPreset.maze:         return const Color(0xFF44FF88);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final color = _color;
-    // Visual box preview: a small rectangle scaled to the preset fraction
-    final boxW = 32.0 * preset.fraction;
-    final boxH = 44.0 * preset.fraction;
-
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        margin: const EdgeInsets.symmetric(horizontal: 6),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-        width: 88,
+        margin: const EdgeInsets.symmetric(horizontal: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        width: 82,
         decoration: BoxDecoration(
           border: Border.all(
             color: selected ? color : const Color(0x44FFFFFF),
@@ -486,50 +485,38 @@ class _ArenaCard extends StatelessWidget {
               ? Color.fromARGB(28, color.red, color.green, color.blue)
               : Colors.transparent,
           boxShadow: selected
-              ? [
-                  BoxShadow(
-                    color: Color.fromARGB(
-                        80, color.red, color.green, color.blue),
-                    blurRadius: 16,
-                  )
-                ]
+              ? [BoxShadow(
+                  color: Color.fromARGB(80, color.red, color.green, color.blue),
+                  blurRadius: 16,
+                )]
               : [],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Miniature arena preview box
             SizedBox(
               width: 36,
-              height: 48,
-              child: Center(
-                child: Container(
-                  width: boxW,
-                  height: boxH,
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: selected ? color : const Color(0x66FFFFFF),
-                      width: 1.5,
-                    ),
-                    color: selected
-                        ? Color.fromARGB(
-                            20, color.red, color.green, color.blue)
-                        : Colors.transparent,
-                  ),
+              height: 46,
+              child: CustomPaint(
+                painter: _ArenaPreviewPainter(
+                  preset: preset,
+                  color: color,
+                  selected: selected,
                 ),
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 5),
             Text(
               preset.label,
+              textAlign: TextAlign.center,
               style: TextStyle(
                 color: color,
-                fontSize: 10,
+                fontSize: 9,
                 fontWeight: FontWeight.w900,
-                letterSpacing: 1,
+                letterSpacing: 0.5,
               ),
             ),
-            const SizedBox(height: 3),
+            const SizedBox(height: 2),
             Text(
               preset.subtitle,
               textAlign: TextAlign.center,
@@ -544,6 +531,98 @@ class _ArenaCard extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Draws a miniature arena preview that reflects the preset's layout.
+class _ArenaPreviewPainter extends CustomPainter {
+  final ArenaPreset preset;
+  final Color color;
+  final bool selected;
+
+  const _ArenaPreviewPainter({
+    required this.preset,
+    required this.color,
+    required this.selected,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final f  = preset.fraction;
+    final bW = size.width  * f;
+    final bH = size.height * f;
+    final l  = (size.width  - bW) / 2;
+    final t  = (size.height - bH) / 2;
+    final arenaRect = Rect.fromLTWH(l, t, bW, bH);
+
+    final borderColor = selected ? color : const Color(0x66FFFFFF);
+    final fillColor   = selected
+        ? Color.fromARGB(20, color.red, color.green, color.blue)
+        : Colors.transparent;
+    final obstacleColor = selected
+        ? color.withOpacity(0.75)
+        : const Color(0x66FFFFFF);
+
+    // Arena border
+    canvas.drawRect(arenaRect, Paint()..color = fillColor);
+    canvas.drawRect(
+      arenaRect,
+      Paint()
+        ..color = borderColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5,
+    );
+
+    final wallPaint = Paint()
+      ..color = obstacleColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.8
+      ..strokeCap = StrokeCap.square;
+    final pillPaint = Paint()..color = obstacleColor;
+
+    switch (preset) {
+      case ArenaPreset.pillarsSmall:
+        // 4 small squares at quadrant centres
+        const hs = 3.5;
+        for (final cx in [l + bW * 0.25, l + bW * 0.75]) {
+          for (final cy in [t + bH * 0.25, t + bH * 0.75]) {
+            canvas.drawRect(
+              Rect.fromCenter(center: Offset(cx, cy), width: hs * 2, height: hs * 2),
+              pillPaint,
+            );
+          }
+        }
+
+      case ArenaPreset.pillarsBig:
+        // 2 large squares left/right of centre
+        const hs = 7.0;
+        for (final cx in [l + bW * 0.25, l + bW * 0.75]) {
+          canvas.drawRect(
+            Rect.fromCenter(center: Offset(cx, t + bH * 0.5), width: hs * 2, height: hs * 2),
+            pillPaint,
+          );
+        }
+
+      case ArenaPreset.corridors:
+        // Two S-curve dividers
+        canvas.drawLine(Offset(l + 1,         t + bH * 0.37), Offset(l + bW * 0.58, t + bH * 0.37), wallPaint);
+        canvas.drawLine(Offset(l + bW * 0.42, t + bH * 0.63), Offset(l + bW - 1,    t + bH * 0.63), wallPaint);
+
+      case ArenaPreset.maze:
+        // Top-left L
+        canvas.drawLine(Offset(l + 1,         t + bH * 0.30), Offset(l + bW * 0.44, t + bH * 0.30), wallPaint);
+        canvas.drawLine(Offset(l + bW * 0.44, t + bH * 0.30), Offset(l + bW * 0.44, t + bH * 0.56), wallPaint);
+        // Bottom-right L
+        canvas.drawLine(Offset(l + bW * 0.56, t + bH * 0.44), Offset(l + bW * 0.56, t + bH * 0.70), wallPaint);
+        canvas.drawLine(Offset(l + bW * 0.56, t + bH * 0.70), Offset(l + bW - 1,    t + bH * 0.70), wallPaint);
+
+      default:
+        break; // plain rectangle — no obstacles
+    }
+  }
+
+  @override
+  bool shouldRepaint(_ArenaPreviewPainter old) =>
+      old.preset != preset || old.selected != selected || old.color != color;
 }
 
 // ── Boss HP chip ─────────────────────────────────────────────────────────────

@@ -80,6 +80,7 @@ class BossBallGame extends FlameGame {
   void _buildWalls() {
     final cfg = arenaConfig;
     const t = ArenaConfig.wallThickness;
+    // Border walls
     addAll([
       ArenaWall(position: Vector2(cfg.left, cfg.top),
                 size: Vector2(cfg.width, t)),
@@ -90,6 +91,13 @@ class BossBallGame extends FlameGame {
       ArenaWall(position: Vector2(cfg.left + cfg.width - t, cfg.top + t),
                 size: Vector2(t, cfg.height - t * 2)),
     ]);
+    // Internal obstacle walls / pillars
+    for (final rect in cfg.obstacles) {
+      add(ArenaWall(
+        position: Vector2(rect.left, rect.top),
+        size: Vector2(rect.width, rect.height),
+      ));
+    }
   }
 
   void _buildBoss() {
