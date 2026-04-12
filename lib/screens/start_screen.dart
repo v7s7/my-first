@@ -3,6 +3,7 @@ import '../orbs/orb_behavior.dart';
 import '../orbs/orb_registry.dart';
 import '../modes/game_mode.dart';
 import '../modes/mode_registry.dart';
+import '../game/arena_config.dart';
 import 'game_screen.dart';
 
 class StartScreen extends StatefulWidget {
@@ -16,6 +17,7 @@ class _StartScreenState extends State<StartScreen>
     with SingleTickerProviderStateMixin {
   OrbBehavior _selectedOrb = OrbRegistry.all.first;
   GameMode _selectedMode = ModeRegistry.all.first;
+  ArenaPreset _selectedArena = ArenaPreset.normal;
 
   late AnimationController _pulseCtrl;
   late Animation<double> _pulseAnim;
@@ -140,6 +142,34 @@ class _StartScreenState extends State<StartScreen>
                           .toList(),
                     ),
                   ),
+                  const SizedBox(height: 28),
+
+                  // ── Arena size selector ───────────────────────────────────
+                  const Text(
+                    'ARENA SIZE',
+                    style: TextStyle(
+                      color: Color(0xAAFFFFFF),
+                      fontSize: 13,
+                      letterSpacing: 4,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: ArenaPreset.values
+                          .map((p) => _ArenaCard(
+                                preset: p,
+                                selected: _selectedArena == p,
+                                onTap: () =>
+                                    setState(() => _selectedArena = p),
+                              ))
+                          .toList(),
+                    ),
+                  ),
                   const SizedBox(height: 40),
 
                   // ── Start button ──────────────────────────────────────────
@@ -154,6 +184,7 @@ class _StartScreenState extends State<StartScreen>
                           builder: (_) => GameScreen(
                             orbBehavior: _selectedOrb,
                             mode: _selectedMode,
+                            arenaPreset: _selectedArena,
                           ),
                         ),
                       ),
@@ -369,4 +400,111 @@ class _GlowCirclePainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _GlowCirclePainter old) =>
       old.color != color;
+}
+
+// ── Arena size card ──────────────────────────────────────────────────────────
+
+class _ArenaCard extends StatelessWidget {
+  final ArenaPreset preset;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _ArenaCard({
+    required this.preset,
+    required this.selected,
+    required this.onTap,
+  });
+
+  // Accent color per preset
+  Color get _color {
+    switch (preset) {
+      case ArenaPreset.tiny:   return const Color(0xFFFF4444);
+      case ArenaPreset.small:  return const Color(0xFFFFAA00);
+      case ArenaPreset.normal: return const Color(0xFF00FFEE);
+      case ArenaPreset.full:   return const Color(0xFF8844FF);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _color;
+    // Visual box preview: a small rectangle scaled to the preset fraction
+    final boxW = 32.0 * preset.fraction;
+    final boxH = 44.0 * preset.fraction;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        margin: const EdgeInsets.symmetric(horizontal: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        width: 88,
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: selected ? color : const Color(0x44FFFFFF),
+            width: selected ? 2 : 1,
+          ),
+          borderRadius: BorderRadius.circular(8),
+          color: selected
+              ? Color.fromARGB(28, color.red, color.green, color.blue)
+              : Colors.transparent,
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                    color: Color.fromARGB(
+                        80, color.red, color.green, color.blue),
+                    blurRadius: 16,
+                  )
+                ]
+              : [],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Miniature arena preview box
+            SizedBox(
+              width: 36,
+              height: 48,
+              child: Center(
+                child: Container(
+                  width: boxW,
+                  height: boxH,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: selected ? color : const Color(0x66FFFFFF),
+                      width: 1.5,
+                    ),
+                    color: selected
+                        ? Color.fromARGB(
+                            20, color.red, color.green, color.blue)
+                        : Colors.transparent,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              preset.label,
+              style: TextStyle(
+                color: color,
+                fontSize: 10,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              preset.subtitle,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Color(0x88FFFFFF),
+                fontSize: 8,
+                height: 1.3,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

@@ -1,8 +1,10 @@
 import 'dart:math';
+import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import '../orbs/orb_behavior.dart';
 import '../modes/game_mode.dart';
+import 'arena_config.dart';
 import 'arena_wall.dart';
 import 'boss_component.dart';
 import 'player_orb.dart';
@@ -11,8 +13,9 @@ import 'hud_component.dart';
 class BossBallGame extends FlameGame {
   final OrbBehavior orbBehavior;
   final GameMode mode;
+  final ArenaPreset arenaPreset;
 
-  static const double wallThickness = 14.0;
+  late ArenaConfig arenaConfig;
 
   late int bossMaxHp;
   late int bossHp;
@@ -21,10 +24,7 @@ class BossBallGame extends FlameGame {
   bool playing = false;
   bool bossDestroyed = false;
 
-  /// Cumulative damage this round — used for score-based modes.
   int totalDamage = 0;
-
-  /// Elapsed game time — used for DPS calculation.
   double totalTime = 0.0;
 
   late BossComponent boss;
@@ -34,14 +34,20 @@ class BossBallGame extends FlameGame {
   double _shakeTimer = 0.0;
   final Random _rng = Random();
 
-  BossBallGame({required this.orbBehavior, required this.mode});
+  BossBallGame({
+    required this.orbBehavior,
+    required this.mode,
+    this.arenaPreset = ArenaPreset.normal,
+  });
 
   @override
-  Color backgroundColor() => const Color(0xFF080812);
+  Color backgroundColor() => const Color(0xFF040408);
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
+
+    arenaConfig = ArenaConfig.fromScreen(size, arenaPreset);
 
     bossMaxHp = mode.bossMaxHp;
     bossHp = bossMaxHp;
@@ -49,47 +55,59 @@ class BossBallGame extends FlameGame {
     totalDamage = 0;
     totalTime = 0.0;
 
-    _buildArena();
+    _buildArenaBackground();
+    _buildWalls();
     _buildBoss();
     _buildOrb();
     add(HudComponent(gameRef: this));
     playing = true;
   }
 
-  void _buildArena() {
-    final w = size.x;
-    final h = size.y;
-    const t = wallThickness;
+  /// Slightly lighter background panel that marks the playable zone.
+  void _buildArenaBackground() {
+    final cfg = arenaConfig;
+    add(RectangleComponent(
+      position: Vector2(cfg.left, cfg.top),
+      size: Vector2(cfg.width, cfg.height),
+      paint: Paint()..color = const Color(0xFF0C0C18),
+      priority: -1,
+    ));
+  }
+
+  void _buildWalls() {
+    final cfg = arenaConfig;
+    const t = ArenaConfig.wallThickness;
     addAll([
-      ArenaWall(position: Vector2(0, 0), size: Vector2(w, t)),
-      ArenaWall(position: Vector2(0, h - t), size: Vector2(w, t)),
-      ArenaWall(position: Vector2(0, t), size: Vector2(t, h - t * 2)),
-      ArenaWall(position: Vector2(w - t, t), size: Vector2(t, h - t * 2)),
+      ArenaWall(position: Vector2(cfg.left, cfg.top),
+                size: Vector2(cfg.width, t)),
+      ArenaWall(position: Vector2(cfg.left, cfg.top + cfg.height - t),
+                size: Vector2(cfg.width, t)),
+      ArenaWall(position: Vector2(cfg.left, cfg.top + t),
+                size: Vector2(t, cfg.height - t * 2)),
+      ArenaWall(position: Vector2(cfg.left + cfg.width - t, cfg.top + t),
+                size: Vector2(t, cfg.height - t * 2)),
     ]);
   }
 
   void _buildBoss() {
-    boss = BossComponent(position: size / 2);
+    boss = BossComponent(position: arenaConfig.center, arena: arenaConfig);
     add(boss);
   }
 
   void _buildOrb() {
-    orb = PlayerOrb(behavior: orbBehavior, gameRef: this);
+    orb = PlayerOrb(behavior: orbBehavior, gameRef: this, arena: arenaConfig);
     add(orb);
   }
 
-  /// Called by OrbBehavior subclasses when they deal damage.
-  /// [isLaserTick] dampens screen shake for rapid tick-based damage.
+  // ── Damage callback ────────────────────────────────────────────────────────
+
   void onOrbHitBoss(int damage, {bool isLaserTick = false}) {
     bossHp = (bossHp - damage).clamp(0, bossMaxHp);
     totalDamage += damage;
 
     if (!isLaserTick) {
-      final normalizedPower = damage / bossMaxHp;
-      triggerShake(
-        intensity: (normalizedPower * 300).clamp(4.0, 28.0),
-        duration: 0.18,
-      );
+      final ratio = damage / bossMaxHp;
+      triggerShake(intensity: (ratio * 300).clamp(4.0, 28.0), duration: 0.18);
     } else {
       triggerShake(intensity: 1.8, duration: 0.04);
     }
@@ -107,6 +125,8 @@ class BossBallGame extends FlameGame {
       _shakeTimer = duration;
     }
   }
+
+  // ── Game loop ──────────────────────────────────────────────────────────────
 
   @override
   void update(double dt) {
