@@ -1,0 +1,12 @@
+{
+  "name": "Boss Ball Blitz",
+  "short_name": "BossBlitz",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#080812",
+  "theme_color": "#080812",
+  "description": "Physics-based boss-smashing incremental arcade game",
+  "orientation": "portrait-primary",
+  "prefer_related_applications": false,
+  "icons": []
+}
