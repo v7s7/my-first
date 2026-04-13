@@ -42,18 +42,18 @@ class DamageNumber extends PositionComponent {
   void render(Canvas canvas) {
     final progress = 1.0 - (_life / _totalLife);
 
-    // Alpha: solid until 65%, then linear fade to zero
-    final alpha = (progress < 0.65
+    // Alpha: solid until 70%, then smooth fade to zero
+    final alpha = (progress < 0.70
             ? 1.0
-            : 1.0 - (progress - 0.65) / 0.35)
+            : 1.0 - (progress - 0.70) / 0.30)
         .clamp(0.0, 1.0);
 
-    // Pop scale: rises to peak at ~20% then settles; small numbers just scale flat
-    final scale = isSmall ? 0.72 : (1.0 + sin(progress * pi * 0.85) * 0.45);
+    // Pop scale: rises to peak at ~15% then settles; small numbers just scale flat
+    final scale = isSmall ? 0.72 : (1.0 + sin(progress * pi * 0.85) * 0.55);
 
     final color = _colorFor(damage);
-    final fontSize = (isSmall ? 13.0 : 22.0) * scale;
-    final text = _fmt(damage);
+    final fontSize = (isSmall ? 13.0 : 26.0) * scale;
+    final text = '-${_fmt(damage)}';
 
     final tp = TextPainter(
       text: TextSpan(
@@ -65,13 +65,18 @@ class DamageNumber extends PositionComponent {
           height: 1.0,
           shadows: [
             Shadow(
-              color: Colors.black.withOpacity(alpha * 0.85),
-              offset: const Offset(1, 1),
-              blurRadius: 3,
+              color: Colors.black.withOpacity(alpha * 0.9),
+              offset: const Offset(2, 2),
+              blurRadius: 4,
             ),
             Shadow(
-              color: color.withOpacity(alpha * 0.45),
-              blurRadius: 10,
+              color: color.withOpacity(alpha * 0.6),
+              blurRadius: 14,
+            ),
+            Shadow(
+              color: color.withOpacity(alpha * 0.3),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
             ),
           ],
         ),
@@ -79,8 +84,12 @@ class DamageNumber extends PositionComponent {
       textDirection: TextDirection.ltr,
     )..layout();
 
-    // Centre on position
-    tp.paint(canvas, Offset(-tp.width / 2, -tp.height / 2));
+    // Scale effect: larger popup
+    canvas.save();
+    canvas.translate(-tp.width / 2, -tp.height / 2);
+    canvas.scale(1.0 + (1.0 - alpha) * 0.15, 1.0 + (1.0 - alpha) * 0.15);
+    tp.paint(canvas, Offset.zero);
+    canvas.restore();
   }
 
   static Color _colorFor(int d) {

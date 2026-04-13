@@ -1,18 +1,14 @@
+import 'dart:collection';
 import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
+
 import 'boss_ball_game.dart';
 import 'boss_component.dart';
 import 'arena_config.dart';
 import '../orbs/orb_behavior.dart';
 
 /// Physics shell for the player's bouncing orb.
-///
-/// Owns: position, velocity, speed ramp, wall-bounce geometry,
-/// two-body elastic collision with the boss, base sphere rendering,
-/// and bounce squash animation.
-///
-/// All orb-type-specific logic is delegated to [behavior].
 class PlayerOrb extends PositionComponent {
   final OrbBehavior behavior;
   final BossBallGame gameRef;
@@ -22,15 +18,18 @@ class PlayerOrb extends PositionComponent {
   static const double baseSpeed = 280.0;
   static const double speedGrowthPerBounce = 0.03;
   static const double maxSpeed = 900.0;
-  static const double hitCooldown = 0.25; // seconds between damage events
+  static const double hitCooldown = 0.25; // ثواني بين كل ضرر والآخر
 
-  // Package-accessible — OrbBehavior subclasses can read/modify these.
   double speed = baseSpeed;
   late Vector2 velocity;
 
   final Random _rng = Random();
   double _hitCooldownTimer = 0.0;
   double _bounceSquashTimer = 0.0;
+
+  // 🔴 قائمة لتخزين المواقع السابقة للكرة لرسم الذيل الحركي
+  final Queue<Vector2> _trail = Queue<Vector2>();
+  static const int _maxTrailLength = 12;
 
   PlayerOrb({
     required this.behavior,
@@ -42,17 +41,14 @@ class PlayerOrb extends PositionComponent {
           priority: 10,
         );
 
-  // ── Flame lifecycle ────────────────────────────────────────────────────────
-
   @override
   Future<void> onLoad() async {
-    // Spawn in the upper portion of the arena, away from the boss
+    // تحديد موقع بداية الكرة داخل الميدان
     position = Vector2(
       arena.minX(radius) + _rng.nextDouble() * (arena.maxX(radius) - arena.minX(radius)) * 0.35,
       arena.minY(radius) + _rng.nextDouble() * (arena.maxY(radius) - arena.minY(radius)) * 0.25,
     );
 
-    // Random angle aimed roughly toward center-right
     final angle = (pi * 0.2) + _rng.nextDouble() * (pi * 0.6);
     velocity = Vector2(cos(angle), sin(angle)) * speed;
 
@@ -67,17 +63,31 @@ class PlayerOrb extends PositionComponent {
     if (_hitCooldownTimer > 0) _hitCooldownTimer -= dt;
     if (_bounceSquashTimer > 0) _bounceSquashTimer -= dt;
 
+    // Update motion trail
+    _trail.addFirst(position.clone());
+    if (_trail.length > _maxTrailLength) {
+      _trail.removeLast();
+    }
+
     behavior.onUpdate(dt, this);
 
-    position += velocity * dt;
-    _handleWallBounce();
+    // Hook Orb homing behavior
+    if (behavior.id == 'hook') {
+      final bossPos = gameRef.boss.position;
+      final distanceToBoss = position.distanceTo(bossPos);
+      
+      if (distanceToBoss < 400) {
+        final directionToBoss = (bossPos - position).normalized();
+        velocity.lerp(directionToBoss * speed, dt * 2.5);
+        velocity = velocity.normalized() * speed;
+      }
+    }
 
-    // Physics collision runs every frame (separation + impulse).
-    // Damage is gated by _hitCooldownTimer inside _resolveCollision.
+    position += velocity * dt;
+    
+    _handleWallBounce();
     _resolveCollision();
   }
-
-  // ── Physics ────────────────────────────────────────────────────────────────
 
   void _handleWallBounce() {
     bool bounced = false;
@@ -110,7 +120,7 @@ class PlayerOrb extends PositionComponent {
       behavior.onWallBounce(this);
     }
 
-    // Obstacle collision (pillars / maze walls)
+    // الاصطدام مع الجدران الداخلية والعقبات في الميدان
     if (arena.bounceOffObstacles(position, velocity, radius)) {
       speed = min(speed * (1.0 + speedGrowthPerBounce), maxSpeed);
       if (velocity.length > 0.01) velocity = velocity.normalized() * speed;
@@ -120,45 +130,42 @@ class PlayerOrb extends PositionComponent {
     }
   }
 
-  /// Two-body elastic collision between orb (mass 1) and boss (mass [BossComponent.mass]).
-  ///
-  /// Runs every frame. Separates overlapping circles first, then exchanges
-  /// momentum along the collision normal. Damage is only applied once per
-  /// cooldown window.
   void _resolveCollision() {
     final boss = gameRef.boss;
     final dist = position.distanceTo(boss.position);
-    final minDist = BossComponent.radius + radius;
+    final minDist = boss.radius + radius;
 
     if (dist >= minDist) return;
 
-    // ── Step 1: Positional separation (prevent overlap) ──────────────────────
     final n = dist < 0.001
-        ? Vector2(1, 0) // degenerate case: same position
+        ? Vector2(1, 0)
         : (position - boss.position).normalized();
 
     final overlap = minDist - dist;
-    const m1 = 1.0;
-    const m2 = BossComponent.mass;
-    const total = m1 + m2;
-
-    position += n * (overlap * m2 / total);
-    boss.position -= n * (overlap * m1 / total);
-
-    // Clamp both back into arena after separation
+    position += n * overlap;
     position = arena.clamp(position, radius);
-    boss.position = arena.clamp(boss.position, BossComponent.radius);
 
-    // ── Step 2: Impulse exchange (elastic collision) ──────────────────────────
-    // n = boss→orb (outward). relVel < 0 means orb and boss are approaching.
-    final relVel = (velocity - boss.velocity).dot(n);
-    if (relVel < 0) {
-      // j = impulse scalar (positive)
-      final j = 2.0 * m1 * m2 * (-relVel) / total;
-      velocity = velocity + n * (j / m1);       // push orb away from boss (+n)
-      boss.applyImpulse(-n * (j / m2));          // push boss in -n direction
+    // Calculate relative velocity and apply collision physics
+    final relVel = velocity - boss.velocity;
+    final velAlongNormal = relVel.dot(n);
 
-      // Keep the orb from going dead (minimum speed guarantee)
+    if (velAlongNormal < 0) {
+      // Bounce with realistic physics
+      const m1 = 1.0; // Orb mass
+      final m2 = BossComponent.mass; // Boss mass
+      
+      // Impulse calculation
+      final restitution = 0.8; // Bounciness
+      final j = -(1.0 + restitution) * velAlongNormal / (m1 + m2);
+      
+      // Apply impulse to orb
+      final impulse = n * j;
+      velocity = velocity + impulse * m2;
+      
+      // Apply impulse to boss
+      boss.velocity = boss.velocity - impulse * m1 * 0.7;
+      
+      // Maintain orb speed
       if (velocity.length < speed * 0.3) {
         velocity = velocity.length < 0.01
             ? n * (speed * 0.5)
@@ -166,21 +173,41 @@ class PlayerOrb extends PositionComponent {
       }
     }
 
-    // ── Step 3: Damage event (cooldown-gated) ────────────────────────────────
     if (_hitCooldownTimer <= 0) {
       _hitCooldownTimer = hitCooldown;
       behavior.onBossHit(this);
     }
   }
 
-  // ── Rendering ──────────────────────────────────────────────────────────────
-
   @override
   void render(Canvas canvas) {
-    final squash = _bounceSquashTimer > 0 ? 1.15 : 1.0;
-    final stretch = _bounceSquashTimer > 0 ? 0.88 : 1.0;
     const cx = radius;
     const cy = radius;
+
+    // 🔴 رسم الذيل الحركي أولاً ليكون خلف الكرة
+    int i = 0;
+    for (final trailPos in _trail) {
+      final progress = i / _trail.length; // قيمة من 0 إلى 1
+      final trailOpacity = (1.0 - progress) * 0.4;
+      final trailRadius = radius * (1.0 - progress * 0.5); 
+
+      // تحويل إحداثيات الذيل العالمية إلى إحداثيات محلية ليتم رسمها في المكان الصحيح
+      final dx = trailPos.x - position.x;
+      final dy = trailPos.y - position.y;
+
+      canvas.drawCircle(
+        Offset(cx + dx, cy + dy),
+        trailRadius,
+        Paint()
+          ..color = behavior.color.withOpacity(trailOpacity)
+          ..blendMode = BlendMode.screen,
+      );
+      i++;
+    }
+
+    // Bounce squash effect
+    final squash = _bounceSquashTimer > 0 ? 1.15 : 1.0;
+    final stretch = _bounceSquashTimer > 0 ? 0.88 : 1.0;
 
     canvas.save();
     canvas.translate(cx, cy);
@@ -192,35 +219,45 @@ class PlayerOrb extends PositionComponent {
     // Outer glow
     canvas.drawCircle(
       const Offset(cx, cy),
-      radius + 10,
+      radius + 12,
       Paint()
-        ..color = Color.fromARGB(100, color.red, color.green, color.blue)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 14),
+        ..color = color.withOpacity(0.25)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 18),
     );
 
-    // Core body
+    // Main sphere body
     canvas.drawCircle(const Offset(cx, cy), radius, Paint()..color = color);
 
-    // Shine
+    // Metallic highlight
     canvas.drawCircle(
-      const Offset(cx - radius * 0.32, cy - radius * 0.32),
-      radius * 0.32,
-      Paint()..color = const Color(0x88FFFFFF),
+      const Offset(cx - radius * 0.35, cy - radius * 0.35),
+      radius * 0.38,
+      Paint()
+        ..color = Colors.white.withOpacity(0.45)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
     );
 
-    // Rim
+    // Inner glow for depth
+    canvas.drawCircle(
+      const Offset(cx, cy),
+      radius * 0.8,
+      Paint()
+        ..color = color.withOpacity(0.3)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
+    );
+
+    // Rim highlight
     canvas.drawCircle(
       const Offset(cx, cy),
       radius,
       Paint()
-        ..color = const Color(0x66FFFFFF)
+        ..color = Colors.white.withOpacity(0.35)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5,
+        ..strokeWidth = 2.0,
     );
 
     canvas.restore();
 
-    // Orb-type overlay (combo badge, laser ring, etc.)
     behavior.renderOverlay(canvas, radius, cx, cy);
   }
 }

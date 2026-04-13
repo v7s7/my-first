@@ -1,7 +1,9 @@
 import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
+import 'package:flame/particles.dart';
 import 'package:flutter/material.dart';
+
 import '../orbs/orb_behavior.dart';
 import '../modes/game_mode.dart';
 import 'arena_config.dart';
@@ -101,11 +103,8 @@ class BossBallGame extends FlameGame {
   }
 
   void _buildBoss() {
-    boss = BossComponent(position: arenaConfig.center, arena: arenaConfig);
+    boss = BossComponent(position: arenaConfig.center);
     add(boss);
-    // HP fields are set here so they're ready before the first frame.
-    boss.maxHp = bossMaxHp;
-    boss.currentHp = bossMaxHp;
   }
 
   void _buildOrb() {
@@ -113,30 +112,87 @@ class BossBallGame extends FlameGame {
     add(orb);
   }
 
+  // 🔴 تمت إعادة إضافة دالة تأثير النار المفقودة
+  void spawnFireExplosion(Vector2 position) {
+    add(
+      ParticleSystemComponent(
+        position: position,
+        particle: Particle.generate(
+          count: 40,
+          lifespan: 0.5,
+          generator: (i) {
+            final speed = Vector2((_rng.nextDouble() - 0.5) * 600, (_rng.nextDouble() - 0.5) * 600);
+            return AcceleratedParticle(
+              acceleration: Vector2(0, 200),
+              speed: speed,
+              child: ComputedParticle(
+                renderer: (canvas, particle) {
+                  final color = Color.lerp(
+                    Colors.yellow,
+                    Colors.red,
+                    particle.progress,
+                  )!.withOpacity(1.0 - particle.progress);
+                  
+                  final paint = Paint()
+                    ..color = color
+                    ..blendMode = BlendMode.screen
+                    ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+                    
+                  final radius = 6.0 * (1.0 - particle.progress);
+                  canvas.drawCircle(Offset.zero, radius, paint);
+                },
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
   // ── Damage callback ────────────────────────────────────────────────────────
 
-  void onOrbHitBoss(int damage, {bool isLaserTick = false}) {
-    bossHp = (bossHp - damage).clamp(0, bossMaxHp);
-    boss.currentHp = bossHp; // keep boss HP ring in sync
-    totalDamage += damage;
+  void onOrbHitBoss(int baseDamage, {bool isLaserTick = false}) {
+    // 20% chance for critical hit
+    bool isCrit = false;
+    int finalDamage = baseDamage;
 
-    // Spawn a floating damage number near the top of the boss
-    add(DamageNumber(
-      damage: damage,
-      position: boss.position +
-          Vector2(
-            (_rng.nextDouble() - 0.5) * BossComponent.radius * 0.8,
-            -BossComponent.radius * 0.55,
-          ),
-      isSmall: isLaserTick,
-      driftX: (_rng.nextDouble() - 0.5) * 55,
-    ));
+    if (!isLaserTick && _rng.nextDouble() < 0.20) {
+      isCrit = true;
+      finalDamage = baseDamage * 2;
+    }
+
+    bossHp = (bossHp - finalDamage).clamp(0, bossMaxHp);
+    totalDamage += finalDamage;
 
     if (!isLaserTick) {
-      final ratio = damage / bossMaxHp;
-      triggerShake(intensity: (ratio * 300).clamp(4.0, 28.0), duration: 0.18);
+      final shakePower = isCrit ? 50.0 : ((finalDamage / bossMaxHp) * 300).clamp(4.0, 28.0);
+      triggerShake(
+        intensity: shakePower,
+        duration: isCrit ? 0.3 : 0.18,
+      );
+      
+      spawnFireExplosion(orb.position.clone());
+      
+      // Spawn floating damage number
+      add(DamageNumber(
+        position: boss.position.clone() + Vector2((_rng.nextDouble() - 0.5) * 40, -30),
+        damage: finalDamage,
+        isSmall: false,
+        driftX: (_rng.nextDouble() - 0.5) * 60,
+      ));
+      
     } else {
       triggerShake(intensity: 1.8, duration: 0.04);
+      if (_rng.nextDouble() > 0.5) {
+        spawnFireExplosion(boss.position.clone() + Vector2((_rng.nextDouble() - 0.5) * 40, (_rng.nextDouble() - 0.5) * 40));
+        // Small damage numbers for laser ticks
+        add(DamageNumber(
+          position: boss.position.clone() + Vector2((_rng.nextDouble() - 0.5) * 50, (_rng.nextDouble() - 0.5) * 50),
+          damage: finalDamage,
+          isSmall: true,
+          driftX: (_rng.nextDouble() - 0.5) * 40,
+        ));
+      }
     }
 
     if (mode.winOnBossKill && bossHp <= 0 && !bossDestroyed) {

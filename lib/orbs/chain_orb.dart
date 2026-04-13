@@ -26,8 +26,6 @@ class ChainOrb extends OrbBehavior {
   double _renderTimer  = 0;          // drives flicker seed
   Offset _bossOffset   = Offset.zero; // boss pos relative to orb centre
 
-  final Random _rng = Random();
-
   @override
   void onAttach(PlayerOrb orb) {
     _chainActive  = false;

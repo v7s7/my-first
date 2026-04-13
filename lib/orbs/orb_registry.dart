@@ -7,7 +7,11 @@ import 'fire_orb.dart';
 import 'prismatic_orb.dart';
 import 'nova_star_orb.dart';
 import 'void_orb.dart';
-
+import 'hook_orb.dart';
+import 'splitter_orb.dart';
+import 'zapper_orb.dart';
+import 'clone_orb.dart';
+import 'black_hole_orb.dart';
 /// The single place where orb types are declared.
 ///
 /// To add a new orb:
@@ -27,6 +31,11 @@ class OrbRegistry {
     PrismaticOrb(),
     NovaStarOrb(),
     VoidOrb(),
+    HookOrb(),
+    SplitterOrb(),
+    ZapperOrb(),
+    CloneOrb(),
+    BlackHoleOrb(),
   ];
 
   static OrbBehavior findById(String id) =>
