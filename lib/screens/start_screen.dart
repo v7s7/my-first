@@ -3,6 +3,7 @@ import '../orbs/orb_behavior.dart';
 import '../orbs/orb_registry.dart';
 import '../modes/game_mode.dart';
 import '../modes/mode_registry.dart';
+import '../game/arena_config.dart';
 import 'game_screen.dart';
 
 class StartScreen extends StatefulWidget {
@@ -16,6 +17,16 @@ class _StartScreenState extends State<StartScreen>
     with SingleTickerProviderStateMixin {
   OrbBehavior _selectedOrb = OrbRegistry.all.first;
   GameMode _selectedMode = ModeRegistry.all.first;
+  ArenaPreset _selectedArena = ArenaPreset.normal;
+  int _selectedHp = 1000000;
+
+  static const List<int> _hpPresets = [
+    100000,
+    500000,
+    1000000,
+    5000000,
+    10000000,
+  ];
 
   late AnimationController _pulseCtrl;
   late Animation<double> _pulseAnim;
@@ -140,6 +151,61 @@ class _StartScreenState extends State<StartScreen>
                           .toList(),
                     ),
                   ),
+                  const SizedBox(height: 28),
+
+                  // ── Arena size selector ───────────────────────────────────
+                  const Text(
+                    'ARENA SIZE',
+                    style: TextStyle(
+                      color: Color(0xAAFFFFFF),
+                      fontSize: 13,
+                      letterSpacing: 4,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: ArenaPreset.values
+                          .map((p) => _ArenaCard(
+                                preset: p,
+                                selected: _selectedArena == p,
+                                onTap: () =>
+                                    setState(() => _selectedArena = p),
+                              ))
+                          .toList(),
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+
+                  // ── Boss HP selector ──────────────────────────────────────
+                  const Text(
+                    'BOSS HP',
+                    style: TextStyle(
+                      color: Color(0xAAFFFFFF),
+                      fontSize: 13,
+                      letterSpacing: 4,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _hpPresets
+                        .map((hp) => _HpChip(
+                              hp: hp,
+                              selected: _selectedHp == hp,
+                              onTap: () => setState(() => _selectedHp = hp),
+                            ))
+                        .toList(),
+                  ),
+
                   const SizedBox(height: 40),
 
                   // ── Start button ──────────────────────────────────────────
@@ -154,6 +220,8 @@ class _StartScreenState extends State<StartScreen>
                           builder: (_) => GameScreen(
                             orbBehavior: _selectedOrb,
                             mode: _selectedMode,
+                            arenaPreset: _selectedArena,
+                            customBossHp: _selectedHp,
                           ),
                         ),
                       ),
@@ -369,4 +437,250 @@ class _GlowCirclePainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _GlowCirclePainter old) =>
       old.color != color;
+}
+
+// ── Arena size / shape card ───────────────────────────────────────────────────
+
+class _ArenaCard extends StatelessWidget {
+  final ArenaPreset preset;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _ArenaCard({
+    required this.preset,
+    required this.selected,
+    required this.onTap,
+  });
+
+  Color get _color {
+    switch (preset) {
+      case ArenaPreset.tiny:         return const Color(0xFFFF4444);
+      case ArenaPreset.small:        return const Color(0xFFFFAA00);
+      case ArenaPreset.normal:       return const Color(0xFF00FFEE);
+      case ArenaPreset.full:         return const Color(0xFF8844FF);
+      case ArenaPreset.pillarsSmall: return const Color(0xFF44BBFF);
+      case ArenaPreset.pillarsBig:   return const Color(0xFF0088FF);
+      case ArenaPreset.corridors:    return const Color(0xFFFF44AA);
+      case ArenaPreset.maze:         return const Color(0xFF44FF88);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _color;
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        margin: const EdgeInsets.symmetric(horizontal: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        width: 82,
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: selected ? color : const Color(0x44FFFFFF),
+            width: selected ? 2 : 1,
+          ),
+          borderRadius: BorderRadius.circular(8),
+          color: selected
+              ? Color.fromARGB(28, color.red, color.green, color.blue)
+              : Colors.transparent,
+          boxShadow: selected
+              ? [BoxShadow(
+                  color: Color.fromARGB(80, color.red, color.green, color.blue),
+                  blurRadius: 16,
+                )]
+              : [],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 36,
+              height: 46,
+              child: CustomPaint(
+                painter: _ArenaPreviewPainter(
+                  preset: preset,
+                  color: color,
+                  selected: selected,
+                ),
+              ),
+            ),
+            const SizedBox(height: 5),
+            Text(
+              preset.label,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: color,
+                fontSize: 9,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              preset.subtitle,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Color(0x88FFFFFF),
+                fontSize: 8,
+                height: 1.3,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Draws a miniature arena preview that reflects the preset's layout.
+class _ArenaPreviewPainter extends CustomPainter {
+  final ArenaPreset preset;
+  final Color color;
+  final bool selected;
+
+  const _ArenaPreviewPainter({
+    required this.preset,
+    required this.color,
+    required this.selected,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final f  = preset.fraction;
+    final bW = size.width  * f;
+    final bH = size.height * f;
+    final l  = (size.width  - bW) / 2;
+    final t  = (size.height - bH) / 2;
+    final arenaRect = Rect.fromLTWH(l, t, bW, bH);
+
+    final borderColor = selected ? color : const Color(0x66FFFFFF);
+    final fillColor   = selected
+        ? Color.fromARGB(20, color.red, color.green, color.blue)
+        : Colors.transparent;
+    final obstacleColor = selected
+        ? color.withOpacity(0.75)
+        : const Color(0x66FFFFFF);
+
+    // Arena border
+    canvas.drawRect(arenaRect, Paint()..color = fillColor);
+    canvas.drawRect(
+      arenaRect,
+      Paint()
+        ..color = borderColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5,
+    );
+
+    final wallPaint = Paint()
+      ..color = obstacleColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.8
+      ..strokeCap = StrokeCap.square;
+    final pillPaint = Paint()..color = obstacleColor;
+
+    switch (preset) {
+      case ArenaPreset.pillarsSmall:
+        // 4 small squares at quadrant centres
+        const hs = 3.5;
+        for (final cx in [l + bW * 0.25, l + bW * 0.75]) {
+          for (final cy in [t + bH * 0.25, t + bH * 0.75]) {
+            canvas.drawRect(
+              Rect.fromCenter(center: Offset(cx, cy), width: hs * 2, height: hs * 2),
+              pillPaint,
+            );
+          }
+        }
+
+      case ArenaPreset.pillarsBig:
+        // 2 large squares left/right of centre
+        const hs = 7.0;
+        for (final cx in [l + bW * 0.25, l + bW * 0.75]) {
+          canvas.drawRect(
+            Rect.fromCenter(center: Offset(cx, t + bH * 0.5), width: hs * 2, height: hs * 2),
+            pillPaint,
+          );
+        }
+
+      case ArenaPreset.corridors:
+        // Two S-curve dividers
+        canvas.drawLine(Offset(l + 1,         t + bH * 0.37), Offset(l + bW * 0.58, t + bH * 0.37), wallPaint);
+        canvas.drawLine(Offset(l + bW * 0.42, t + bH * 0.63), Offset(l + bW - 1,    t + bH * 0.63), wallPaint);
+
+      case ArenaPreset.maze:
+        // Top-left L
+        canvas.drawLine(Offset(l + 1,         t + bH * 0.30), Offset(l + bW * 0.44, t + bH * 0.30), wallPaint);
+        canvas.drawLine(Offset(l + bW * 0.44, t + bH * 0.30), Offset(l + bW * 0.44, t + bH * 0.56), wallPaint);
+        // Bottom-right L
+        canvas.drawLine(Offset(l + bW * 0.56, t + bH * 0.44), Offset(l + bW * 0.56, t + bH * 0.70), wallPaint);
+        canvas.drawLine(Offset(l + bW * 0.56, t + bH * 0.70), Offset(l + bW - 1,    t + bH * 0.70), wallPaint);
+
+      default:
+        break; // plain rectangle — no obstacles
+    }
+  }
+
+  @override
+  bool shouldRepaint(_ArenaPreviewPainter old) =>
+      old.preset != preset || old.selected != selected || old.color != color;
+}
+
+// ── Boss HP chip ─────────────────────────────────────────────────────────────
+
+class _HpChip extends StatelessWidget {
+  final int hp;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _HpChip({
+    required this.hp,
+    required this.selected,
+    required this.onTap,
+  });
+
+  static const Color _accent = Color(0xFFFF6633);
+
+  static String _fmt(int n) {
+    if (n >= 1000000) return '${(n / 1000000).toStringAsFixed(0)}M';
+    if (n >= 1000) return '${(n / 1000).toStringAsFixed(0)}K';
+    return '$n';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: selected ? _accent : const Color(0x44FFFFFF),
+            width: selected ? 2 : 1,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          color: selected
+              ? const Color(0x22FF6633)
+              : Colors.transparent,
+          boxShadow: selected
+              ? const [
+                  BoxShadow(
+                    color: Color(0x44FF6633),
+                    blurRadius: 12,
+                  )
+                ]
+              : [],
+        ),
+        child: Text(
+          _fmt(hp),
+          style: TextStyle(
+            color: selected ? _accent : const Color(0x88FFFFFF),
+            fontSize: 13,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 1,
+          ),
+        ),
+      ),
+    );
+  }
 }

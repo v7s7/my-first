@@ -3,30 +3,28 @@ import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 import 'boss_ball_game.dart';
 import 'boss_component.dart';
+import 'arena_config.dart';
 import '../orbs/orb_behavior.dart';
 
 /// Physics shell for the player's bouncing orb.
 ///
-/// This class owns ONLY what is universal to every orb:
-///   - position, velocity, speed ramp
-///   - elastic wall-bounce geometry
-///   - boss-collision geometry (distance check, push-out, cooldown)
-///   - shared base-sphere rendering (glow, body, shine, rim)
-///   - bounce squash animation
+/// Owns: position, velocity, speed ramp, wall-bounce geometry,
+/// two-body elastic collision with the boss, base sphere rendering,
+/// and bounce squash animation.
 ///
-/// Everything that varies per orb type is delegated to [behavior].
-/// To add a new orb, create a new [OrbBehavior] subclass — no edits here.
+/// All orb-type-specific logic is delegated to [behavior].
 class PlayerOrb extends PositionComponent {
   final OrbBehavior behavior;
   final BossBallGame gameRef;
+  final ArenaConfig arena;
 
   static const double radius = 18.0;
   static const double baseSpeed = 280.0;
   static const double speedGrowthPerBounce = 0.03;
   static const double maxSpeed = 900.0;
-  static const double hitCooldown = 0.3;
+  static const double hitCooldown = 0.25; // seconds between damage events
 
-  // Package-accessible so OrbBehavior subclasses can read/mutate if needed.
+  // Package-accessible — OrbBehavior subclasses can read/modify these.
   double speed = baseSpeed;
   late Vector2 velocity;
 
@@ -34,20 +32,28 @@ class PlayerOrb extends PositionComponent {
   double _hitCooldownTimer = 0.0;
   double _bounceSquashTimer = 0.0;
 
-  PlayerOrb({required this.behavior, required this.gameRef})
-      : super(
+  PlayerOrb({
+    required this.behavior,
+    required this.gameRef,
+    required this.arena,
+  }) : super(
           size: Vector2.all(radius * 2),
           anchor: Anchor.center,
           priority: 10,
         );
 
+  // ── Flame lifecycle ────────────────────────────────────────────────────────
+
   @override
   Future<void> onLoad() async {
+    // Spawn in the upper portion of the arena, away from the boss
     position = Vector2(
-      gameRef.size.x * (0.15 + _rng.nextDouble() * 0.15),
-      gameRef.size.y * (0.12 + _rng.nextDouble() * 0.12),
+      arena.minX(radius) + _rng.nextDouble() * (arena.maxX(radius) - arena.minX(radius)) * 0.35,
+      arena.minY(radius) + _rng.nextDouble() * (arena.maxY(radius) - arena.minY(radius)) * 0.25,
     );
-    final angle = (pi * 0.25) + _rng.nextDouble() * (pi * 0.5);
+
+    // Random angle aimed roughly toward center-right
+    final angle = (pi * 0.2) + _rng.nextDouble() * (pi * 0.6);
     velocity = Vector2(cos(angle), sin(angle)) * speed;
 
     behavior.onAttach(this);
@@ -66,34 +72,32 @@ class PlayerOrb extends PositionComponent {
     position += velocity * dt;
     _handleWallBounce();
 
-    if (_hitCooldownTimer <= 0) _checkBossCollision();
+    // Physics collision runs every frame (separation + impulse).
+    // Damage is gated by _hitCooldownTimer inside _resolveCollision.
+    _resolveCollision();
   }
 
-  void _handleWallBounce() {
-    final t = BossBallGame.wallThickness;
-    final minX = t + radius;
-    final maxX = gameRef.size.x - t - radius;
-    final minY = t + radius;
-    final maxY = gameRef.size.y - t - radius;
+  // ── Physics ────────────────────────────────────────────────────────────────
 
+  void _handleWallBounce() {
     bool bounced = false;
 
-    if (position.x <= minX) {
-      position.x = minX;
+    if (position.x <= arena.minX(radius)) {
+      position.x = arena.minX(radius);
       velocity.x = velocity.x.abs();
       bounced = true;
-    } else if (position.x >= maxX) {
-      position.x = maxX;
+    } else if (position.x >= arena.maxX(radius)) {
+      position.x = arena.maxX(radius);
       velocity.x = -velocity.x.abs();
       bounced = true;
     }
 
-    if (position.y <= minY) {
-      position.y = minY;
+    if (position.y <= arena.minY(radius)) {
+      position.y = arena.minY(radius);
       velocity.y = velocity.y.abs();
       bounced = true;
-    } else if (position.y >= maxY) {
-      position.y = maxY;
+    } else if (position.y >= arena.maxY(radius)) {
+      position.y = arena.maxY(radius);
       velocity.y = -velocity.y.abs();
       bounced = true;
     }
@@ -105,20 +109,71 @@ class PlayerOrb extends PositionComponent {
       gameRef.triggerShake(intensity: 1.5, duration: 0.05);
       behavior.onWallBounce(this);
     }
+
+    // Obstacle collision (pillars / maze walls)
+    if (arena.bounceOffObstacles(position, velocity, radius)) {
+      speed = min(speed * (1.0 + speedGrowthPerBounce), maxSpeed);
+      if (velocity.length > 0.01) velocity = velocity.normalized() * speed;
+      _bounceSquashTimer = 0.08;
+      gameRef.triggerShake(intensity: 1.5, duration: 0.05);
+      behavior.onWallBounce(this);
+    }
   }
 
-  void _checkBossCollision() {
-    final dist = position.distanceTo(gameRef.boss.position);
-    if (dist >= BossComponent.radius + radius) return;
+  /// Two-body elastic collision between orb (mass 1) and boss (mass [BossComponent.mass]).
+  ///
+  /// Runs every frame. Separates overlapping circles first, then exchanges
+  /// momentum along the collision normal. Damage is only applied once per
+  /// cooldown window.
+  void _resolveCollision() {
+    final boss = gameRef.boss;
+    final dist = position.distanceTo(boss.position);
+    final minDist = BossComponent.radius + radius;
 
-    final dir = (position - gameRef.boss.position).normalized();
-    position = gameRef.boss.position + dir * (BossComponent.radius + radius + 1.0);
-    velocity = dir * speed;
+    if (dist >= minDist) return;
 
-    _hitCooldownTimer = hitCooldown;
-    gameRef.boss.triggerHitAnimation();
-    behavior.onBossHit(this);
+    // ── Step 1: Positional separation (prevent overlap) ──────────────────────
+    final n = dist < 0.001
+        ? Vector2(1, 0) // degenerate case: same position
+        : (position - boss.position).normalized();
+
+    final overlap = minDist - dist;
+    const m1 = 1.0;
+    const m2 = BossComponent.mass;
+    const total = m1 + m2;
+
+    position += n * (overlap * m2 / total);
+    boss.position -= n * (overlap * m1 / total);
+
+    // Clamp both back into arena after separation
+    position = arena.clamp(position, radius);
+    boss.position = arena.clamp(boss.position, BossComponent.radius);
+
+    // ── Step 2: Impulse exchange (elastic collision) ──────────────────────────
+    // n = boss→orb (outward). relVel < 0 means orb and boss are approaching.
+    final relVel = (velocity - boss.velocity).dot(n);
+    if (relVel < 0) {
+      // j = impulse scalar (positive)
+      final j = 2.0 * m1 * m2 * (-relVel) / total;
+      velocity = velocity + n * (j / m1);       // push orb away from boss (+n)
+      boss.applyImpulse(-n * (j / m2));          // push boss in -n direction
+
+      // Keep the orb from going dead (minimum speed guarantee)
+      if (velocity.length < speed * 0.3) {
+        velocity = velocity.length < 0.01
+            ? n * (speed * 0.5)
+            : velocity.normalized() * (speed * 0.45);
+      }
+    }
+
+    // ── Step 3: Damage event (cooldown-gated) ────────────────────────────────
+    if (_hitCooldownTimer <= 0) {
+      _hitCooldownTimer = hitCooldown;
+      behavior.onBossHit(this);
+    }
   }
+
+  // ── Rendering ──────────────────────────────────────────────────────────────
 
   @override
   void render(Canvas canvas) {
@@ -165,7 +220,7 @@ class PlayerOrb extends PositionComponent {
 
     canvas.restore();
 
-    // Orb-specific overlay (combo badge, laser ring, etc.)
+    // Orb-type overlay (combo badge, laser ring, etc.)
     behavior.renderOverlay(canvas, radius, cx, cy);
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
 import '../game/boss_ball_game.dart';
+import '../game/arena_config.dart';
 import '../orbs/orb_behavior.dart';
 import '../modes/game_mode.dart';
 import 'game_over_screen.dart';
@@ -8,16 +9,25 @@ import 'game_over_screen.dart';
 class GameScreen extends StatelessWidget {
   final OrbBehavior orbBehavior;
   final GameMode mode;
+  final ArenaPreset arenaPreset;
+  final int? customBossHp;
 
   const GameScreen({
     super.key,
     required this.orbBehavior,
     required this.mode,
+    this.arenaPreset = ArenaPreset.normal,
+    this.customBossHp,
   });
 
   @override
   Widget build(BuildContext context) {
-    final game = BossBallGame(orbBehavior: orbBehavior, mode: mode);
+    final game = BossBallGame(
+      orbBehavior: orbBehavior,
+      mode: mode,
+      arenaPreset: arenaPreset,
+      customBossHp: customBossHp,
+    );
     return GameWidget(
       game: game,
       overlayBuilderMap: {

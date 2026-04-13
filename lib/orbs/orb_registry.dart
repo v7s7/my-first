@@ -2,14 +2,19 @@ import 'orb_behavior.dart';
 import 'basic_orb.dart';
 import 'laser_orb.dart';
 import 'combo_orb.dart';
+import 'chain_orb.dart';
+import 'fire_orb.dart';
+import 'prismatic_orb.dart';
+import 'nova_star_orb.dart';
+import 'void_orb.dart';
 
 /// The single place where orb types are declared.
 ///
 /// To add a new orb:
-///   1. import it here
-///   2. add one entry to [all]
+///   1. Create a file in lib/orbs/ that extends OrbBehavior.
+///   2. Import it here and add one entry to [all].
 ///
-/// Everything else (start-screen cards, PlayerOrb factory) reads from here.
+/// Everything else (start-screen cards, PlayerOrb) reads from this list.
 class OrbRegistry {
   OrbRegistry._();
 
@@ -17,7 +22,11 @@ class OrbRegistry {
     BasicOrb(),
     LaserOrb(),
     ComboOrb(),
-    // ThunderOrb(),   ← add line here to register a new orb
+    ChainOrb(),
+    FireOrb(),
+    PrismaticOrb(),
+    NovaStarOrb(),
+    VoidOrb(),
   ];
 
   static OrbBehavior findById(String id) =>
