@@ -3,79 +3,118 @@ import 'package:flutter/material.dart';
 import 'orb_behavior.dart';
 import '../game/player_orb.dart';
 
-/// Damage oscillates on a sine wave between 400 and 18 000 every 7 s.
+/// Damage oscillates on a sine wave between 2 000 and 60 000 every 6 s.
 ///
-/// The orb's colour continuously shifts through the full HSL hue wheel.
-/// Three spinning arc-rings show the current position in the cycle —
-/// hit near the peak (full gold glow) for maximum damage.
+/// Hit at the peak (full gold glow) for maximum damage.
+/// Three nested prism arc rings show the current damage cycle position.
+/// At peak: six light beams shoot outward like a diamond catching sunlight.
 class PrismaticOrb extends OrbBehavior {
   @override String get id   => 'prismatic';
   @override String get name => 'PRISM';
-  @override String get description => '400-18K\ntimed hit';
+  @override String get description => '2K–60K\ntimed hit';
 
-  static const double _cyclePeriod = 7.0;  // seconds for one full wave
-  static const int    _minDamage   = 400;
-  static const int    _maxDamage   = 18000;
+  static const double _cyclePeriod = 6.0;
+  static const int    _minDamage   = 2000;
+  static const int    _maxDamage   = 60000;
 
   double _cycleTimer = 0.0;
+  bool   _peakFlash  = false;
+  double _flashTimer = 0.0;
 
-  /// 0..1 — position in the damage curve (0 = trough, 1 = peak).
-  double get _cyclePos => (sin(_cycleTimer * 2 * pi / _cyclePeriod) + 1) / 2;
+  /// 0 = trough, 1 = peak.
+  double get _cyclePos =>
+      (sin(_cycleTimer * 2 * pi / _cyclePeriod) + 1) / 2;
 
   @override
   Color get color {
-    // Hue sweeps 360° every ~4 s; starts at a vivid cyan-purple
-    final hue = (_cycleTimer * 90 + 200) % 360;
+    final hue = (_cycleTimer * 80 + 200) % 360;
     return HSLColor.fromAHSL(1.0, hue, 1.0, 0.58).toColor();
   }
 
   @override void onAttach(PlayerOrb orb) { _cycleTimer = 0; }
 
-  @override void onUpdate(double dt, PlayerOrb orb) { _cycleTimer += dt; }
+  @override
+  void onUpdate(double dt, PlayerOrb orb) {
+    _cycleTimer += dt;
+    if (_peakFlash) {
+      _flashTimer -= dt;
+      if (_flashTimer <= 0) _peakFlash = false;
+    }
+  }
 
   @override
   void onBossHit(PlayerOrb orb) {
     final damage =
         (_minDamage + (_maxDamage - _minDamage) * _cyclePos).round();
     orb.gameRef.onOrbHitBoss(damage);
+    if (_cyclePos > 0.85) {
+      _peakFlash  = true;
+      _flashTimer = 0.4;
+    }
   }
 
   // ── Rendering ───────────────────────────────────────────────────────────────
 
   @override
   void renderOverlay(Canvas canvas, double radius, double cx, double cy) {
-    final t = _cycleTimer;
+    final t   = _cycleTimer;
+    final pos = _cyclePos;
 
-    // Three arcs at different radii, each with a different colour and speed
+    // Three spinning prism arc rings
     for (int i = 0; i < 3; i++) {
-      final hue   = (t * 120 + i * 120) % 360.0;
-      final c     = HSLColor.fromAHSL(0.75, hue, 1.0, 0.6).toColor();
-      final arcR  = radius + 9.0 + i * 7.0;
-      final speed = 2.0 + i * 0.8; // faster inner arcs
+      final hue   = (t * 130 + i * 120) % 360.0;
+      final c     = HSLColor.fromAHSL(0.80, hue, 1.0, 0.60).toColor();
+      final arcR  = radius + 9.0 + i * 8.0;
+      final speed = 2.5 + i * 0.9;
       canvas.drawArc(
         Rect.fromCircle(center: Offset(cx, cy), radius: arcR),
         t * speed + i * (2 * pi / 3),
-        pi * 0.85,            // arc length
+        pi * 0.9,
         false,
         Paint()
           ..color = c
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 2.8
+          ..strokeWidth = 3.0
           ..strokeCap = StrokeCap.round
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
       );
     }
 
-    // Cycle-position ring: glows gold at peak, dim at trough
-    final glowAlpha = (_cyclePos * 200).round().clamp(20, 200);
+    // Cycle-position gold glow ring
+    final glowAlpha = (pos * 230).round().clamp(15, 230);
     canvas.drawCircle(
       Offset(cx, cy),
-      radius * 1.1,
+      radius * 1.12,
       Paint()
         ..color = Color.fromARGB(glowAlpha, 255, 220, 60)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
+        ..strokeWidth = 2.0
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 7),
     );
+
+    // At peak: six light beams radiate outward
+    if (pos > 0.7 || _peakFlash) {
+      final beamAlpha = _peakFlash
+          ? (1.0 - _flashTimer / 0.4).let((p) => (1.0 - p) * 0.9)
+          : (pos - 0.7) / 0.3 * 0.7;
+      const beams = 6;
+      for (int i = 0; i < beams; i++) {
+        final angle = t * 1.5 + i * (pi / beams) * 2;
+        final len   = radius * 1.5 + (pos - 0.7).clamp(0.0, 0.3) / 0.3 * radius * 1.2;
+        canvas.drawLine(
+          Offset(cx, cy),
+          Offset(cx + cos(angle) * len, cy + sin(angle) * len),
+          Paint()
+            ..color = const Color(0xFFFFEE88).withOpacity(beamAlpha)
+            ..strokeWidth = 2.0
+            ..strokeCap = StrokeCap.round
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
+        );
+      }
+    }
   }
+}
+
+extension _Let<T> on T {
+  R let<R>(R Function(T) fn) => fn(this);
 }
