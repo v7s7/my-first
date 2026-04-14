@@ -3,13 +3,14 @@ import 'package:flutter/material.dart' hide Gradient;
 import 'orb_behavior.dart';
 import '../game/player_orb.dart';
 
-/// Fires three chained lightning bolts in quick succession.
+/// Fires three chained attacks in quick succession.
 ///
 /// On each boss hit, the first bolt deals damage immediately and two
 /// follow-up bolts fire 0.12 s apart.  Total: 3 × 3 000 = 9 000 dmg.
 ///
-/// Visual: two zig-zag lightning lines track toward the boss while the
-/// chain is active.  The zig-zag seed changes every ~50 ms for a flicker.
+/// Visual: a real chain of glowing oval links stretches from the orb to
+/// the boss while the chain is active, with a pulsing electric ring on
+/// the orb and a flickering final lightning bolt at the target end.
 class ChainOrb extends OrbBehavior {
   @override String get id   => 'chain';
   @override String get name => 'CHAIN';
@@ -18,30 +19,29 @@ class ChainOrb extends OrbBehavior {
 
   static const int    _bolts        = 3;
   static const int    _boltDamage   = 3000;
-  static const double _boltInterval = 0.12; // seconds between extra bolts
+  static const double _boltInterval = 0.12;
 
-  bool   _chainActive  = false;
-  int    _boltsLeft    = 0;
+  bool   _chainActive   = false;
+  int    _boltsLeft     = 0;
   double _nextBoltTimer = 0;
-  double _renderTimer  = 0;          // drives flicker seed
-  Offset _bossOffset   = Offset.zero; // boss pos relative to orb centre
+  double _renderTimer   = 0;
+  Offset _bossOffset    = Offset.zero;
 
   @override
   void onAttach(PlayerOrb orb) {
-    _chainActive  = false;
-    _boltsLeft    = 0;
+    _chainActive   = false;
+    _boltsLeft     = 0;
     _nextBoltTimer = 0;
-    _renderTimer  = 0;
-    _bossOffset   = Offset.zero;
+    _renderTimer   = 0;
+    _bossOffset    = Offset.zero;
   }
 
   @override
   void onUpdate(double dt, PlayerOrb orb) {
     if (!_chainActive) return;
-
     _renderTimer += dt;
 
-    // Keep the lightning target updated
+    // Track live boss position
     final bp = orb.gameRef.boss.position;
     _bossOffset = Offset(bp.x - orb.position.x, bp.y - orb.position.y);
 
@@ -56,7 +56,6 @@ class ChainOrb extends OrbBehavior {
 
   @override
   void onBossHit(PlayerOrb orb) {
-    // First bolt fires immediately
     orb.gameRef.onOrbHitBoss(_boltDamage);
     _chainActive   = true;
     _boltsLeft     = _bolts - 1;
@@ -75,61 +74,95 @@ class ChainOrb extends OrbBehavior {
     // Pulsing electric ring on the orb
     canvas.drawCircle(
       Offset(cx, cy),
-      radius * 1.3 + sin(_renderTimer * 30) * 2,
+      radius * 1.35 + sin(_renderTimer * 30) * 2,
       Paint()
         ..color = const Color(0x8844CCFF)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2
+        ..strokeWidth = 2.2
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
     );
 
-    // Two zig-zag lightning lines toward the boss
-    final flickerSeed = (_renderTimer * 20).round(); // changes every ~50 ms
     final from = Offset(cx, cy);
     final to   = Offset(cx + _bossOffset.dx, cy + _bossOffset.dy);
-    _drawLightning(canvas, from, to, flickerSeed);
-    _drawLightning(canvas, from, to, flickerSeed + 17);
+
+    // Draw the chain link line
+    _drawChainLinks(canvas, from, to);
+
+    // Flickering lightning at the boss end
+    final flickerSeed = (_renderTimer * 20).round();
+    _drawLightningFlicker(canvas, to, flickerSeed);
   }
 
-  void _drawLightning(Canvas canvas, Offset from, Offset to, int seed) {
-    final dx  = to.dx - from.dx;
-    final dy  = to.dy - from.dy;
-    final len = sqrt(dx * dx + dy * dy);
-    if (len < 2) return;
+  /// Draws a row of alternating oval chain links from [from] to [to].
+  void _drawChainLinks(Canvas canvas, Offset from, Offset to) {
+    final dx   = to.dx - from.dx;
+    final dy   = to.dy - from.dy;
+    final dist = sqrt(dx * dx + dy * dy);
+    if (dist < 5) return;
 
-    // Perpendicular unit vector for jitter
-    final px = -dy / len;
-    final py =  dx / len;
+    const linkLen     = 13.0;
+    const linkWidth   = 6.5;
+    const linkSpacing = 14.0;
+    final count = (dist / linkSpacing).floor();
+    if (count <= 0) return;
 
-    final rng  = Random(seed);
-    const segs = 8;
+    final chainAngle = atan2(dy, dx);
 
-    final path = Path()..moveTo(from.dx, from.dy);
-    for (int i = 1; i < segs; i++) {
-      final t      = i / segs;
-      final bx     = from.dx + dx * t;
-      final by     = from.dy + dy * t;
-      final jitter = (rng.nextDouble() - 0.5) * (len * 0.28).clamp(0, 26);
-      path.lineTo(bx + px * jitter, by + py * jitter);
+    for (int i = 0; i < count; i++) {
+      final t  = (i + 0.5) / count;
+      final lx = from.dx + dx * t;
+      final ly = from.dy + dy * t;
+
+      canvas.save();
+      canvas.translate(lx, ly);
+      // Alternate: even links align with chain, odd links are perpendicular
+      canvas.rotate(chainAngle + (i.isEven ? 0 : pi / 2));
+
+      // Outer glow oval
+      canvas.drawOval(
+        Rect.fromCenter(
+            center: Offset.zero, width: linkLen, height: linkWidth),
+        Paint()
+          ..color = const Color(0xAA44CCFF)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.2
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
+      );
+      // Bright core oval
+      canvas.drawOval(
+        Rect.fromCenter(
+            center: Offset.zero,
+            width: linkLen * 0.62,
+            height: linkWidth * 0.5),
+        Paint()
+          ..color = const Color(0x99DDFAFF)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.0,
+      );
+
+      canvas.restore();
     }
-    path.lineTo(to.dx, to.dy);
+  }
 
-    // Glow layer
+  /// Small zigzag lightning flicker near the boss end for impact feel.
+  void _drawLightningFlicker(Canvas canvas, Offset target, int seed) {
+    final rng    = Random(seed);
+    final spread = 18.0;
+    final path   = Path()..moveTo(target.dx, target.dy);
+    for (int i = 0; i < 4; i++) {
+      path.lineTo(
+        target.dx + (rng.nextDouble() - 0.5) * spread,
+        target.dy + (rng.nextDouble() - 0.5) * spread,
+      );
+    }
     canvas.drawPath(
       path,
       Paint()
-        ..color = const Color(0x9966DDFF)
-        ..strokeWidth = 3.5
+        ..color = const Color(0xBBAAEEFF)
+        ..strokeWidth = 1.5
         ..style = PaintingStyle.stroke
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 7),
-    );
-    // Core bright line
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = const Color(0xEEFFFFFF)
-        ..strokeWidth = 1.2
-        ..style = PaintingStyle.stroke,
+        ..strokeCap = StrokeCap.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
     );
   }
 }
