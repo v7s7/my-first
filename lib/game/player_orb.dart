@@ -29,7 +29,7 @@ class PlayerOrb extends PositionComponent {
 
   // 🔴 قائمة لتخزين المواقع السابقة للكرة لرسم الذيل الحركي
   final Queue<Vector2> _trail = Queue<Vector2>();
-  static const int _maxTrailLength = 12;
+  static const int _maxTrailLength = 24;
 
   PlayerOrb({
     required this.behavior,
@@ -188,8 +188,8 @@ class PlayerOrb extends PositionComponent {
     int i = 0;
     for (final trailPos in _trail) {
       final progress = i / _trail.length; // قيمة من 0 إلى 1
-      final trailOpacity = (1.0 - progress) * 0.4;
-      final trailRadius = radius * (1.0 - progress * 0.5); 
+      final trailOpacity = (1.0 - progress) * 0.65;
+      final trailRadius = radius * (1.0 - progress * 0.6);
 
       // تحويل إحداثيات الذيل العالمية إلى إحداثيات محلية ليتم رسمها في المكان الصحيح
       final dx = trailPos.x - position.x;
@@ -216,14 +216,30 @@ class PlayerOrb extends PositionComponent {
 
     final color = behavior.color;
 
-    // Outer glow
+    // Speed-reactive outer glow — intensifies and expands as ball accelerates
+    final speedRatio = (speed / maxSpeed).clamp(0.25, 1.0);
     canvas.drawCircle(
       const Offset(cx, cy),
-      radius + 12,
+      radius + 10.0 + speedRatio * 12.0,
       Paint()
-        ..color = color.withOpacity(0.25)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 18),
+        ..color = color.withOpacity(0.18 + speedRatio * 0.22)
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, 16.0 + speedRatio * 12.0),
     );
+
+    // Bounce flash ring — expands outward and fades when squash is active
+    if (_bounceSquashTimer > 0) {
+      final flashProgress = (1.0 - _bounceSquashTimer / 0.08).clamp(0.0, 1.0);
+      final flashR = radius + 6.0 + flashProgress * radius * 1.4;
+      canvas.drawCircle(
+        const Offset(cx, cy),
+        flashR,
+        Paint()
+          ..color = color.withOpacity((1.0 - flashProgress) * 0.85)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3.0
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
+      );
+    }
 
     // Main sphere body
     canvas.drawCircle(const Offset(cx, cy), radius, Paint()..color = color);

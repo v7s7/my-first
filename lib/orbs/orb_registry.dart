@@ -12,6 +12,9 @@ import 'splitter_orb.dart';
 import 'zapper_orb.dart';
 import 'clone_orb.dart';
 import 'black_hole_orb.dart';
+import 'rainbow_orb.dart';
+import 'plasma_orb.dart';
+import 'comet_orb.dart';
 /// The single place where orb types are declared.
 ///
 /// To add a new orb:
@@ -36,6 +39,9 @@ class OrbRegistry {
     ZapperOrb(),
     CloneOrb(),
     BlackHoleOrb(),
+    RainbowOrb(),
+    PlasmaOrb(),
+    CometOrb(),
   ];
 
   static OrbBehavior findById(String id) =>
