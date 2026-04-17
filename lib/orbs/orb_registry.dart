@@ -12,6 +12,10 @@ import 'splitter_orb.dart';
 import 'zapper_orb.dart';
 import 'clone_orb.dart';
 import 'black_hole_orb.dart';
+import 'mine_orb.dart';
+import 'ice_orb.dart';
+import 'fire_trap_orb.dart';
+
 /// The single place where orb types are declared.
 ///
 /// To add a new orb:
@@ -36,6 +40,9 @@ class OrbRegistry {
     ZapperOrb(),
     CloneOrb(),
     BlackHoleOrb(),
+    MineOrb(),
+    IceOrb(),
+    FireTrapOrb(),
   ];
 
   static OrbBehavior findById(String id) =>
