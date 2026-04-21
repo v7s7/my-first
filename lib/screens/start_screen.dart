@@ -13,40 +13,26 @@ class StartScreen extends StatefulWidget {
   State<StartScreen> createState() => _StartScreenState();
 }
 
-class _StartScreenState extends State<StartScreen>
-    with SingleTickerProviderStateMixin {
-  OrbBehavior _selectedOrb = OrbRegistry.all.first;
-  GameMode _selectedMode = ModeRegistry.all.first;
-  ArenaPreset _selectedArena = ArenaPreset.normal;
-  int _selectedHp = 1000000;
+class _StartScreenState extends State<StartScreen> {
+  OrbBehavior  _selectedOrb   = OrbRegistry.all.first;
+  GameMode     _selectedMode  = ModeRegistry.all.first;
+  ArenaPreset  _selectedArena = ArenaPreset.normal;
+  int          _selectedHp    = 1000000;
 
-  static const List<int> _hpPresets = [
-    100000,
-    500000,
-    1000000,
-    5000000,
-    10000000,
-  ];
+  static const List<int> _hpPresets = [100000, 500000, 1000000, 5000000, 10000000];
 
-  late AnimationController _pulseCtrl;
-  late Animation<double> _pulseAnim;
-
-  @override
-  void initState() {
-    super.initState();
-    _pulseCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1200),
-    )..repeat(reverse: true);
-    _pulseAnim = Tween(begin: 0.85, end: 1.0).animate(
-      CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut),
+  void _startGame() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => GameScreen(
+          orbBehavior: _selectedOrb,
+          mode: _selectedMode,
+          arenaPreset: _selectedArena,
+          customBossHp: _selectedHp,
+        ),
+      ),
     );
-  }
-
-  @override
-  void dispose() {
-    _pulseCtrl.dispose();
-    super.dispose();
   }
 
   @override
@@ -55,197 +41,125 @@ class _StartScreenState extends State<StartScreen>
       backgroundColor: const Color(0xFF080812),
       body: SafeArea(
         child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 20),
           child: Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 32),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Title
-                  ShaderMask(
-                    shaderCallback: (bounds) => const LinearGradient(
-                      colors: [Color(0xFF00FFEE), Color(0xFF0088FF)],
-                    ).createShader(bounds),
-                    child: const Text(
-                      'BOSS BALL\nBLITZ',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 52,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 5,
-                        height: 1.1,
+                  // ── Title ───────────────────────────────────────────────
+                  Center(
+                    child: ShaderMask(
+                      shaderCallback: (bounds) => const LinearGradient(
+                        colors: [Color(0xFF00FFEE), Color(0xFF0088FF)],
+                      ).createShader(bounds),
+                      child: const Text(
+                        'BOSS BALL BLITZ',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 38,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 4,
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 8),
-
-                  // Live subtitle from selected mode
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 200),
+                  const SizedBox(height: 4),
+                  Center(
                     child: Text(
                       _selectedMode.subtitle.toUpperCase(),
-                      key: ValueKey(_selectedMode.id),
                       style: const TextStyle(
-                        color: Color(0x88FFFFFF),
+                        color: Color(0x66FFFFFF),
                         fontSize: 11,
                         letterSpacing: 3,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 36),
-
-                  // ── Orb selector ──────────────────────────────────────────
-                  const Text(
-                    'SELECT ORB',
-                    style: TextStyle(
-                      color: Color(0xAAFFFFFF),
-                      fontSize: 13,
-                      letterSpacing: 4,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-
-                  // Auto-populated from OrbRegistry — add an orb class and
-                  // register it; a card appears here automatically.
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: OrbRegistry.all
-                          .map((b) => _OrbCard(
-                                behavior: b,
-                                selected: _selectedOrb.id == b.id,
-                                onTap: () => setState(() => _selectedOrb = b),
-                              ))
-                          .toList(),
-                    ),
-                  ),
-                  const SizedBox(height: 28),
-
-                  // ── Mode selector ─────────────────────────────────────────
-                  const Text(
-                    'SELECT MODE',
-                    style: TextStyle(
-                      color: Color(0xAAFFFFFF),
-                      fontSize: 13,
-                      letterSpacing: 4,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-
-                  // Auto-populated from ModeRegistry.
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: ModeRegistry.all
-                          .map((m) => _ModeCard(
-                                mode: m,
-                                selected: _selectedMode.id == m.id,
-                                onTap: () =>
-                                    setState(() => _selectedMode = m),
-                              ))
-                          .toList(),
-                    ),
-                  ),
-                  const SizedBox(height: 28),
-
-                  // ── Arena size selector ───────────────────────────────────
-                  const Text(
-                    'ARENA SIZE',
-                    style: TextStyle(
-                      color: Color(0xAAFFFFFF),
-                      fontSize: 13,
-                      letterSpacing: 4,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: ArenaPreset.values
-                          .map((p) => _ArenaCard(
-                                preset: p,
-                                selected: _selectedArena == p,
-                                onTap: () =>
-                                    setState(() => _selectedArena = p),
-                              ))
-                          .toList(),
-                    ),
-                  ),
-                  const SizedBox(height: 28),
-
-                  // ── Boss HP selector ──────────────────────────────────────
-                  const Text(
-                    'BOSS HP',
-                    style: TextStyle(
-                      color: Color(0xAAFFFFFF),
-                      fontSize: 13,
-                      letterSpacing: 4,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  Wrap(
-                    alignment: WrapAlignment.center,
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: _hpPresets
-                        .map((hp) => _HpChip(
-                              hp: hp,
-                              selected: _selectedHp == hp,
-                              onTap: () => setState(() => _selectedHp = hp),
-                            ))
-                        .toList(),
-                  ),
 
                   const SizedBox(height: 40),
 
-                  // ── Start button ──────────────────────────────────────────
-                  AnimatedBuilder(
-                    animation: _pulseAnim,
-                    builder: (_, child) =>
-                        Transform.scale(scale: _pulseAnim.value, child: child),
+                  // ── 01 · ORB ────────────────────────────────────────────
+                  _StepHeader(step: '01', label: 'ORB'),
+                  const SizedBox(height: 12),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: OrbRegistry.all.map((b) => _OrbCard(
+                        behavior: b,
+                        selected: _selectedOrb.id == b.id,
+                        onTap: () => setState(() => _selectedOrb = b),
+                      )).toList(),
+                    ),
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // ── 02 · MODE ───────────────────────────────────────────
+                  _StepHeader(step: '02', label: 'MODE'),
+                  const SizedBox(height: 12),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: ModeRegistry.all.map((m) => _ModeCard(
+                        mode: m,
+                        selected: _selectedMode.id == m.id,
+                        onTap: () => setState(() => _selectedMode = m),
+                      )).toList(),
+                    ),
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // ── 03 · ARENA ──────────────────────────────────────────
+                  _StepHeader(step: '03', label: 'ARENA'),
+                  const SizedBox(height: 12),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: ArenaPreset.values.map((p) => _ArenaCard(
+                        preset: p,
+                        selected: _selectedArena == p,
+                        onTap: () => setState(() => _selectedArena = p),
+                      )).toList(),
+                    ),
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // ── 04 · BOSS HP ─────────────────────────────────────────
+                  _StepHeader(step: '04', label: 'BOSS HP'),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _hpPresets.map((hp) => _HpChip(
+                      hp: hp,
+                      selected: _selectedHp == hp,
+                      onTap: () => setState(() => _selectedHp = hp),
+                    )).toList(),
+                  ),
+
+                  const SizedBox(height: 44),
+
+                  // ── START button ─────────────────────────────────────────
+                  Center(
                     child: GestureDetector(
-                      onTap: () => Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => GameScreen(
-                            orbBehavior: _selectedOrb,
-                            mode: _selectedMode,
-                            arenaPreset: _selectedArena,
-                            customBossHp: _selectedHp,
-                          ),
-                        ),
-                      ),
+                      onTap: _startGame,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 52, vertical: 18),
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 18),
                         decoration: BoxDecoration(
-                          border: Border.all(
-                              color: const Color(0xFF00FFEE), width: 2),
-                          borderRadius: BorderRadius.circular(4),
-                          color: const Color(0x1400FFEE),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Color(0x4400FFEE),
-                              blurRadius: 24,
-                              spreadRadius: 2,
-                            ),
-                          ],
+                          color: const Color(0xFF00DDCC),
+                          borderRadius: BorderRadius.circular(6),
                         ),
                         child: const Text(
                           'START',
+                          textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Color(0xFF00FFEE),
-                            fontSize: 26,
+                            color: Color(0xFF080812),
+                            fontSize: 22,
                             fontWeight: FontWeight.w900,
                             letterSpacing: 8,
                           ),
@@ -253,6 +167,8 @@ class _StartScreenState extends State<StartScreen>
                       ),
                     ),
                   ),
+
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
@@ -263,11 +179,51 @@ class _StartScreenState extends State<StartScreen>
   }
 }
 
-// ── Orb card ────────────────────────────────────────────────────────────────
+// ── Step header ──────────────────────────────────────────────────────────────
+
+class _StepHeader extends StatelessWidget {
+  final String step;
+  final String label;
+
+  const _StepHeader({required this.step, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Text(
+          step,
+          style: const TextStyle(
+            color: Color(0x55FFFFFF),
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Color(0xCCFFFFFF),
+            fontSize: 13,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 4,
+          ),
+        ),
+        const SizedBox(width: 12),
+        const Expanded(
+          child: Divider(color: Color(0x22FFFFFF), thickness: 1),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Orb card ─────────────────────────────────────────────────────────────────
 
 class _OrbCard extends StatelessWidget {
   final OrbBehavior behavior;
-  final bool selected;
+  final bool        selected;
   final VoidCallback onTap;
 
   const _OrbCard({
@@ -281,54 +237,33 @@ class _OrbCard extends StatelessWidget {
     final color = behavior.color;
     return GestureDetector(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        margin: const EdgeInsets.symmetric(horizontal: 6),
-        padding: const EdgeInsets.all(14),
-        width: 96,
+      child: Container(
+        margin: const EdgeInsets.only(right: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        width: 88,
         decoration: BoxDecoration(
-          border: Border.all(
-            color: selected ? color : const Color(0x44FFFFFF),
-            width: selected ? 2 : 1,
-          ),
           borderRadius: BorderRadius.circular(8),
           color: selected
-              ? Color.fromARGB(28, color.red, color.green, color.blue)
-              : Colors.transparent,
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                    color: Color.fromARGB(80, color.red, color.green, color.blue),
-                    blurRadius: 16,
-                  )
-                ]
-              : [],
+              ? Color.fromARGB(30, color.red, color.green, color.blue)
+              : const Color(0x0CFFFFFF),
+          border: Border.all(
+            color: selected ? color : const Color(0x33FFFFFF),
+            width: selected ? 2 : 1,
+          ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CustomPaint(
-              size: const Size(38, 38),
-              painter: _GlowCirclePainter(color: color),
-            ),
+            _GlowCircle(color: color, size: 32),
             const SizedBox(height: 8),
             Text(
               behavior.name,
-              style: TextStyle(
-                color: color,
-                fontSize: 11,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              behavior.description,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Color(0x88FFFFFF),
-                fontSize: 9,
-                height: 1.4,
+              style: TextStyle(
+                color: selected ? color : const Color(0xAAFFFFFF),
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.5,
               ),
             ),
           ],
@@ -338,11 +273,11 @@ class _OrbCard extends StatelessWidget {
   }
 }
 
-// ── Mode card ────────────────────────────────────────────────────────────────
+// ── Mode card ─────────────────────────────────────────────────────────────────
 
 class _ModeCard extends StatelessWidget {
-  final GameMode mode;
-  final bool selected;
+  final GameMode   mode;
+  final bool       selected;
   final VoidCallback onTap;
 
   const _ModeCard({
@@ -356,49 +291,39 @@ class _ModeCard extends StatelessWidget {
     final color = mode.accentColor;
     return GestureDetector(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        margin: const EdgeInsets.symmetric(horizontal: 6),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        width: 96,
+      child: Container(
+        margin: const EdgeInsets.only(right: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        width: 110,
         decoration: BoxDecoration(
-          border: Border.all(
-            color: selected ? color : const Color(0x44FFFFFF),
-            width: selected ? 2 : 1,
-          ),
           borderRadius: BorderRadius.circular(8),
           color: selected
-              ? Color.fromARGB(28, color.red, color.green, color.blue)
-              : Colors.transparent,
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                    color: Color.fromARGB(80, color.red, color.green, color.blue),
-                    blurRadius: 16,
-                  )
-                ]
-              : [],
+              ? Color.fromARGB(30, color.red, color.green, color.blue)
+              : const Color(0x0CFFFFFF),
+          border: Border.all(
+            color: selected ? color : const Color(0x33FFFFFF),
+            width: selected ? 2 : 1,
+          ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               mode.name,
-              textAlign: TextAlign.center,
               style: TextStyle(
-                color: color,
-                fontSize: 10,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1,
+                color: selected ? color : const Color(0xAAFFFFFF),
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.5,
               ),
             ),
             const SizedBox(height: 6),
             Text(
               mode.subtitle,
-              textAlign: TextAlign.center,
               style: const TextStyle(
-                color: Color(0x88FFFFFF),
-                fontSize: 9,
+                color: Color(0x77FFFFFF),
+                fontSize: 10,
                 height: 1.4,
               ),
             ),
@@ -409,41 +334,11 @@ class _ModeCard extends StatelessWidget {
   }
 }
 
-// ── Shared orb-icon painter ──────────────────────────────────────────────────
-
-class _GlowCirclePainter extends CustomPainter {
-  final Color color;
-  const _GlowCirclePainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final c = Offset(size.width / 2, size.height / 2);
-    final r = size.width / 2 - 3;
-    canvas.drawCircle(
-      c,
-      r + 6,
-      Paint()
-        ..color = Color.fromARGB(80, color.red, color.green, color.blue)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
-    );
-    canvas.drawCircle(c, r, Paint()..color = color);
-    canvas.drawCircle(
-      Offset(c.dx - r * 0.3, c.dy - r * 0.3),
-      r * 0.3,
-      Paint()..color = const Color(0x66FFFFFF),
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _GlowCirclePainter old) =>
-      old.color != color;
-}
-
-// ── Arena size / shape card ───────────────────────────────────────────────────
+// ── Arena card ────────────────────────────────────────────────────────────────
 
 class _ArenaCard extends StatelessWidget {
   final ArenaPreset preset;
-  final bool selected;
+  final bool        selected;
   final VoidCallback onTap;
 
   const _ArenaCard({
@@ -470,49 +365,41 @@ class _ArenaCard extends StatelessWidget {
     final color = _color;
     return GestureDetector(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        margin: const EdgeInsets.symmetric(horizontal: 5),
+      child: Container(
+        margin: const EdgeInsets.only(right: 8),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-        width: 82,
+        width: 78,
         decoration: BoxDecoration(
-          border: Border.all(
-            color: selected ? color : const Color(0x44FFFFFF),
-            width: selected ? 2 : 1,
-          ),
           borderRadius: BorderRadius.circular(8),
           color: selected
-              ? Color.fromARGB(28, color.red, color.green, color.blue)
-              : Colors.transparent,
-          boxShadow: selected
-              ? [BoxShadow(
-                  color: Color.fromARGB(80, color.red, color.green, color.blue),
-                  blurRadius: 16,
-                )]
-              : [],
+              ? Color.fromARGB(30, color.red, color.green, color.blue)
+              : const Color(0x0CFFFFFF),
+          border: Border.all(
+            color: selected ? color : const Color(0x33FFFFFF),
+            width: selected ? 2 : 1,
+          ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             SizedBox(
-              width: 36,
-              height: 46,
+              width: 34,
+              height: 42,
               child: CustomPaint(
                 painter: _ArenaPreviewPainter(
                   preset: preset,
-                  color: color,
-                  selected: selected,
+                  color: selected ? color : const Color(0x66FFFFFF),
                 ),
               ),
             ),
-            const SizedBox(height: 5),
+            const SizedBox(height: 6),
             Text(
               preset.label,
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: color,
+                color: selected ? color : const Color(0x88FFFFFF),
                 fontSize: 9,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w800,
                 letterSpacing: 0.5,
               ),
             ),
@@ -521,7 +408,7 @@ class _ArenaCard extends StatelessWidget {
               preset.subtitle,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                color: Color(0x88FFFFFF),
+                color: Color(0x66FFFFFF),
                 fontSize: 8,
                 height: 1.3,
               ),
@@ -533,17 +420,95 @@ class _ArenaCard extends StatelessWidget {
   }
 }
 
-/// Draws a miniature arena preview that reflects the preset's layout.
+// ── Boss HP chip ──────────────────────────────────────────────────────────────
+
+class _HpChip extends StatelessWidget {
+  final int  hp;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _HpChip({required this.hp, required this.selected, required this.onTap});
+
+  static const Color _accent = Color(0xFFFF6633);
+
+  static String _fmt(int n) {
+    if (n >= 1000000) return '${(n / 1000000).toStringAsFixed(0)}M';
+    if (n >= 1000)    return '${(n / 1000).toStringAsFixed(0)}K';
+    return '$n';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          color: selected ? const Color(0x22FF6633) : const Color(0x0CFFFFFF),
+          border: Border.all(
+            color: selected ? _accent : const Color(0x33FFFFFF),
+            width: selected ? 2 : 1,
+          ),
+        ),
+        child: Text(
+          _fmt(hp),
+          style: TextStyle(
+            color: selected ? _accent : const Color(0x77FFFFFF),
+            fontSize: 13,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Orb color dot ─────────────────────────────────────────────────────────────
+
+class _GlowCircle extends StatelessWidget {
+  final Color  color;
+  final double size;
+
+  const _GlowCircle({required this.color, required this.size});
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      size: Size(size, size),
+      painter: _GlowCirclePainter(color: color),
+    );
+  }
+}
+
+class _GlowCirclePainter extends CustomPainter {
+  final Color color;
+  const _GlowCirclePainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final c = Offset(size.width / 2, size.height / 2);
+    final r = size.width / 2 - 2;
+    canvas.drawCircle(c, r, Paint()..color = color);
+    canvas.drawCircle(
+      Offset(c.dx - r * 0.28, c.dy - r * 0.28),
+      r * 0.28,
+      Paint()..color = const Color(0x55FFFFFF),
+    );
+  }
+
+  @override
+  bool shouldRepaint(_GlowCirclePainter old) => old.color != color;
+}
+
+// ── Arena preview painter ─────────────────────────────────────────────────────
+
 class _ArenaPreviewPainter extends CustomPainter {
   final ArenaPreset preset;
-  final Color color;
-  final bool selected;
+  final Color       color;
 
-  const _ArenaPreviewPainter({
-    required this.preset,
-    required this.color,
-    required this.selected,
-  });
+  const _ArenaPreviewPainter({required this.preset, required this.color});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -552,135 +517,57 @@ class _ArenaPreviewPainter extends CustomPainter {
     final bH = size.height * f;
     final l  = (size.width  - bW) / 2;
     final t  = (size.height - bH) / 2;
-    final arenaRect = Rect.fromLTWH(l, t, bW, bH);
+    final rect = Rect.fromLTWH(l, t, bW, bH);
 
-    final borderColor = selected ? color : const Color(0x66FFFFFF);
-    final fillColor   = selected
-        ? Color.fromARGB(20, color.red, color.green, color.blue)
-        : Colors.transparent;
-    final obstacleColor = selected
-        ? color.withOpacity(0.75)
-        : const Color(0x66FFFFFF);
-
-    // Arena border
-    canvas.drawRect(arenaRect, Paint()..color = fillColor);
-    canvas.drawRect(
-      arenaRect,
+    canvas.drawRect(rect,
       Paint()
-        ..color = borderColor
+        ..color = color.withOpacity(0.08),
+    );
+    canvas.drawRect(rect,
+      Paint()
+        ..color = color
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.5,
     );
 
     final wallPaint = Paint()
-      ..color = obstacleColor
+      ..color = color
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.8
       ..strokeCap = StrokeCap.square;
-    final pillPaint = Paint()..color = obstacleColor;
+    final pillPaint = Paint()..color = color;
 
     switch (preset) {
       case ArenaPreset.pillarsSmall:
-        // 4 small squares at quadrant centres
-        const hs = 3.5;
         for (final cx in [l + bW * 0.25, l + bW * 0.75]) {
           for (final cy in [t + bH * 0.25, t + bH * 0.75]) {
             canvas.drawRect(
-              Rect.fromCenter(center: Offset(cx, cy), width: hs * 2, height: hs * 2),
+              Rect.fromCenter(center: Offset(cx, cy), width: 7, height: 7),
               pillPaint,
             );
           }
         }
-
       case ArenaPreset.pillarsBig:
-        // 2 large squares left/right of centre
-        const hs = 7.0;
         for (final cx in [l + bW * 0.25, l + bW * 0.75]) {
           canvas.drawRect(
-            Rect.fromCenter(center: Offset(cx, t + bH * 0.5), width: hs * 2, height: hs * 2),
+            Rect.fromCenter(center: Offset(cx, t + bH * 0.5), width: 14, height: 14),
             pillPaint,
           );
         }
-
       case ArenaPreset.corridors:
-        // Two S-curve dividers
-        canvas.drawLine(Offset(l + 1,         t + bH * 0.37), Offset(l + bW * 0.58, t + bH * 0.37), wallPaint);
-        canvas.drawLine(Offset(l + bW * 0.42, t + bH * 0.63), Offset(l + bW - 1,    t + bH * 0.63), wallPaint);
-
+        canvas.drawLine(Offset(l + 1, t + bH * 0.37), Offset(l + bW * 0.58, t + bH * 0.37), wallPaint);
+        canvas.drawLine(Offset(l + bW * 0.42, t + bH * 0.63), Offset(l + bW - 1, t + bH * 0.63), wallPaint);
       case ArenaPreset.maze:
-        // Top-left L
-        canvas.drawLine(Offset(l + 1,         t + bH * 0.30), Offset(l + bW * 0.44, t + bH * 0.30), wallPaint);
+        canvas.drawLine(Offset(l + 1, t + bH * 0.30), Offset(l + bW * 0.44, t + bH * 0.30), wallPaint);
         canvas.drawLine(Offset(l + bW * 0.44, t + bH * 0.30), Offset(l + bW * 0.44, t + bH * 0.56), wallPaint);
-        // Bottom-right L
         canvas.drawLine(Offset(l + bW * 0.56, t + bH * 0.44), Offset(l + bW * 0.56, t + bH * 0.70), wallPaint);
-        canvas.drawLine(Offset(l + bW * 0.56, t + bH * 0.70), Offset(l + bW - 1,    t + bH * 0.70), wallPaint);
-
+        canvas.drawLine(Offset(l + bW * 0.56, t + bH * 0.70), Offset(l + bW - 1, t + bH * 0.70), wallPaint);
       default:
-        break; // plain rectangle — no obstacles
+        break;
     }
   }
 
   @override
   bool shouldRepaint(_ArenaPreviewPainter old) =>
-      old.preset != preset || old.selected != selected || old.color != color;
-}
-
-// ── Boss HP chip ─────────────────────────────────────────────────────────────
-
-class _HpChip extends StatelessWidget {
-  final int hp;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _HpChip({
-    required this.hp,
-    required this.selected,
-    required this.onTap,
-  });
-
-  static const Color _accent = Color(0xFFFF6633);
-
-  static String _fmt(int n) {
-    if (n >= 1000000) return '${(n / 1000000).toStringAsFixed(0)}M';
-    if (n >= 1000) return '${(n / 1000).toStringAsFixed(0)}K';
-    return '$n';
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: selected ? _accent : const Color(0x44FFFFFF),
-            width: selected ? 2 : 1,
-          ),
-          borderRadius: BorderRadius.circular(20),
-          color: selected
-              ? const Color(0x22FF6633)
-              : Colors.transparent,
-          boxShadow: selected
-              ? const [
-                  BoxShadow(
-                    color: Color(0x44FF6633),
-                    blurRadius: 12,
-                  )
-                ]
-              : [],
-        ),
-        child: Text(
-          _fmt(hp),
-          style: TextStyle(
-            color: selected ? _accent : const Color(0x88FFFFFF),
-            fontSize: 13,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 1,
-          ),
-        ),
-      ),
-    );
-  }
+      old.preset != preset || old.color != color;
 }
