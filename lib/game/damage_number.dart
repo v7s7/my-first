@@ -2,10 +2,12 @@ import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
-/// A short-lived floating number that appears on hit and fades upward.
+/// A short-lived floating number (or label) that appears on hit and fades upward.
 class DamageNumber extends PositionComponent {
   final int damage;
   final bool isSmall; // true for laser ticks — smaller, faster fade
+  final String? label;       // optional override text (for pickup names)
+  final Color? labelColor;   // optional override color
 
   static const double _lifeNormal = 1.4;
   static const double _lifeSmall = 0.75;
@@ -19,6 +21,8 @@ class DamageNumber extends PositionComponent {
     required this.damage,
     required Vector2 position,
     this.isSmall = false,
+    this.label,
+    this.labelColor,
     double driftX = 0,
   })  : _floatSpeed = isSmall ? -48 : -85,
         _driftX = driftX,
@@ -51,9 +55,9 @@ class DamageNumber extends PositionComponent {
     // Pop scale: rises to peak at ~15% then settles; small numbers just scale flat
     final scale = isSmall ? 0.72 : (1.0 + sin(progress * pi * 0.85) * 0.55);
 
-    final color = _colorFor(damage);
+    final color = labelColor ?? _colorFor(damage);
     final fontSize = (isSmall ? 13.0 : 26.0) * scale;
-    final text = '-${_fmt(damage)}';
+    final text = label ?? '-${_fmt(damage)}';
 
     final tp = TextPainter(
       text: TextSpan(

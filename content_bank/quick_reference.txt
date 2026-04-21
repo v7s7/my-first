@@ -1,0 +1,267 @@
+BOSS BALL BLITZ — CONTENT QUICK REFERENCE
+============================================================
+
+[basic_maze_endurance]
+  Title  : POV: you unlock SHOCK ORB for the first time 😳
+  Caption: #shock #satisfying #gaming #physics #bossfight #simulation #classic #bossbattle …
+  Hook   : Sixty seconds on the clock. That boss is going DOWN.
+
+[basic_tiny_blitz]
+  Title  : How much damage can SHOCK ORB do in BLITZ? 🔢
+  Caption: #shock #satisfying #gaming #physics #bossfight #simulation #classic #bossbattle …
+  Hook   : BLITZ mode. Thirty seconds on the clock. This is going to be INSANE.
+
+[blackhole_corridors]
+  Title  : The physics of VOID STAR will BLOW your mind 🧠
+  Caption: #blackhole #vortex #satisfying #physics #gaming #simulation #bossfight #bossbatt…
+  Hook   : BLITZ. Maximum pressure. Let's see what this orb can do.
+
+[blackhole_maze]
+  Title  : VOID STAR bouncing in THE MAZE is pure ASMR 🔊
+  Caption: #blackhole #vortex #satisfying #physics #gaming #simulation #bossfight #bossbatt…
+  Hook   : This is Time Attack mode. One million HP. Sixty seconds. GO.
+
+[blackhole_pillars]
+  Title  : FINAL ROUND: VOID STAR in PILLAR ARENA ⚔️
+  Caption: #blackhole #vortex #satisfying #physics #gaming #simulation #bossfight #bossbatt…
+  Hook   : Two million HP. Half a minute. Watch what happens.
+
+[blackhole_small_speedrun]
+  Title  : VOID STAR + SMALL ARENA = perfect chaos 💫
+  Caption: #blackhole #vortex #satisfying #physics #gaming #simulation #bossfight #bossbatt…
+  Hook   : Speed Run. Pure chaos. Fifteen seconds to do as much damage as possible.
+
+[blackhole_tiny]
+  Title  : Wait… VOID STAR can do THAT?! 😳
+  Caption: #blackhole #vortex #satisfying #physics #gaming #simulation #bossfight #bossbatt…
+  Hook   : Okay. Thirty seconds. Two million HP. Let's GO.
+
+[chain_maze]
+  Title  : I put CHAIN ORB in THE MAZE and this happened 👇
+  Caption: #lightning #chain #satisfying #gaming #electric #bossfight #physics #bossbattle …
+  Hook   : One minute. One boss. One orb. Let's find out.
+
+[chain_pillars_big]
+  Title  : Wait… CHAIN ORB can do THAT?! 😳
+  Caption: #lightning #chain #satisfying #gaming #electric #bossfight #physics #bossbattle …
+  Hook   : Sixty seconds on the clock. That boss is going DOWN.
+
+[chain_pillars_small]
+  Title  : POV: you unlock CHAIN ORB for the first time 😳
+  Caption: #lightning #chain #satisfying #gaming #electric #bossfight #physics #bossbattle …
+  Hook   : Thirty seconds. Boss has two million HP. Can we even do this?
+
+[chain_tiny_blitz]
+  Title  : Boss Ball Battle: CHAIN ORB Edition 🔥
+  Caption: #lightning #chain #satisfying #gaming #electric #bossfight #physics #bossbattle …
+  Hook   : BLITZ mode. Thirty seconds on the clock. This is going to be INSANE.
+
+[clone_corridors_blitz]
+  Title  : POV: the boss sees ECHO ORB coming 😈
+  Caption: #clone #echo #satisfying #gaming #physics #bossfight #swarm #bossbattle #ballgam…
+  Hook   : BLITZ mode. Thirty seconds on the clock. This is going to be INSANE.
+
+[clone_full]
+  Title  : POV: you unlock ECHO ORB for the first time 😳
+  Caption: #clone #echo #satisfying #gaming #physics #bossfight #swarm #bossbattle #ballgam…
+  Hook   : Time Attack. One million HP. The clock starts NOW.
+
+[clone_maze]
+  Title  : ECHO ORB vs THE BOSS 💀
+  Caption: #clone #echo #satisfying #gaming #physics #bossfight #swarm #bossbattle #ballgam…
+  Hook   : This is Time Attack mode. One million HP. Sixty seconds. GO.
+
+[combo_full]
+  Title  : The devs didn't want you to find this combo 🚫
+  Caption: #combo #multiplier #satisfying #gaming #bossfight #streak #physics #bossbattle #…
+  Hook   : Sixty seconds on the clock. That boss is going DOWN.
+
+[combo_maze]
+  Title  : COMBO ORB is carrying this entire run 💪
+  Caption: #combo #multiplier #satisfying #gaming #bossfight #streak #physics #bossbattle #…
+  Hook   : Sixty seconds. One million HP boss. Let's see if this combo works.
+
+[combo_normal]
+  Title  : FINAL ROUND: COMBO ORB in NORMAL ARENA ⚔️
+  Caption: #combo #multiplier #satisfying #gaming #bossfight #streak #physics #bossbattle #…
+  Hook   : Sixty seconds on the clock. That boss is going DOWN.
+
+[combo_pillars_big]
+  Title  : COMBO ORB + MEGA PILLAR ARENA = perfect chaos 💫
+  Caption: #combo #multiplier #satisfying #gaming #bossfight #streak #physics #bossbattle #…
+  Hook   : One minute. One boss. One orb. Let's find out.
+
+[fire_corridors]
+  Title  : The BEST orb in Boss Ball? Testing INFERNO ORB 🥇
+  Caption: #fire #inferno #satisfying #gaming #physics #bossfight #burn #bossbattle #ballga…
+  Hook   : One minute. One boss. One orb. Let's find out.
+
+[fire_maze]
+  Title  : The BEST orb in Boss Ball? Testing INFERNO ORB 🥇
+  Caption: #fire #inferno #satisfying #gaming #physics #bossfight #burn #bossbattle #ballga…
+  Hook   : Sixty seconds. One million HP boss. Let's see if this combo works.
+
+[firetrap_corridors_blitz]
+  Title  : FIRE TRAP vs THE BOSS 💀
+  Caption: #fire #trap #satisfying #gaming #physics #bossfight #explosion #bossbattle #ball…
+  Hook   : Two million HP. Half a minute. Watch what happens.
+
+[firetrap_maze]
+  Title  : Rating every orb: FIRE TRAP review 🏅
+  Caption: #fire #trap #satisfying #gaming #physics #bossfight #explosion #bossbattle #ball…
+  Hook   : Sixty seconds on the clock. That boss is going DOWN.
+
+[hook_corridors_blitz]
+  Title  : Boss Ball Battle: HOOK ORB Edition 🔥
+  Caption: #homing #hook #satisfying #gaming #physics #bossfight #tracking #bossbattle #bal…
+  Hook   : Two million HP. Half a minute. Watch what happens.
+
+[hook_full]
+  Title  : WEAPON BALL: HOOK ORB enters FULL ARENA ⚡
+  Caption: #homing #hook #satisfying #gaming #physics #bossfight #tracking #bossbattle #bal…
+  Hook   : This is Time Attack mode. One million HP. Sixty seconds. GO.
+
+[hook_pillars_big]
+  Title  : HOOK ORB in MEGA PILLAR ARENA is the most satisfying thing 🎯
+  Caption: #homing #hook #satisfying #gaming #physics #bossfight #tracking #bossbattle #bal…
+  Hook   : Time Attack. One million HP. The clock starts NOW.
+
+[ice_corridors]
+  Title  : Boss Ball Battle: ICE ORB Edition 🔥
+  Caption: #ice #freeze #satisfying #physics #bossfight #gaming #simulation #bossbattle #ba…
+  Hook   : This is Time Attack mode. One million HP. Sixty seconds. GO.
+
+[ice_maze_speedrun]
+  Title  : The devs didn't want you to find this combo 🚫
+  Caption: #ice #freeze #satisfying #physics #bossfight #gaming #simulation #bossbattle #ba…
+  Hook   : Fifteen seconds. Every single hit counts.
+
+[ice_pillars_blitz]
+  Title  : Nobody told me ICE ORB does THIS 😱
+  Caption: #ice #freeze #satisfying #physics #bossfight #gaming #simulation #bossbattle #ba…
+  Hook   : Okay. Thirty seconds. Two million HP. Let's GO.
+
+[ice_small_blitz]
+  Title  : POV: ICE ORB in SMALL ARENA hits different 💀
+  Caption: #ice #freeze #satisfying #physics #bossfight #gaming #simulation #bossbattle #ba…
+  Hook   : Okay. Thirty seconds. Two million HP. Let's GO.
+
+[ice_tiny_blitz]
+  Title  : Wait… ICE ORB can do THAT?! 😳
+  Caption: #ice #freeze #satisfying #physics #bossfight #gaming #simulation #bossbattle #ba…
+  Hook   : BLITZ mode. Thirty seconds on the clock. This is going to be INSANE.
+
+[laser_corridors_speedrun]
+  Title  : New record attempt: LASER ORB in SPEED RUN ⚡
+  Caption: #laser #beam #satisfying #gaming #physics #bossfight #simulation #bossbattle #ba…
+  Hook   : Speed Run. Pure chaos. Fifteen seconds to do as much damage as possible.
+
+[laser_normal]
+  Title  : Rating every orb: LASER ORB review 🏅
+  Caption: #laser #beam #satisfying #gaming #physics #bossfight #simulation #bossbattle #ba…
+  Hook   : Time Attack. One million HP. The clock starts NOW.
+
+[laser_small_speedrun]
+  Title  : LASER ORB BATTLE ROYALE 🏹
+  Caption: #laser #beam #satisfying #gaming #physics #bossfight #simulation #bossbattle #ba…
+  Hook   : Fifteen seconds. Every single hit counts.
+
+[laser_tiny_blitz]
+  Title  : LASER ORB in TINY ARENA is the most satisfying thing 🎯
+  Caption: #laser #beam #satisfying #gaming #physics #bossfight #simulation #bossbattle #ba…
+  Hook   : Okay. Thirty seconds. Two million HP. Let's GO.
+
+[mine_corridors]
+  Title  : MINE ORB just broke CORRIDOR ARENA 💥
+  Caption: #mines #explosion #satisfying #physics #gaming #trap #bossfight #bossbattle #bal…
+  Hook   : Sixty seconds. One million HP boss. Let's see if this combo works.
+
+[mine_maze]
+  Title  : I put MINE ORB in THE MAZE and this happened 👇
+  Caption: #mines #explosion #satisfying #physics #gaming #trap #bossfight #bossbattle #bal…
+  Hook   : Sixty seconds on the clock. That boss is going DOWN.
+
+[mine_pillars_big]
+  Title  : POV: you find the most broken combo in Boss Ball 🤯
+  Caption: #mines #explosion #satisfying #physics #gaming #trap #bossfight #bossbattle #bal…
+  Hook   : Time Attack. One million HP. The clock starts NOW.
+
+[mine_pillars_small]
+  Title  : How much damage can MINE ORB do in TIME ATTACK? 🔢
+  Caption: #mines #explosion #satisfying #physics #gaming #trap #bossfight #bossbattle #bal…
+  Hook   : Time Attack. One million HP. The clock starts NOW.
+
+[mine_tiny_blitz]
+  Title  : Rating every orb: MINE ORB review 🏅
+  Caption: #mines #explosion #satisfying #physics #gaming #trap #bossfight #bossbattle #bal…
+  Hook   : BLITZ mode. Thirty seconds on the clock. This is going to be INSANE.
+
+[nova_corridors]
+  Title  : Rating every orb: NOVA STAR review 🏅
+  Caption: #explosion #nova #satisfying #gaming #physics #bossfight #boom #bossbattle #ball…
+  Hook   : One minute. One boss. One orb. Let's find out.
+
+[nova_small_blitz]
+  Title  : New record attempt: NOVA STAR in BLITZ ⚡
+  Caption: #explosion #nova #satisfying #gaming #physics #bossfight #boom #bossbattle #ball…
+  Hook   : BLITZ. Maximum pressure. Let's see what this orb can do.
+
+[nova_tiny_speedrun]
+  Title  : NOVA STAR + TINY ARENA = perfect chaos 💫
+  Caption: #explosion #nova #satisfying #gaming #physics #bossfight #boom #bossbattle #ball…
+  Hook   : Fifteen seconds. Every single hit counts.
+
+[prismatic_full]
+  Title  : Boss Ball Battle: PRISMATIC ORB Edition 🔥
+  Caption: #prism #beam #satisfying #gaming #physics #bossfight #reflect #bossbattle #ballg…
+  Hook   : This is Time Attack mode. One million HP. Sixty seconds. GO.
+
+[prismatic_pillars_big]
+  Title  : Can this orb one-shot the boss? 💥
+  Caption: #prism #beam #satisfying #gaming #physics #bossfight #reflect #bossbattle #ballg…
+  Hook   : This is Time Attack mode. One million HP. Sixty seconds. GO.
+
+[splitter_corridors_speedrun]
+  Title  : They need to NERF SHURIKEN ORB immediately 🔥
+  Caption: #shuriken #blades #satisfying #gaming #physics #bossfight #spin #bossbattle #bal…
+  Hook   : Fifteen seconds. Every single hit counts.
+
+[splitter_maze]
+  Title  : SHURIKEN ORB + THE MAZE = perfect chaos 💫
+  Caption: #shuriken #blades #satisfying #gaming #physics #bossfight #spin #bossbattle #bal…
+  Hook   : Sixty seconds. One million HP boss. Let's see if this combo works.
+
+[splitter_tiny_blitz]
+  Title  : This SHURIKEN ORB combo is UNPLAYABLE 😭
+  Caption: #shuriken #blades #satisfying #gaming #physics #bossfight #spin #bossbattle #bal…
+  Hook   : Okay. Thirty seconds. Two million HP. Let's GO.
+
+[void_corridors]
+  Title  : Is VOID ORB actually broken? 🧐
+  Caption: #void #warp #satisfying #gaming #physics #bossfight #teleport #bossbattle #ballg…
+  Hook   : Sixty seconds on the clock. That boss is going DOWN.
+
+[void_maze_blitz]
+  Title  : VOID ORB = S TIER? Let's find out 👇
+  Caption: #void #warp #satisfying #gaming #physics #bossfight #teleport #bossbattle #ballg…
+  Hook   : BLITZ mode. Thirty seconds on the clock. This is going to be INSANE.
+
+[void_tiny_speedrun]
+  Title  : Satisfying VOID ORB run — no commentary 🎵
+  Caption: #void #warp #satisfying #gaming #physics #bossfight #teleport #bossbattle #ballg…
+  Hook   : The fastest fifteen seconds you'll ever watch.
+
+[zapper_corridors_blitz]
+  Title  : ZAPPER ORB just broke CORRIDOR ARENA 💥
+  Caption: #lightning #thunder #satisfying #gaming #electric #bossfight #zap #bossbattle #b…
+  Hook   : Okay. Thirty seconds. Two million HP. Let's GO.
+
+[zapper_maze]
+  Title  : ZAPPER ORB = S TIER? Let's find out 👇
+  Caption: #lightning #thunder #satisfying #gaming #electric #bossfight #zap #bossbattle #b…
+  Hook   : Time Attack. One million HP. The clock starts NOW.
+
+[zapper_pillars_small]
+  Title  : Boss Ball Battle: ZAPPER ORB Edition 🔥
+  Caption: #lightning #thunder #satisfying #gaming #electric #bossfight #zap #bossbattle #b…
+  Hook   : Sixty seconds on the clock. That boss is going DOWN.

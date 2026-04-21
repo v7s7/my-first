@@ -1,0 +1,1433 @@
+{
+  "ice_tiny_blitz": {
+    "tag": "ice_tiny_blitz",
+    "orb": "ice",
+    "arena": "tiny",
+    "mode": "blitz",
+    "hp": 1000000,
+    "titles": [
+      "Wait… ICE ORB can do THAT?! 😳",
+      "ICE ORB just broke TINY ARENA 💥",
+      "POV: you find the most broken combo in Boss Ball 🤯"
+    ],
+    "caption": "#ice #freeze #satisfying #physics #bossfight #gaming #simulation #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "BLITZ mode. Thirty seconds on the clock. This is going to be INSANE.",
+      "orb_setup": "Ice Orb. Every hit freezes the boss for two and a half seconds. While frozen — double damage. It cannot fight back.",
+      "arena_setup": "We are in the TINY arena. Fifty-two percent of screen. The boss has absolutely NOWHERE to go.",
+      "commentary": [
+        "Freeze. Hit. Freeze. Hit. The cycle never ends.",
+        "Frozen again. Double damage window is OPEN.",
+        "Watch — the moment it hits — FREEZE.",
+        "Frozen solid. Hit it again."
+      ],
+      "result": "ELIMINATED. No contest.",
+      "outro": "Follow for more orb battles. 🏹",
+      "script": "[HOOK]  BLITZ mode. Thirty seconds on the clock. This is going to be INSANE.\n[SETUP] Ice Orb. Every hit freezes the boss for two and a half seconds. While frozen — double damage. It cannot fight back.\n        We are in the TINY arena. Fifty-two percent of screen. The boss has absolutely NOWHERE to go.\n[—]     Freeze. Hit. Freeze. Hit. The cycle never ends.\n[—]     Frozen again. Double damage window is OPEN.\n[—]     Watch — the moment it hits — FREEZE.\n[—]     Frozen solid. Hit it again.\n[END]   ELIMINATED. No contest.\n[CTA]   Follow for more orb battles. 🏹"
+    }
+  },
+  "ice_small_blitz": {
+    "tag": "ice_small_blitz",
+    "orb": "ice",
+    "arena": "small",
+    "mode": "blitz",
+    "hp": 800000,
+    "titles": [
+      "POV: ICE ORB in SMALL ARENA hits different 💀",
+      "WEAPON BALL: ICE ORB enters SMALL ARENA ⚡",
+      "ICE ORB vs BLITZ — who wins? 🏆"
+    ],
+    "caption": "#ice #freeze #satisfying #physics #bossfight #gaming #simulation #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Okay. Thirty seconds. Two million HP. Let's GO.",
+      "orb_setup": "Ice Orb. Every hit freezes the boss for two and a half seconds. While frozen — double damage. It cannot fight back.",
+      "arena_setup": "Small arena. Close quarters. Every bounce comes back instantly.",
+      "commentary": [
+        "It cannot run. It cannot dodge. It just takes every hit.",
+        "The tiny arena makes this even more brutal.",
+        "Frozen solid. Hit it again.",
+        "The boss cannot move. It is completely stuck."
+      ],
+      "result": "This orb is S-tier. No debate.",
+      "outro": "Tag someone who would pick this orb. 👀",
+      "script": "[HOOK]  Okay. Thirty seconds. Two million HP. Let's GO.\n[SETUP] Ice Orb. Every hit freezes the boss for two and a half seconds. While frozen — double damage. It cannot fight back.\n        Small arena. Close quarters. Every bounce comes back instantly.\n[—]     It cannot run. It cannot dodge. It just takes every hit.\n[—]     The tiny arena makes this even more brutal.\n[—]     Frozen solid. Hit it again.\n[—]     The boss cannot move. It is completely stuck.\n[END]   This orb is S-tier. No debate.\n[CTA]   Tag someone who would pick this orb. 👀"
+    }
+  },
+  "ice_corridors_time_attack": {
+    "tag": "ice_corridors",
+    "orb": "ice",
+    "arena": "corridors",
+    "mode": "time_attack",
+    "hp": 1500000,
+    "titles": [
+      "Boss Ball Battle: ICE ORB Edition 🔥",
+      "Is ICE ORB actually broken? 🧐",
+      "Can this orb one-shot the boss? 💥"
+    ],
+    "caption": "#ice #freeze #satisfying #physics #bossfight #gaming #simulation #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "This is Time Attack mode. One million HP. Sixty seconds. GO.",
+      "orb_setup": "Ice Orb. Every hit freezes the boss for two and a half seconds. While frozen — double damage. It cannot fight back.",
+      "arena_setup": "Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.",
+      "commentary": [
+        "It cannot run. It cannot dodge. It just takes every hit.",
+        "Frozen again. Double damage window is OPEN.",
+        "Watch — the moment it hits — FREEZE.",
+        "The tiny arena makes this even more brutal."
+      ],
+      "result": "BOSS DEFEATED. Let's GO. 🔥",
+      "outro": "Subscribe for the full orb rankings. 🏆",
+      "script": "[HOOK]  This is Time Attack mode. One million HP. Sixty seconds. GO.\n[SETUP] Ice Orb. Every hit freezes the boss for two and a half seconds. While frozen — double damage. It cannot fight back.\n        Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.\n[—]     It cannot run. It cannot dodge. It just takes every hit.\n[—]     Frozen again. Double damage window is OPEN.\n[—]     Watch — the moment it hits — FREEZE.\n[—]     The tiny arena makes this even more brutal.\n[END]   BOSS DEFEATED. Let's GO. 🔥\n[CTA]   Subscribe for the full orb rankings. 🏆"
+    }
+  },
+  "ice_maze_speed_run": {
+    "tag": "ice_maze_speedrun",
+    "orb": "ice",
+    "arena": "maze",
+    "mode": "speed_run",
+    "hp": null,
+    "titles": [
+      "The devs didn't want you to find this combo 🚫",
+      "POV: you find the most broken combo in Boss Ball 🤯",
+      "Can this orb one-shot the boss? 💥"
+    ],
+    "caption": "#ice #freeze #satisfying #physics #bossfight #gaming #simulation #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Fifteen seconds. Every single hit counts.",
+      "orb_setup": "Ice Orb. Every hit freezes the boss for two and a half seconds. While frozen — double damage. It cannot fight back.",
+      "arena_setup": "THE MAZE. L-shaped walls mirrored across the entire arena. Once the traps are set — there is no escape route.",
+      "commentary": [
+        "Watch — the moment it hits — FREEZE.",
+        "Freeze. Hit. Freeze. Hit. The cycle never ends.",
+        "It cannot run. It cannot dodge. It just takes every hit.",
+        "The tiny arena makes this even more brutal."
+      ],
+      "result": "ELIMINATED. No contest.",
+      "outro": "Follow for more orb battles. 🏹",
+      "script": "[HOOK]  Fifteen seconds. Every single hit counts.\n[SETUP] Ice Orb. Every hit freezes the boss for two and a half seconds. While frozen — double damage. It cannot fight back.\n        THE MAZE. L-shaped walls mirrored across the entire arena. Once the traps are set — there is no escape route.\n[—]     Watch — the moment it hits — FREEZE.\n[—]     Freeze. Hit. Freeze. Hit. The cycle never ends.\n[—]     It cannot run. It cannot dodge. It just takes every hit.\n[—]     The tiny arena makes this even more brutal.\n[END]   ELIMINATED. No contest.\n[CTA]   Follow for more orb battles. 🏹"
+    }
+  },
+  "ice_pillarsSmall_blitz": {
+    "tag": "ice_pillars_blitz",
+    "orb": "ice",
+    "arena": "pillarsSmall",
+    "mode": "blitz",
+    "hp": 1200000,
+    "titles": [
+      "Nobody told me ICE ORB does THIS 😱",
+      "WEAPON BALL: ICE ORB enters PILLAR ARENA ⚡",
+      "Can this orb one-shot the boss? 💥"
+    ],
+    "caption": "#ice #freeze #satisfying #physics #bossfight #gaming #simulation #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Okay. Thirty seconds. Two million HP. Let's GO.",
+      "orb_setup": "Ice Orb. Every hit freezes the boss for two and a half seconds. While frozen — double damage. It cannot fight back.",
+      "arena_setup": "Pillar arena. Four pillars at every corner. The orb ricochets off everything in here.",
+      "commentary": [
+        "It cannot run. It cannot dodge. It just takes every hit.",
+        "Freeze. Hit. Freeze. Hit. The cycle never ends.",
+        "Frozen solid. Hit it again.",
+        "Watch — the moment it hits — FREEZE."
+      ],
+      "result": "That score speaks for itself.",
+      "outro": "Share this with someone who needs to see this combo. 🎮",
+      "script": "[HOOK]  Okay. Thirty seconds. Two million HP. Let's GO.\n[SETUP] Ice Orb. Every hit freezes the boss for two and a half seconds. While frozen — double damage. It cannot fight back.\n        Pillar arena. Four pillars at every corner. The orb ricochets off everything in here.\n[—]     It cannot run. It cannot dodge. It just takes every hit.\n[—]     Freeze. Hit. Freeze. Hit. The cycle never ends.\n[—]     Frozen solid. Hit it again.\n[—]     Watch — the moment it hits — FREEZE.\n[END]   That score speaks for itself.\n[CTA]   Share this with someone who needs to see this combo. 🎮"
+    }
+  },
+  "mine_maze_time_attack": {
+    "tag": "mine_maze",
+    "orb": "mine",
+    "arena": "maze",
+    "mode": "time_attack",
+    "hp": null,
+    "titles": [
+      "I put MINE ORB in THE MAZE and this happened 👇",
+      "They need to NERF MINE ORB immediately 🔥",
+      "POV: you unlock MINE ORB for the first time 😳"
+    ],
+    "caption": "#mines #explosion #satisfying #physics #gaming #trap #bossfight #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Sixty seconds on the clock. That boss is going DOWN.",
+      "orb_setup": "Mine Orb. Plants a proximity mine on every single bounce. Watch the arena fill up with explosives.",
+      "arena_setup": "THE MAZE. L-shaped walls mirrored across the entire arena. Once the traps are set — there is no escape route.",
+      "commentary": [
+        "BOOM. There goes another cluster.",
+        "It stepped right into it. Every time.",
+        "Every bounce plants another mine. There is no safe zone left.",
+        "The boss just walked into three mines at once."
+      ],
+      "result": "Timer is up — but look at that damage number.",
+      "outro": "Comment your favorite orb below. 💬",
+      "script": "[HOOK]  Sixty seconds on the clock. That boss is going DOWN.\n[SETUP] Mine Orb. Plants a proximity mine on every single bounce. Watch the arena fill up with explosives.\n        THE MAZE. L-shaped walls mirrored across the entire arena. Once the traps are set — there is no escape route.\n[—]     BOOM. There goes another cluster.\n[—]     It stepped right into it. Every time.\n[—]     Every bounce plants another mine. There is no safe zone left.\n[—]     The boss just walked into three mines at once.\n[END]   Timer is up — but look at that damage number.\n[CTA]   Comment your favorite orb below. 💬"
+    }
+  },
+  "mine_corridors_time_attack": {
+    "tag": "mine_corridors",
+    "orb": "mine",
+    "arena": "corridors",
+    "mode": "time_attack",
+    "hp": 1000000,
+    "titles": [
+      "MINE ORB just broke CORRIDOR ARENA 💥",
+      "The devs didn't want you to find this combo 🚫",
+      "FINAL ROUND: MINE ORB in CORRIDOR ARENA ⚔️"
+    ],
+    "caption": "#mines #explosion #satisfying #physics #gaming #trap #bossfight #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Sixty seconds. One million HP boss. Let's see if this combo works.",
+      "orb_setup": "Mine Orb. Plants a proximity mine on every single bounce. Watch the arena fill up with explosives.",
+      "arena_setup": "Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.",
+      "commentary": [
+        "It stepped right into it. Every time.",
+        "The boss just walked into three mines at once.",
+        "Mine down.",
+        "The entire floor is a death trap."
+      ],
+      "result": "ELIMINATED. No contest.",
+      "outro": "Share this with someone who needs to see this combo. 🎮",
+      "script": "[HOOK]  Sixty seconds. One million HP boss. Let's see if this combo works.\n[SETUP] Mine Orb. Plants a proximity mine on every single bounce. Watch the arena fill up with explosives.\n        Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.\n[—]     It stepped right into it. Every time.\n[—]     The boss just walked into three mines at once.\n[—]     Mine down.\n[—]     The entire floor is a death trap.\n[END]   ELIMINATED. No contest.\n[CTA]   Share this with someone who needs to see this combo. 🎮"
+    }
+  },
+  "mine_tiny_blitz": {
+    "tag": "mine_tiny_blitz",
+    "orb": "mine",
+    "arena": "tiny",
+    "mode": "blitz",
+    "hp": 500000,
+    "titles": [
+      "Rating every orb: MINE ORB review 🏅",
+      "POV: MINE ORB in TINY ARENA hits different 💀",
+      "Can this orb one-shot the boss? 💥"
+    ],
+    "caption": "#mines #explosion #satisfying #physics #gaming #trap #bossfight #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "BLITZ mode. Thirty seconds on the clock. This is going to be INSANE.",
+      "orb_setup": "Mine Orb. Plants a proximity mine on every single bounce. Watch the arena fill up with explosives.",
+      "arena_setup": "We are in the TINY arena. Fifty-two percent of screen. The boss has absolutely NOWHERE to go.",
+      "commentary": [
+        "Every bounce plants another mine. There is no safe zone left.",
+        "Another mine. And another.",
+        "The boss just walked into three mines at once.",
+        "Look at how many mines are covering this arena right now."
+      ],
+      "result": "Clean run. Perfect execution.",
+      "outro": "More boss battles every single day. 🔥",
+      "script": "[HOOK]  BLITZ mode. Thirty seconds on the clock. This is going to be INSANE.\n[SETUP] Mine Orb. Plants a proximity mine on every single bounce. Watch the arena fill up with explosives.\n        We are in the TINY arena. Fifty-two percent of screen. The boss has absolutely NOWHERE to go.\n[—]     Every bounce plants another mine. There is no safe zone left.\n[—]     Another mine. And another.\n[—]     The boss just walked into three mines at once.\n[—]     Look at how many mines are covering this arena right now.\n[END]   Clean run. Perfect execution.\n[CTA]   More boss battles every single day. 🔥"
+    }
+  },
+  "mine_pillarsSmall_time_attack": {
+    "tag": "mine_pillars_small",
+    "orb": "mine",
+    "arena": "pillarsSmall",
+    "mode": "time_attack",
+    "hp": 1500000,
+    "titles": [
+      "How much damage can MINE ORB do in TIME ATTACK? 🔢",
+      "Satisfying MINE ORB run — no commentary 🎵",
+      "Satisfying MINE ORB run — no commentary 🎵"
+    ],
+    "caption": "#mines #explosion #satisfying #physics #gaming #trap #bossfight #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Time Attack. One million HP. The clock starts NOW.",
+      "orb_setup": "Mine Orb. Plants a proximity mine on every single bounce. Watch the arena fill up with explosives.",
+      "arena_setup": "Pillar arena. Four pillars at every corner. The orb ricochets off everything in here.",
+      "commentary": [
+        "Another mine. And another.",
+        "Every bounce plants another mine. There is no safe zone left.",
+        "Mine down.",
+        "BOOM. There goes another cluster."
+      ],
+      "result": "That score speaks for itself.",
+      "outro": "Follow for more orb battles. 🏹",
+      "script": "[HOOK]  Time Attack. One million HP. The clock starts NOW.\n[SETUP] Mine Orb. Plants a proximity mine on every single bounce. Watch the arena fill up with explosives.\n        Pillar arena. Four pillars at every corner. The orb ricochets off everything in here.\n[—]     Another mine. And another.\n[—]     Every bounce plants another mine. There is no safe zone left.\n[—]     Mine down.\n[—]     BOOM. There goes another cluster.\n[END]   That score speaks for itself.\n[CTA]   Follow for more orb battles. 🏹"
+    }
+  },
+  "mine_pillarsBig_time_attack": {
+    "tag": "mine_pillars_big",
+    "orb": "mine",
+    "arena": "pillarsBig",
+    "mode": "time_attack",
+    "hp": 2000000,
+    "titles": [
+      "POV: you find the most broken combo in Boss Ball 🤯",
+      "POV: you find the most broken combo in Boss Ball 🤯",
+      "FINAL ROUND: MINE ORB in MEGA PILLAR ARENA ⚔️"
+    ],
+    "caption": "#mines #explosion #satisfying #physics #gaming #trap #bossfight #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Time Attack. One million HP. The clock starts NOW.",
+      "orb_setup": "Mine Orb. Plants a proximity mine on every single bounce. Watch the arena fill up with explosives.",
+      "arena_setup": "MEGA pillar arena. Two giant pillars flanking the center. Absolute ricochet chaos.",
+      "commentary": [
+        "Every bounce plants another mine. There is no safe zone left.",
+        "The boss just walked into three mines at once.",
+        "Mine down.",
+        "The entire floor is a death trap."
+      ],
+      "result": "BOSS DEFEATED. Let's GO. 🔥",
+      "outro": "Follow for more orb battles. 🏹",
+      "script": "[HOOK]  Time Attack. One million HP. The clock starts NOW.\n[SETUP] Mine Orb. Plants a proximity mine on every single bounce. Watch the arena fill up with explosives.\n        MEGA pillar arena. Two giant pillars flanking the center. Absolute ricochet chaos.\n[—]     Every bounce plants another mine. There is no safe zone left.\n[—]     The boss just walked into three mines at once.\n[—]     Mine down.\n[—]     The entire floor is a death trap.\n[END]   BOSS DEFEATED. Let's GO. 🔥\n[CTA]   Follow for more orb battles. 🏹"
+    }
+  },
+  "blackhole_corridors_blitz": {
+    "tag": "blackhole_corridors",
+    "orb": "blackhole",
+    "arena": "corridors",
+    "mode": "blitz",
+    "hp": 1500000,
+    "titles": [
+      "The physics of VOID STAR will BLOW your mind 🧠",
+      "FASTEST boss kill: VOID STAR edition 💨",
+      "The physics of VOID STAR will BLOW your mind 🧠"
+    ],
+    "caption": "#blackhole #vortex #satisfying #physics #gaming #simulation #bossfight #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "BLITZ. Maximum pressure. Let's see what this orb can do.",
+      "orb_setup": "Void Star Orb. Creates a gravitational vortex. The boss gets PULLED into it and cannot escape.",
+      "arena_setup": "Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.",
+      "commentary": [
+        "It cannot escape the gravitational field.",
+        "The boss is trapped in orbit. It has absolutely no choice.",
+        "There is the vortex — the boss is getting PULLED IN.",
+        "Fifteen hundred damage every point three seconds from suction alone."
+      ],
+      "result": "This orb is S-tier. No debate.",
+      "outro": "Which orb should I test next? Drop it in the comments. 👇",
+      "script": "[HOOK]  BLITZ. Maximum pressure. Let's see what this orb can do.\n[SETUP] Void Star Orb. Creates a gravitational vortex. The boss gets PULLED into it and cannot escape.\n        Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.\n[—]     It cannot escape the gravitational field.\n[—]     The boss is trapped in orbit. It has absolutely no choice.\n[—]     There is the vortex — the boss is getting PULLED IN.\n[—]     Fifteen hundred damage every point three seconds from suction alone.\n[END]   This orb is S-tier. No debate.\n[CTA]   Which orb should I test next? Drop it in the comments. 👇"
+    }
+  },
+  "blackhole_tiny_blitz": {
+    "tag": "blackhole_tiny",
+    "orb": "blackhole",
+    "arena": "tiny",
+    "mode": "blitz",
+    "hp": 1000000,
+    "titles": [
+      "Wait… VOID STAR can do THAT?! 😳",
+      "FINAL ROUND: VOID STAR in TINY ARENA ⚔️",
+      "WEAPON BALL: VOID STAR enters TINY ARENA ⚡"
+    ],
+    "caption": "#blackhole #vortex #satisfying #physics #gaming #simulation #bossfight #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Okay. Thirty seconds. Two million HP. Let's GO.",
+      "orb_setup": "Void Star Orb. Creates a gravitational vortex. The boss gets PULLED into it and cannot escape.",
+      "arena_setup": "We are in the TINY arena. Fifty-two percent of screen. The boss has absolutely NOWHERE to go.",
+      "commentary": [
+        "Fully locked in. Completely helpless.",
+        "It cannot escape the gravitational field.",
+        "The vortex does not stop. The damage does not stop.",
+        "Fifteen hundred damage every point three seconds from suction alone."
+      ],
+      "result": "That is how you do it. Easy work.",
+      "outro": "Follow for more orb battles. 🏹",
+      "script": "[HOOK]  Okay. Thirty seconds. Two million HP. Let's GO.\n[SETUP] Void Star Orb. Creates a gravitational vortex. The boss gets PULLED into it and cannot escape.\n        We are in the TINY arena. Fifty-two percent of screen. The boss has absolutely NOWHERE to go.\n[—]     Fully locked in. Completely helpless.\n[—]     It cannot escape the gravitational field.\n[—]     The vortex does not stop. The damage does not stop.\n[—]     Fifteen hundred damage every point three seconds from suction alone.\n[END]   That is how you do it. Easy work.\n[CTA]   Follow for more orb battles. 🏹"
+    }
+  },
+  "blackhole_maze_time_attack": {
+    "tag": "blackhole_maze",
+    "orb": "blackhole",
+    "arena": "maze",
+    "mode": "time_attack",
+    "hp": 2000000,
+    "titles": [
+      "VOID STAR bouncing in THE MAZE is pure ASMR 🔊",
+      "Nobody told me VOID STAR does THIS 😱",
+      "POV: the boss sees VOID STAR coming 😈"
+    ],
+    "caption": "#blackhole #vortex #satisfying #physics #gaming #simulation #bossfight #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "This is Time Attack mode. One million HP. Sixty seconds. GO.",
+      "orb_setup": "Void Star Orb. Creates a gravitational vortex. The boss gets PULLED into it and cannot escape.",
+      "arena_setup": "THE MAZE. L-shaped walls mirrored across the entire arena. Once the traps are set — there is no escape route.",
+      "commentary": [
+        "Watch how it circles. Around and around.",
+        "The corridors make the vortex inescapable.",
+        "Fully locked in. Completely helpless.",
+        "The boss is trapped in orbit. It has absolutely no choice."
+      ],
+      "result": "This orb is S-tier. No debate.",
+      "outro": "More boss battles every single day. 🔥",
+      "script": "[HOOK]  This is Time Attack mode. One million HP. Sixty seconds. GO.\n[SETUP] Void Star Orb. Creates a gravitational vortex. The boss gets PULLED into it and cannot escape.\n        THE MAZE. L-shaped walls mirrored across the entire arena. Once the traps are set — there is no escape route.\n[—]     Watch how it circles. Around and around.\n[—]     The corridors make the vortex inescapable.\n[—]     Fully locked in. Completely helpless.\n[—]     The boss is trapped in orbit. It has absolutely no choice.\n[END]   This orb is S-tier. No debate.\n[CTA]   More boss battles every single day. 🔥"
+    }
+  },
+  "blackhole_small_speed_run": {
+    "tag": "blackhole_small_speedrun",
+    "orb": "blackhole",
+    "arena": "small",
+    "mode": "speed_run",
+    "hp": null,
+    "titles": [
+      "VOID STAR + SMALL ARENA = perfect chaos 💫",
+      "POV: you unlock VOID STAR for the first time 😳",
+      "POV: the boss sees VOID STAR coming 😈"
+    ],
+    "caption": "#blackhole #vortex #satisfying #physics #gaming #simulation #bossfight #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Speed Run. Pure chaos. Fifteen seconds to do as much damage as possible.",
+      "orb_setup": "Void Star Orb. Creates a gravitational vortex. The boss gets PULLED into it and cannot escape.",
+      "arena_setup": "Small arena. Close quarters. Every bounce comes back instantly.",
+      "commentary": [
+        "Watch how it circles. Around and around.",
+        "Fifteen hundred damage every point three seconds from suction alone.",
+        "The vortex does not stop. The damage does not stop.",
+        "The corridors make the vortex inescapable."
+      ],
+      "result": "That is how you do it. Easy work.",
+      "outro": "More boss battles every single day. 🔥",
+      "script": "[HOOK]  Speed Run. Pure chaos. Fifteen seconds to do as much damage as possible.\n[SETUP] Void Star Orb. Creates a gravitational vortex. The boss gets PULLED into it and cannot escape.\n        Small arena. Close quarters. Every bounce comes back instantly.\n[—]     Watch how it circles. Around and around.\n[—]     Fifteen hundred damage every point three seconds from suction alone.\n[—]     The vortex does not stop. The damage does not stop.\n[—]     The corridors make the vortex inescapable.\n[END]   That is how you do it. Easy work.\n[CTA]   More boss battles every single day. 🔥"
+    }
+  },
+  "blackhole_pillarsSmall_blitz": {
+    "tag": "blackhole_pillars",
+    "orb": "blackhole",
+    "arena": "pillarsSmall",
+    "mode": "blitz",
+    "hp": 1200000,
+    "titles": [
+      "FINAL ROUND: VOID STAR in PILLAR ARENA ⚔️",
+      "VOID STAR vs BLITZ — who wins? 🏆",
+      "Nobody told me VOID STAR does THIS 😱"
+    ],
+    "caption": "#blackhole #vortex #satisfying #physics #gaming #simulation #bossfight #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Two million HP. Half a minute. Watch what happens.",
+      "orb_setup": "Void Star Orb. Creates a gravitational vortex. The boss gets PULLED into it and cannot escape.",
+      "arena_setup": "Pillar arena. Four pillars at every corner. The orb ricochets off everything in here.",
+      "commentary": [
+        "Watch how it circles. Around and around.",
+        "It cannot escape the gravitational field.",
+        "Fully locked in. Completely helpless.",
+        "The vortex does not stop. The damage does not stop."
+      ],
+      "result": "Timer is up — but look at that damage number.",
+      "outro": "Tag someone who would pick this orb. 👀",
+      "script": "[HOOK]  Two million HP. Half a minute. Watch what happens.\n[SETUP] Void Star Orb. Creates a gravitational vortex. The boss gets PULLED into it and cannot escape.\n        Pillar arena. Four pillars at every corner. The orb ricochets off everything in here.\n[—]     Watch how it circles. Around and around.\n[—]     It cannot escape the gravitational field.\n[—]     Fully locked in. Completely helpless.\n[—]     The vortex does not stop. The damage does not stop.\n[END]   Timer is up — but look at that damage number.\n[CTA]   Tag someone who would pick this orb. 👀"
+    }
+  },
+  "combo_full_time_attack": {
+    "tag": "combo_full",
+    "orb": "combo",
+    "arena": "full",
+    "mode": "time_attack",
+    "hp": 2000000,
+    "titles": [
+      "The devs didn't want you to find this combo 🚫",
+      "I put COMBO ORB in FULL ARENA and this happened 👇",
+      "New record attempt: COMBO ORB in TIME ATTACK ⚡"
+    ],
+    "caption": "#combo #multiplier #satisfying #gaming #bossfight #streak #physics #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Sixty seconds on the clock. That boss is going DOWN.",
+      "orb_setup": "Combo Orb. The damage doubles every wall bounce. At max streak — sixty four thousand damage per hit.",
+      "arena_setup": "Full arena. One hundred percent screen. Maximum distance between walls — maximum bounce buildup.",
+      "commentary": [
+        "Sixteen times multiplier — one more bounce.",
+        "Every wall bounce is worth more than the last.",
+        "Multiplier building. Two times.",
+        "Four times damage now."
+      ],
+      "result": "Done. Boss is DOWN. 💀",
+      "outro": "Subscribe for the full orb rankings. 🏆",
+      "script": "[HOOK]  Sixty seconds on the clock. That boss is going DOWN.\n[SETUP] Combo Orb. The damage doubles every wall bounce. At max streak — sixty four thousand damage per hit.\n        Full arena. One hundred percent screen. Maximum distance between walls — maximum bounce buildup.\n[—]     Sixteen times multiplier — one more bounce.\n[—]     Every wall bounce is worth more than the last.\n[—]     Multiplier building. Two times.\n[—]     Four times damage now.\n[END]   Done. Boss is DOWN. 💀\n[CTA]   Subscribe for the full orb rankings. 🏆"
+    }
+  },
+  "combo_pillarsBig_time_attack": {
+    "tag": "combo_pillars_big",
+    "orb": "combo",
+    "arena": "pillarsBig",
+    "mode": "time_attack",
+    "hp": 3000000,
+    "titles": [
+      "COMBO ORB + MEGA PILLAR ARENA = perfect chaos 💫",
+      "Nobody told me COMBO ORB does THIS 😱",
+      "TOURNAMENT ARC: COMBO ORB vs Boss 🏟️"
+    ],
+    "caption": "#combo #multiplier #satisfying #gaming #bossfight #streak #physics #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "One minute. One boss. One orb. Let's find out.",
+      "orb_setup": "Combo Orb. The damage doubles every wall bounce. At max streak — sixty four thousand damage per hit.",
+      "arena_setup": "MEGA pillar arena. Two giant pillars flanking the center. Absolute ricochet chaos.",
+      "commentary": [
+        "Sixteen times multiplier — one more bounce.",
+        "The full arena gives us maximum bounces before contact.",
+        "THIRTY-TWO TIMES. Almost there.",
+        "The multiplier resets. Build it again from scratch."
+      ],
+      "result": "That score speaks for itself.",
+      "outro": "Like if this orb deserves S-tier. ✅",
+      "script": "[HOOK]  One minute. One boss. One orb. Let's find out.\n[SETUP] Combo Orb. The damage doubles every wall bounce. At max streak — sixty four thousand damage per hit.\n        MEGA pillar arena. Two giant pillars flanking the center. Absolute ricochet chaos.\n[—]     Sixteen times multiplier — one more bounce.\n[—]     The full arena gives us maximum bounces before contact.\n[—]     THIRTY-TWO TIMES. Almost there.\n[—]     The multiplier resets. Build it again from scratch.\n[END]   That score speaks for itself.\n[CTA]   Like if this orb deserves S-tier. ✅"
+    }
+  },
+  "combo_normal_time_attack": {
+    "tag": "combo_normal",
+    "orb": "combo",
+    "arena": "normal",
+    "mode": "time_attack",
+    "hp": 1500000,
+    "titles": [
+      "FINAL ROUND: COMBO ORB in NORMAL ARENA ⚔️",
+      "This COMBO ORB combo is UNPLAYABLE 😭",
+      "WEAPON BALL: COMBO ORB enters NORMAL ARENA ⚡"
+    ],
+    "caption": "#combo #multiplier #satisfying #gaming #bossfight #streak #physics #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Sixty seconds on the clock. That boss is going DOWN.",
+      "orb_setup": "Combo Orb. The damage doubles every wall bounce. At max streak — sixty four thousand damage per hit.",
+      "arena_setup": "Normal arena. Balanced field. This is where the orb really shows what it can do.",
+      "commentary": [
+        "Sixteen times multiplier — one more bounce.",
+        "The multiplier resets. Build it again from scratch.",
+        "Four times damage now.",
+        "Multiplier building. Two times."
+      ],
+      "result": "Clean run. Perfect execution.",
+      "outro": "More boss battles every single day. 🔥",
+      "script": "[HOOK]  Sixty seconds on the clock. That boss is going DOWN.\n[SETUP] Combo Orb. The damage doubles every wall bounce. At max streak — sixty four thousand damage per hit.\n        Normal arena. Balanced field. This is where the orb really shows what it can do.\n[—]     Sixteen times multiplier — one more bounce.\n[—]     The multiplier resets. Build it again from scratch.\n[—]     Four times damage now.\n[—]     Multiplier building. Two times.\n[END]   Clean run. Perfect execution.\n[CTA]   More boss battles every single day. 🔥"
+    }
+  },
+  "combo_maze_time_attack": {
+    "tag": "combo_maze",
+    "orb": "combo",
+    "arena": "maze",
+    "mode": "time_attack",
+    "hp": 2500000,
+    "titles": [
+      "COMBO ORB is carrying this entire run 💪",
+      "The physics of COMBO ORB will BLOW your mind 🧠",
+      "COMBO ORB just broke THE MAZE 💥"
+    ],
+    "caption": "#combo #multiplier #satisfying #gaming #bossfight #streak #physics #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Sixty seconds. One million HP boss. Let's see if this combo works.",
+      "orb_setup": "Combo Orb. The damage doubles every wall bounce. At max streak — sixty four thousand damage per hit.",
+      "arena_setup": "THE MAZE. L-shaped walls mirrored across the entire arena. Once the traps are set — there is no escape route.",
+      "commentary": [
+        "The full arena gives us maximum bounces before contact.",
+        "EIGHT times. Keep it going. Do not hit the boss yet.",
+        "Multiplier building. Two times.",
+        "Every wall bounce is worth more than the last."
+      ],
+      "result": "That score speaks for itself.",
+      "outro": "Which orb should I test next? Drop it in the comments. 👇",
+      "script": "[HOOK]  Sixty seconds. One million HP boss. Let's see if this combo works.\n[SETUP] Combo Orb. The damage doubles every wall bounce. At max streak — sixty four thousand damage per hit.\n        THE MAZE. L-shaped walls mirrored across the entire arena. Once the traps are set — there is no escape route.\n[—]     The full arena gives us maximum bounces before contact.\n[—]     EIGHT times. Keep it going. Do not hit the boss yet.\n[—]     Multiplier building. Two times.\n[—]     Every wall bounce is worth more than the last.\n[END]   That score speaks for itself.\n[CTA]   Which orb should I test next? Drop it in the comments. 👇"
+    }
+  },
+  "laser_small_speed_run": {
+    "tag": "laser_small_speedrun",
+    "orb": "laser",
+    "arena": "small",
+    "mode": "speed_run",
+    "hp": null,
+    "titles": [
+      "LASER ORB BATTLE ROYALE 🏹",
+      "LASER ORB in SMALL ARENA is the most satisfying thing 🎯",
+      "LASER ORB is carrying this entire run 💪"
+    ],
+    "caption": "#laser #beam #satisfying #gaming #physics #bossfight #simulation #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Fifteen seconds. Every single hit counts.",
+      "orb_setup": "Laser Orb. Thirty ticks of beam damage on contact. Consistent. Relentless. Absolutely deadly.",
+      "arena_setup": "Small arena. Close quarters. Every bounce comes back instantly.",
+      "commentary": [
+        "It hits the boss and the laser just keeps going.",
+        "Clean. Efficient. Brutal.",
+        "Thirty ticks of beam damage on contact.",
+        "Thirty thousand damage. Every single hit."
+      ],
+      "result": "Done. Boss is DOWN. 💀",
+      "outro": "Which orb should I test next? Drop it in the comments. 👇",
+      "script": "[HOOK]  Fifteen seconds. Every single hit counts.\n[SETUP] Laser Orb. Thirty ticks of beam damage on contact. Consistent. Relentless. Absolutely deadly.\n        Small arena. Close quarters. Every bounce comes back instantly.\n[—]     It hits the boss and the laser just keeps going.\n[—]     Clean. Efficient. Brutal.\n[—]     Thirty ticks of beam damage on contact.\n[—]     Thirty thousand damage. Every single hit.\n[END]   Done. Boss is DOWN. 💀\n[CTA]   Which orb should I test next? Drop it in the comments. 👇"
+    }
+  },
+  "laser_tiny_blitz": {
+    "tag": "laser_tiny_blitz",
+    "orb": "laser",
+    "arena": "tiny",
+    "mode": "blitz",
+    "hp": 800000,
+    "titles": [
+      "LASER ORB in TINY ARENA is the most satisfying thing 🎯",
+      "What happens when you put LASER ORB in TINY ARENA? 👀",
+      "POV: the boss sees LASER ORB coming 😈"
+    ],
+    "caption": "#laser #beam #satisfying #gaming #physics #bossfight #simulation #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Okay. Thirty seconds. Two million HP. Let's GO.",
+      "orb_setup": "Laser Orb. Thirty ticks of beam damage on contact. Consistent. Relentless. Absolutely deadly.",
+      "arena_setup": "We are in the TINY arena. Fifty-two percent of screen. The boss has absolutely NOWHERE to go.",
+      "commentary": [
+        "Thirty ticks of beam damage on contact.",
+        "Clean. Efficient. Brutal.",
+        "The beam does not stop until the cooldown ends.",
+        "No RNG. No luck. Just consistent damage every time."
+      ],
+      "result": "BOSS DEFEATED. Let's GO. 🔥",
+      "outro": "Follow for more orb battles. 🏹",
+      "script": "[HOOK]  Okay. Thirty seconds. Two million HP. Let's GO.\n[SETUP] Laser Orb. Thirty ticks of beam damage on contact. Consistent. Relentless. Absolutely deadly.\n        We are in the TINY arena. Fifty-two percent of screen. The boss has absolutely NOWHERE to go.\n[—]     Thirty ticks of beam damage on contact.\n[—]     Clean. Efficient. Brutal.\n[—]     The beam does not stop until the cooldown ends.\n[—]     No RNG. No luck. Just consistent damage every time.\n[END]   BOSS DEFEATED. Let's GO. 🔥\n[CTA]   Follow for more orb battles. 🏹"
+    }
+  },
+  "laser_corridors_speed_run": {
+    "tag": "laser_corridors_speedrun",
+    "orb": "laser",
+    "arena": "corridors",
+    "mode": "speed_run",
+    "hp": null,
+    "titles": [
+      "New record attempt: LASER ORB in SPEED RUN ⚡",
+      "LASER ORB max damage run 📈",
+      "LASER ORB + CORRIDOR ARENA = perfect chaos 💫"
+    ],
+    "caption": "#laser #beam #satisfying #gaming #physics #bossfight #simulation #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Speed Run. Pure chaos. Fifteen seconds to do as much damage as possible.",
+      "orb_setup": "Laser Orb. Thirty ticks of beam damage on contact. Consistent. Relentless. Absolutely deadly.",
+      "arena_setup": "Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.",
+      "commentary": [
+        "No RNG. No luck. Just consistent damage every time.",
+        "Clean. Efficient. Brutal.",
+        "It hits the boss and the laser just keeps going.",
+        "The beam does not stop until the cooldown ends."
+      ],
+      "result": "That score speaks for itself.",
+      "outro": "Follow for more orb battles. 🏹",
+      "script": "[HOOK]  Speed Run. Pure chaos. Fifteen seconds to do as much damage as possible.\n[SETUP] Laser Orb. Thirty ticks of beam damage on contact. Consistent. Relentless. Absolutely deadly.\n        Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.\n[—]     No RNG. No luck. Just consistent damage every time.\n[—]     Clean. Efficient. Brutal.\n[—]     It hits the boss and the laser just keeps going.\n[—]     The beam does not stop until the cooldown ends.\n[END]   That score speaks for itself.\n[CTA]   Follow for more orb battles. 🏹"
+    }
+  },
+  "laser_normal_time_attack": {
+    "tag": "laser_normal",
+    "orb": "laser",
+    "arena": "normal",
+    "mode": "time_attack",
+    "hp": 1000000,
+    "titles": [
+      "Rating every orb: LASER ORB review 🏅",
+      "They need to NERF LASER ORB immediately 🔥",
+      "Can this orb one-shot the boss? 💥"
+    ],
+    "caption": "#laser #beam #satisfying #gaming #physics #bossfight #simulation #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Time Attack. One million HP. The clock starts NOW.",
+      "orb_setup": "Laser Orb. Thirty ticks of beam damage on contact. Consistent. Relentless. Absolutely deadly.",
+      "arena_setup": "Normal arena. Balanced field. This is where the orb really shows what it can do.",
+      "commentary": [
+        "The beam does not stop until the cooldown ends.",
+        "No RNG. No luck. Just consistent damage every time.",
+        "Thirty thousand damage. Every single hit.",
+        "Thirty ticks of beam damage on contact."
+      ],
+      "result": "ELIMINATED. No contest.",
+      "outro": "Share this with someone who needs to see this combo. 🎮",
+      "script": "[HOOK]  Time Attack. One million HP. The clock starts NOW.\n[SETUP] Laser Orb. Thirty ticks of beam damage on contact. Consistent. Relentless. Absolutely deadly.\n        Normal arena. Balanced field. This is where the orb really shows what it can do.\n[—]     The beam does not stop until the cooldown ends.\n[—]     No RNG. No luck. Just consistent damage every time.\n[—]     Thirty thousand damage. Every single hit.\n[—]     Thirty ticks of beam damage on contact.\n[END]   ELIMINATED. No contest.\n[CTA]   Share this with someone who needs to see this combo. 🎮"
+    }
+  },
+  "chain_pillarsSmall_blitz": {
+    "tag": "chain_pillars_small",
+    "orb": "chain",
+    "arena": "pillarsSmall",
+    "mode": "blitz",
+    "hp": 1000000,
+    "titles": [
+      "POV: you unlock CHAIN ORB for the first time 😳",
+      "How much damage can CHAIN ORB do in BLITZ? 🔢",
+      "CHAIN ORB in PILLAR ARENA is the most satisfying thing 🎯"
+    ],
+    "caption": "#lightning #chain #satisfying #gaming #electric #bossfight #physics #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Thirty seconds. Boss has two million HP. Can we even do this?",
+      "orb_setup": "Chain Orb. Three lightning bolts fire the instant it touches anything. Chain reaction every single time.",
+      "arena_setup": "Pillar arena. Four pillars at every corner. The orb ricochets off everything in here.",
+      "commentary": [
+        "The pillars redirect every bolt perfectly.",
+        "BOOM. BOOM. BOOM.",
+        "The chain reaction just triggered off the pillar.",
+        "Three lightning bolts. Instantly."
+      ],
+      "result": "This orb is S-tier. No debate.",
+      "outro": "Follow for more orb battles. 🏹",
+      "script": "[HOOK]  Thirty seconds. Boss has two million HP. Can we even do this?\n[SETUP] Chain Orb. Three lightning bolts fire the instant it touches anything. Chain reaction every single time.\n        Pillar arena. Four pillars at every corner. The orb ricochets off everything in here.\n[—]     The pillars redirect every bolt perfectly.\n[—]     BOOM. BOOM. BOOM.\n[—]     The chain reaction just triggered off the pillar.\n[—]     Three lightning bolts. Instantly.\n[END]   This orb is S-tier. No debate.\n[CTA]   Follow for more orb battles. 🏹"
+    }
+  },
+  "chain_maze_time_attack": {
+    "tag": "chain_maze",
+    "orb": "chain",
+    "arena": "maze",
+    "mode": "time_attack",
+    "hp": 1500000,
+    "titles": [
+      "I put CHAIN ORB in THE MAZE and this happened 👇",
+      "CHAIN ORB vs THE BOSS 💀",
+      "New record attempt: CHAIN ORB in TIME ATTACK ⚡"
+    ],
+    "caption": "#lightning #chain #satisfying #gaming #electric #bossfight #physics #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "One minute. One boss. One orb. Let's find out.",
+      "orb_setup": "Chain Orb. Three lightning bolts fire the instant it touches anything. Chain reaction every single time.",
+      "arena_setup": "THE MAZE. L-shaped walls mirrored across the entire arena. Once the traps are set — there is no escape route.",
+      "commentary": [
+        "The chain reaction just triggered off the pillar.",
+        "Lightning bouncing between walls and boss.",
+        "BOOM. BOOM. BOOM.",
+        "Three lightning bolts. Instantly."
+      ],
+      "result": "Timer is up — but look at that damage number.",
+      "outro": "Comment your favorite orb below. 💬",
+      "script": "[HOOK]  One minute. One boss. One orb. Let's find out.\n[SETUP] Chain Orb. Three lightning bolts fire the instant it touches anything. Chain reaction every single time.\n        THE MAZE. L-shaped walls mirrored across the entire arena. Once the traps are set — there is no escape route.\n[—]     The chain reaction just triggered off the pillar.\n[—]     Lightning bouncing between walls and boss.\n[—]     BOOM. BOOM. BOOM.\n[—]     Three lightning bolts. Instantly.\n[END]   Timer is up — but look at that damage number.\n[CTA]   Comment your favorite orb below. 💬"
+    }
+  },
+  "chain_tiny_blitz": {
+    "tag": "chain_tiny_blitz",
+    "orb": "chain",
+    "arena": "tiny",
+    "mode": "blitz",
+    "hp": 800000,
+    "titles": [
+      "Boss Ball Battle: CHAIN ORB Edition 🔥",
+      "What happens when you put CHAIN ORB in TINY ARENA? 👀",
+      "POV: the boss sees CHAIN ORB coming 😈"
+    ],
+    "caption": "#lightning #chain #satisfying #gaming #electric #bossfight #physics #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "BLITZ mode. Thirty seconds on the clock. This is going to be INSANE.",
+      "orb_setup": "Chain Orb. Three lightning bolts fire the instant it touches anything. Chain reaction every single time.",
+      "arena_setup": "We are in the TINY arena. Fifty-two percent of screen. The boss has absolutely NOWHERE to go.",
+      "commentary": [
+        "Three lightning bolts. Instantly.",
+        "BOOM. BOOM. BOOM.",
+        "Triple hit on one contact. That is the chain.",
+        "Lightning bouncing between walls and boss."
+      ],
+      "result": "ELIMINATED. No contest.",
+      "outro": "More boss battles every single day. 🔥",
+      "script": "[HOOK]  BLITZ mode. Thirty seconds on the clock. This is going to be INSANE.\n[SETUP] Chain Orb. Three lightning bolts fire the instant it touches anything. Chain reaction every single time.\n        We are in the TINY arena. Fifty-two percent of screen. The boss has absolutely NOWHERE to go.\n[—]     Three lightning bolts. Instantly.\n[—]     BOOM. BOOM. BOOM.\n[—]     Triple hit on one contact. That is the chain.\n[—]     Lightning bouncing between walls and boss.\n[END]   ELIMINATED. No contest.\n[CTA]   More boss battles every single day. 🔥"
+    }
+  },
+  "chain_pillarsBig_time_attack": {
+    "tag": "chain_pillars_big",
+    "orb": "chain",
+    "arena": "pillarsBig",
+    "mode": "time_attack",
+    "hp": 2000000,
+    "titles": [
+      "Wait… CHAIN ORB can do THAT?! 😳",
+      "Boss Ball Battle: CHAIN ORB Edition 🔥",
+      "Wait… CHAIN ORB can do THAT?! 😳"
+    ],
+    "caption": "#lightning #chain #satisfying #gaming #electric #bossfight #physics #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Sixty seconds on the clock. That boss is going DOWN.",
+      "orb_setup": "Chain Orb. Three lightning bolts fire the instant it touches anything. Chain reaction every single time.",
+      "arena_setup": "MEGA pillar arena. Two giant pillars flanking the center. Absolute ricochet chaos.",
+      "commentary": [
+        "Lightning bouncing between walls and boss.",
+        "Three lightning bolts. Instantly.",
+        "The pillars redirect every bolt perfectly.",
+        "The chain reaction just triggered off the pillar."
+      ],
+      "result": "Done. Boss is DOWN. 💀",
+      "outro": "Share this with someone who needs to see this combo. 🎮",
+      "script": "[HOOK]  Sixty seconds on the clock. That boss is going DOWN.\n[SETUP] Chain Orb. Three lightning bolts fire the instant it touches anything. Chain reaction every single time.\n        MEGA pillar arena. Two giant pillars flanking the center. Absolute ricochet chaos.\n[—]     Lightning bouncing between walls and boss.\n[—]     Three lightning bolts. Instantly.\n[—]     The pillars redirect every bolt perfectly.\n[—]     The chain reaction just triggered off the pillar.\n[END]   Done. Boss is DOWN. 💀\n[CTA]   Share this with someone who needs to see this combo. 🎮"
+    }
+  },
+  "nova_tiny_speed_run": {
+    "tag": "nova_tiny_speedrun",
+    "orb": "nova",
+    "arena": "tiny",
+    "mode": "speed_run",
+    "hp": 500000,
+    "titles": [
+      "NOVA STAR + TINY ARENA = perfect chaos 💫",
+      "Boss Ball Battle: NOVA STAR Edition 🔥",
+      "TOURNAMENT ARC: NOVA STAR vs Boss 🏟️"
+    ],
+    "caption": "#explosion #nova #satisfying #gaming #physics #bossfight #boom #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Fifteen seconds. Every single hit counts.",
+      "orb_setup": "Nova Star Orb. Radial explosion burst on every boss hit. It is basically a bomb with legs.",
+      "arena_setup": "We are in the TINY arena. Fifty-two percent of screen. The boss has absolutely NOWHERE to go.",
+      "commentary": [
+        "EXPLOSION.",
+        "The boss has nowhere to run from a radial explosion.",
+        "Nova going off again.",
+        "Radial burst — everything in range takes the hit."
+      ],
+      "result": "This orb is S-tier. No debate.",
+      "outro": "Like if this orb deserves S-tier. ✅",
+      "script": "[HOOK]  Fifteen seconds. Every single hit counts.\n[SETUP] Nova Star Orb. Radial explosion burst on every boss hit. It is basically a bomb with legs.\n        We are in the TINY arena. Fifty-two percent of screen. The boss has absolutely NOWHERE to go.\n[—]     EXPLOSION.\n[—]     The boss has nowhere to run from a radial explosion.\n[—]     Nova going off again.\n[—]     Radial burst — everything in range takes the hit.\n[END]   This orb is S-tier. No debate.\n[CTA]   Like if this orb deserves S-tier. ✅"
+    }
+  },
+  "nova_small_blitz": {
+    "tag": "nova_small_blitz",
+    "orb": "nova",
+    "arena": "small",
+    "mode": "blitz",
+    "hp": 800000,
+    "titles": [
+      "New record attempt: NOVA STAR in BLITZ ⚡",
+      "POV: NOVA STAR in SMALL ARENA hits different 💀",
+      "FINAL ROUND: NOVA STAR in SMALL ARENA ⚔️"
+    ],
+    "caption": "#explosion #nova #satisfying #gaming #physics #bossfight #boom #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "BLITZ. Maximum pressure. Let's see what this orb can do.",
+      "orb_setup": "Nova Star Orb. Radial explosion burst on every boss hit. It is basically a bomb with legs.",
+      "arena_setup": "Small arena. Close quarters. Every bounce comes back instantly.",
+      "commentary": [
+        "The whole arena lights up on contact.",
+        "The boss has nowhere to run from a radial explosion.",
+        "Radial burst — everything in range takes the hit.",
+        "Nova going off again."
+      ],
+      "result": "That score speaks for itself.",
+      "outro": "Tag someone who would pick this orb. 👀",
+      "script": "[HOOK]  BLITZ. Maximum pressure. Let's see what this orb can do.\n[SETUP] Nova Star Orb. Radial explosion burst on every boss hit. It is basically a bomb with legs.\n        Small arena. Close quarters. Every bounce comes back instantly.\n[—]     The whole arena lights up on contact.\n[—]     The boss has nowhere to run from a radial explosion.\n[—]     Radial burst — everything in range takes the hit.\n[—]     Nova going off again.\n[END]   That score speaks for itself.\n[CTA]   Tag someone who would pick this orb. 👀"
+    }
+  },
+  "nova_corridors_time_attack": {
+    "tag": "nova_corridors",
+    "orb": "nova",
+    "arena": "corridors",
+    "mode": "time_attack",
+    "hp": 1000000,
+    "titles": [
+      "Rating every orb: NOVA STAR review 🏅",
+      "Satisfying NOVA STAR run — no commentary 🎵",
+      "NOVA STAR vs TIME ATTACK — who wins? 🏆"
+    ],
+    "caption": "#explosion #nova #satisfying #gaming #physics #bossfight #boom #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "One minute. One boss. One orb. Let's find out.",
+      "orb_setup": "Nova Star Orb. Radial explosion burst on every boss hit. It is basically a bomb with legs.",
+      "arena_setup": "Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.",
+      "commentary": [
+        "Nova going off again.",
+        "Radial burst — everything in range takes the hit.",
+        "The boss has nowhere to run from a radial explosion.",
+        "EXPLOSION."
+      ],
+      "result": "Done. Boss is DOWN. 💀",
+      "outro": "The full tier list is coming. Stay tuned. 📊",
+      "script": "[HOOK]  One minute. One boss. One orb. Let's find out.\n[SETUP] Nova Star Orb. Radial explosion burst on every boss hit. It is basically a bomb with legs.\n        Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.\n[—]     Nova going off again.\n[—]     Radial burst — everything in range takes the hit.\n[—]     The boss has nowhere to run from a radial explosion.\n[—]     EXPLOSION.\n[END]   Done. Boss is DOWN. 💀\n[CTA]   The full tier list is coming. Stay tuned. 📊"
+    }
+  },
+  "hook_pillarsBig_time_attack": {
+    "tag": "hook_pillars_big",
+    "orb": "hook",
+    "arena": "pillarsBig",
+    "mode": "time_attack",
+    "hp": null,
+    "titles": [
+      "HOOK ORB in MEGA PILLAR ARENA is the most satisfying thing 🎯",
+      "WEAPON BALL: HOOK ORB enters MEGA PILLAR ARENA ⚡",
+      "Orb tier list: where does HOOK ORB land? 📊"
+    ],
+    "caption": "#homing #hook #satisfying #gaming #physics #bossfight #tracking #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Time Attack. One million HP. The clock starts NOW.",
+      "orb_setup": "Hook Orb. Once it gets within four hundred pixels of the boss — it homes in automatically. You cannot dodge it.",
+      "arena_setup": "MEGA pillar arena. Two giant pillars flanking the center. Absolute ricochet chaos.",
+      "commentary": [
+        "Track. Lock. Hit. Repeat.",
+        "You cannot dodge a homing orb. That is literally the point.",
+        "Straight at the boss. No hesitation. No mercy.",
+        "The pillars deflect it but the homing pulls it right back."
+      ],
+      "result": "That score speaks for itself.",
+      "outro": "Subscribe for the full orb rankings. 🏆",
+      "script": "[HOOK]  Time Attack. One million HP. The clock starts NOW.\n[SETUP] Hook Orb. Once it gets within four hundred pixels of the boss — it homes in automatically. You cannot dodge it.\n        MEGA pillar arena. Two giant pillars flanking the center. Absolute ricochet chaos.\n[—]     Track. Lock. Hit. Repeat.\n[—]     You cannot dodge a homing orb. That is literally the point.\n[—]     Straight at the boss. No hesitation. No mercy.\n[—]     The pillars deflect it but the homing pulls it right back.\n[END]   That score speaks for itself.\n[CTA]   Subscribe for the full orb rankings. 🏆"
+    }
+  },
+  "hook_full_time_attack": {
+    "tag": "hook_full",
+    "orb": "hook",
+    "arena": "full",
+    "mode": "time_attack",
+    "hp": 2000000,
+    "titles": [
+      "WEAPON BALL: HOOK ORB enters FULL ARENA ⚡",
+      "I put HOOK ORB in FULL ARENA and this happened 👇",
+      "FINAL ROUND: HOOK ORB in FULL ARENA ⚔️"
+    ],
+    "caption": "#homing #hook #satisfying #gaming #physics #bossfight #tracking #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "This is Time Attack mode. One million HP. Sixty seconds. GO.",
+      "orb_setup": "Hook Orb. Once it gets within four hundred pixels of the boss — it homes in automatically. You cannot dodge it.",
+      "arena_setup": "Full arena. One hundred percent screen. Maximum distance between walls — maximum bounce buildup.",
+      "commentary": [
+        "Straight at the boss. No hesitation. No mercy.",
+        "Track. Lock. Hit. Repeat.",
+        "You cannot dodge a homing orb. That is literally the point.",
+        "The pillars deflect it but the homing pulls it right back."
+      ],
+      "result": "This orb is S-tier. No debate.",
+      "outro": "Which orb should I test next? Drop it in the comments. 👇",
+      "script": "[HOOK]  This is Time Attack mode. One million HP. Sixty seconds. GO.\n[SETUP] Hook Orb. Once it gets within four hundred pixels of the boss — it homes in automatically. You cannot dodge it.\n        Full arena. One hundred percent screen. Maximum distance between walls — maximum bounce buildup.\n[—]     Straight at the boss. No hesitation. No mercy.\n[—]     Track. Lock. Hit. Repeat.\n[—]     You cannot dodge a homing orb. That is literally the point.\n[—]     The pillars deflect it but the homing pulls it right back.\n[END]   This orb is S-tier. No debate.\n[CTA]   Which orb should I test next? Drop it in the comments. 👇"
+    }
+  },
+  "hook_corridors_blitz": {
+    "tag": "hook_corridors_blitz",
+    "orb": "hook",
+    "arena": "corridors",
+    "mode": "blitz",
+    "hp": 1000000,
+    "titles": [
+      "Boss Ball Battle: HOOK ORB Edition 🔥",
+      "HOOK ORB BATTLE ROYALE 🏹",
+      "HOOK ORB max damage run 📈"
+    ],
+    "caption": "#homing #hook #satisfying #gaming #physics #bossfight #tracking #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Two million HP. Half a minute. Watch what happens.",
+      "orb_setup": "Hook Orb. Once it gets within four hundred pixels of the boss — it homes in automatically. You cannot dodge it.",
+      "arena_setup": "Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.",
+      "commentary": [
+        "Straight at the boss. No hesitation. No mercy.",
+        "Track. Lock. Hit. Repeat.",
+        "You cannot dodge a homing orb. That is literally the point.",
+        "It locked on. The boss cannot outrun it."
+      ],
+      "result": "Done. Boss is DOWN. 💀",
+      "outro": "Comment your favorite orb below. 💬",
+      "script": "[HOOK]  Two million HP. Half a minute. Watch what happens.\n[SETUP] Hook Orb. Once it gets within four hundred pixels of the boss — it homes in automatically. You cannot dodge it.\n        Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.\n[—]     Straight at the boss. No hesitation. No mercy.\n[—]     Track. Lock. Hit. Repeat.\n[—]     You cannot dodge a homing orb. That is literally the point.\n[—]     It locked on. The boss cannot outrun it.\n[END]   Done. Boss is DOWN. 💀\n[CTA]   Comment your favorite orb below. 💬"
+    }
+  },
+  "splitter_corridors_speed_run": {
+    "tag": "splitter_corridors_speedrun",
+    "orb": "splitter",
+    "arena": "corridors",
+    "mode": "speed_run",
+    "hp": null,
+    "titles": [
+      "They need to NERF SHURIKEN ORB immediately 🔥",
+      "POV: you unlock SHURIKEN ORB for the first time 😳",
+      "SHURIKEN ORB bouncing in CORRIDOR ARENA is pure ASMR 🔊"
+    ],
+    "caption": "#shuriken #blades #satisfying #gaming #physics #bossfight #spin #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Fifteen seconds. Every single hit counts.",
+      "orb_setup": "Shuriken Orb. Spawns three spinning blades on each hit. Eight thousand damage each. Do the math.",
+      "arena_setup": "Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.",
+      "commentary": [
+        "In the corridors the blades have nowhere to go but the boss.",
+        "Three blades. Eight thousand each. Twenty-four thousand damage total.",
+        "The blades fan out and surround the boss completely.",
+        "The blades are bouncing all over the arena."
+      ],
+      "result": "That score speaks for itself.",
+      "outro": "Like if this orb deserves S-tier. ✅",
+      "script": "[HOOK]  Fifteen seconds. Every single hit counts.\n[SETUP] Shuriken Orb. Spawns three spinning blades on each hit. Eight thousand damage each. Do the math.\n        Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.\n[—]     In the corridors the blades have nowhere to go but the boss.\n[—]     Three blades. Eight thousand each. Twenty-four thousand damage total.\n[—]     The blades fan out and surround the boss completely.\n[—]     The blades are bouncing all over the arena.\n[END]   That score speaks for itself.\n[CTA]   Like if this orb deserves S-tier. ✅"
+    }
+  },
+  "splitter_tiny_blitz": {
+    "tag": "splitter_tiny_blitz",
+    "orb": "splitter",
+    "arena": "tiny",
+    "mode": "blitz",
+    "hp": 500000,
+    "titles": [
+      "This SHURIKEN ORB combo is UNPLAYABLE 😭",
+      "I put SHURIKEN ORB in TINY ARENA and this happened 👇",
+      "What happens when you put SHURIKEN ORB in TINY ARENA? 👀"
+    ],
+    "caption": "#shuriken #blades #satisfying #gaming #physics #bossfight #spin #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Okay. Thirty seconds. Two million HP. Let's GO.",
+      "orb_setup": "Shuriken Orb. Spawns three spinning blades on each hit. Eight thousand damage each. Do the math.",
+      "arena_setup": "We are in the TINY arena. Fifty-two percent of screen. The boss has absolutely NOWHERE to go.",
+      "commentary": [
+        "Three blades. Eight thousand each. Twenty-four thousand damage total.",
+        "Shuriken spiral — you cannot avoid all three.",
+        "The blades fan out and surround the boss completely.",
+        "The blades are bouncing all over the arena."
+      ],
+      "result": "That is how you do it. Easy work.",
+      "outro": "More boss battles every single day. 🔥",
+      "script": "[HOOK]  Okay. Thirty seconds. Two million HP. Let's GO.\n[SETUP] Shuriken Orb. Spawns three spinning blades on each hit. Eight thousand damage each. Do the math.\n        We are in the TINY arena. Fifty-two percent of screen. The boss has absolutely NOWHERE to go.\n[—]     Three blades. Eight thousand each. Twenty-four thousand damage total.\n[—]     Shuriken spiral — you cannot avoid all three.\n[—]     The blades fan out and surround the boss completely.\n[—]     The blades are bouncing all over the arena.\n[END]   That is how you do it. Easy work.\n[CTA]   More boss battles every single day. 🔥"
+    }
+  },
+  "splitter_maze_time_attack": {
+    "tag": "splitter_maze",
+    "orb": "splitter",
+    "arena": "maze",
+    "mode": "time_attack",
+    "hp": 1500000,
+    "titles": [
+      "SHURIKEN ORB + THE MAZE = perfect chaos 💫",
+      "SHURIKEN ORB vs TIME ATTACK — who wins? 🏆",
+      "Can SHURIKEN ORB beat TIME ATTACK in THE MAZE? 🤔"
+    ],
+    "caption": "#shuriken #blades #satisfying #gaming #physics #bossfight #spin #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Sixty seconds. One million HP boss. Let's see if this combo works.",
+      "orb_setup": "Shuriken Orb. Spawns three spinning blades on each hit. Eight thousand damage each. Do the math.",
+      "arena_setup": "THE MAZE. L-shaped walls mirrored across the entire arena. Once the traps are set — there is no escape route.",
+      "commentary": [
+        "Shuriken spiral — you cannot avoid all three.",
+        "In the corridors the blades have nowhere to go but the boss.",
+        "The blades are bouncing all over the arena.",
+        "The blades fan out and surround the boss completely."
+      ],
+      "result": "That score speaks for itself.",
+      "outro": "Subscribe for the full orb rankings. 🏆",
+      "script": "[HOOK]  Sixty seconds. One million HP boss. Let's see if this combo works.\n[SETUP] Shuriken Orb. Spawns three spinning blades on each hit. Eight thousand damage each. Do the math.\n        THE MAZE. L-shaped walls mirrored across the entire arena. Once the traps are set — there is no escape route.\n[—]     Shuriken spiral — you cannot avoid all three.\n[—]     In the corridors the blades have nowhere to go but the boss.\n[—]     The blades are bouncing all over the arena.\n[—]     The blades fan out and surround the boss completely.\n[END]   That score speaks for itself.\n[CTA]   Subscribe for the full orb rankings. 🏆"
+    }
+  },
+  "zapper_maze_time_attack": {
+    "tag": "zapper_maze",
+    "orb": "zapper",
+    "arena": "maze",
+    "mode": "time_attack",
+    "hp": 2000000,
+    "titles": [
+      "ZAPPER ORB = S TIER? Let's find out 👇",
+      "ZAPPER ORB max damage run 📈",
+      "The BEST orb in Boss Ball? Testing ZAPPER ORB 🥇"
+    ],
+    "caption": "#lightning #thunder #satisfying #gaming #electric #bossfight #zap #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Time Attack. One million HP. The clock starts NOW.",
+      "orb_setup": "Zapper Orb. Every bounce drops a crackling thunder zone across the entire arena.",
+      "arena_setup": "THE MAZE. L-shaped walls mirrored across the entire arena. Once the traps are set — there is no escape route.",
+      "commentary": [
+        "Boss walked directly into the thunder field.",
+        "The zapper fills the maze faster than anything else.",
+        "The whole arena is electric now.",
+        "Every square meter of this maze is now dangerous."
+      ],
+      "result": "Timer is up — but look at that damage number.",
+      "outro": "Follow for more orb battles. 🏹",
+      "script": "[HOOK]  Time Attack. One million HP. The clock starts NOW.\n[SETUP] Zapper Orb. Every bounce drops a crackling thunder zone across the entire arena.\n        THE MAZE. L-shaped walls mirrored across the entire arena. Once the traps are set — there is no escape route.\n[—]     Boss walked directly into the thunder field.\n[—]     The zapper fills the maze faster than anything else.\n[—]     The whole arena is electric now.\n[—]     Every square meter of this maze is now dangerous.\n[END]   Timer is up — but look at that damage number.\n[CTA]   Follow for more orb battles. 🏹"
+    }
+  },
+  "zapper_corridors_blitz": {
+    "tag": "zapper_corridors_blitz",
+    "orb": "zapper",
+    "arena": "corridors",
+    "mode": "blitz",
+    "hp": 1500000,
+    "titles": [
+      "ZAPPER ORB just broke CORRIDOR ARENA 💥",
+      "Rating every orb: ZAPPER ORB review 🏅",
+      "ZAPPER ORB just broke CORRIDOR ARENA 💥"
+    ],
+    "caption": "#lightning #thunder #satisfying #gaming #electric #bossfight #zap #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Okay. Thirty seconds. Two million HP. Let's GO.",
+      "orb_setup": "Zapper Orb. Every bounce drops a crackling thunder zone across the entire arena.",
+      "arena_setup": "Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.",
+      "commentary": [
+        "The zapper fills the maze faster than anything else.",
+        "Every square meter of this maze is now dangerous.",
+        "The whole arena is electric now.",
+        "Boss walked directly into the thunder field."
+      ],
+      "result": "That score speaks for itself.",
+      "outro": "Follow for more orb battles. 🏹",
+      "script": "[HOOK]  Okay. Thirty seconds. Two million HP. Let's GO.\n[SETUP] Zapper Orb. Every bounce drops a crackling thunder zone across the entire arena.\n        Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.\n[—]     The zapper fills the maze faster than anything else.\n[—]     Every square meter of this maze is now dangerous.\n[—]     The whole arena is electric now.\n[—]     Boss walked directly into the thunder field.\n[END]   That score speaks for itself.\n[CTA]   Follow for more orb battles. 🏹"
+    }
+  },
+  "zapper_pillarsSmall_time_attack": {
+    "tag": "zapper_pillars_small",
+    "orb": "zapper",
+    "arena": "pillarsSmall",
+    "mode": "time_attack",
+    "hp": 1000000,
+    "titles": [
+      "Boss Ball Battle: ZAPPER ORB Edition 🔥",
+      "WEAPON BALL: ZAPPER ORB enters PILLAR ARENA ⚡",
+      "ZAPPER ORB BATTLE ROYALE 🏹"
+    ],
+    "caption": "#lightning #thunder #satisfying #gaming #electric #bossfight #zap #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Sixty seconds on the clock. That boss is going DOWN.",
+      "orb_setup": "Zapper Orb. Every bounce drops a crackling thunder zone across the entire arena.",
+      "arena_setup": "Pillar arena. Four pillars at every corner. The orb ricochets off everything in here.",
+      "commentary": [
+        "Every square meter of this maze is now dangerous.",
+        "The whole arena is electric now.",
+        "Thunder zone placed.",
+        "Boss walked directly into the thunder field."
+      ],
+      "result": "That score speaks for itself.",
+      "outro": "Tag someone who would pick this orb. 👀",
+      "script": "[HOOK]  Sixty seconds on the clock. That boss is going DOWN.\n[SETUP] Zapper Orb. Every bounce drops a crackling thunder zone across the entire arena.\n        Pillar arena. Four pillars at every corner. The orb ricochets off everything in here.\n[—]     Every square meter of this maze is now dangerous.\n[—]     The whole arena is electric now.\n[—]     Thunder zone placed.\n[—]     Boss walked directly into the thunder field.\n[END]   That score speaks for itself.\n[CTA]   Tag someone who would pick this orb. 👀"
+    }
+  },
+  "void_maze_blitz": {
+    "tag": "void_maze_blitz",
+    "orb": "void",
+    "arena": "maze",
+    "mode": "blitz",
+    "hp": 1000000,
+    "titles": [
+      "VOID ORB = S TIER? Let's find out 👇",
+      "New record attempt: VOID ORB in BLITZ ⚡",
+      "VOID ORB = S TIER? Let's find out 👇"
+    ],
+    "caption": "#void #warp #satisfying #gaming #physics #bossfight #teleport #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "BLITZ mode. Thirty seconds on the clock. This is going to be INSANE.",
+      "orb_setup": "Void Orb. Phases through walls. Warps across the arena. The boss has absolutely nowhere to hide.",
+      "arena_setup": "THE MAZE. L-shaped walls mirrored across the entire arena. Once the traps are set — there is no escape route.",
+      "commentary": [
+        "In the maze the void just ignores every wall entirely.",
+        "The boss had no idea where it was coming from.",
+        "It phased out and reappeared on the other side instantly.",
+        "Void teleport. Completely unpredictable trajectory."
+      ],
+      "result": "ELIMINATED. No contest.",
+      "outro": "Which orb should I test next? Drop it in the comments. 👇",
+      "script": "[HOOK]  BLITZ mode. Thirty seconds on the clock. This is going to be INSANE.\n[SETUP] Void Orb. Phases through walls. Warps across the arena. The boss has absolutely nowhere to hide.\n        THE MAZE. L-shaped walls mirrored across the entire arena. Once the traps are set — there is no escape route.\n[—]     In the maze the void just ignores every wall entirely.\n[—]     The boss had no idea where it was coming from.\n[—]     It phased out and reappeared on the other side instantly.\n[—]     Void teleport. Completely unpredictable trajectory.\n[END]   ELIMINATED. No contest.\n[CTA]   Which orb should I test next? Drop it in the comments. 👇"
+    }
+  },
+  "void_tiny_speed_run": {
+    "tag": "void_tiny_speedrun",
+    "orb": "void",
+    "arena": "tiny",
+    "mode": "speed_run",
+    "hp": null,
+    "titles": [
+      "Satisfying VOID ORB run — no commentary 🎵",
+      "This VOID ORB combo is UNPLAYABLE 😭",
+      "VOID ORB is carrying this entire run 💪"
+    ],
+    "caption": "#void #warp #satisfying #gaming #physics #bossfight #teleport #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "The fastest fifteen seconds you'll ever watch.",
+      "orb_setup": "Void Orb. Phases through walls. Warps across the arena. The boss has absolutely nowhere to hide.",
+      "arena_setup": "We are in the TINY arena. Fifty-two percent of screen. The boss has absolutely NOWHERE to go.",
+      "commentary": [
+        "Phase warp. Through the wall.",
+        "In the maze the void just ignores every wall entirely.",
+        "The boss had no idea where it was coming from.",
+        "It phased out and reappeared on the other side instantly."
+      ],
+      "result": "That score speaks for itself.",
+      "outro": "Tag someone who would pick this orb. 👀",
+      "script": "[HOOK]  The fastest fifteen seconds you'll ever watch.\n[SETUP] Void Orb. Phases through walls. Warps across the arena. The boss has absolutely nowhere to hide.\n        We are in the TINY arena. Fifty-two percent of screen. The boss has absolutely NOWHERE to go.\n[—]     Phase warp. Through the wall.\n[—]     In the maze the void just ignores every wall entirely.\n[—]     The boss had no idea where it was coming from.\n[—]     It phased out and reappeared on the other side instantly.\n[END]   That score speaks for itself.\n[CTA]   Tag someone who would pick this orb. 👀"
+    }
+  },
+  "void_corridors_time_attack": {
+    "tag": "void_corridors",
+    "orb": "void",
+    "arena": "corridors",
+    "mode": "time_attack",
+    "hp": 1500000,
+    "titles": [
+      "Is VOID ORB actually broken? 🧐",
+      "This VOID ORB combo is UNPLAYABLE 😭",
+      "They need to NERF VOID ORB immediately 🔥"
+    ],
+    "caption": "#void #warp #satisfying #gaming #physics #bossfight #teleport #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Sixty seconds on the clock. That boss is going DOWN.",
+      "orb_setup": "Void Orb. Phases through walls. Warps across the arena. The boss has absolutely nowhere to hide.",
+      "arena_setup": "Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.",
+      "commentary": [
+        "The boss had no idea where it was coming from.",
+        "It phased out and reappeared on the other side instantly.",
+        "No wall can stop the Void Orb. None.",
+        "In the maze the void just ignores every wall entirely."
+      ],
+      "result": "Done. Boss is DOWN. 💀",
+      "outro": "Comment your favorite orb below. 💬",
+      "script": "[HOOK]  Sixty seconds on the clock. That boss is going DOWN.\n[SETUP] Void Orb. Phases through walls. Warps across the arena. The boss has absolutely nowhere to hide.\n        Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.\n[—]     The boss had no idea where it was coming from.\n[—]     It phased out and reappeared on the other side instantly.\n[—]     No wall can stop the Void Orb. None.\n[—]     In the maze the void just ignores every wall entirely.\n[END]   Done. Boss is DOWN. 💀\n[CTA]   Comment your favorite orb below. 💬"
+    }
+  },
+  "clone_full_time_attack": {
+    "tag": "clone_full",
+    "orb": "clone",
+    "arena": "full",
+    "mode": "time_attack",
+    "hp": 2000000,
+    "titles": [
+      "POV: you unlock ECHO ORB for the first time 😳",
+      "Watch ECHO ORB fill every corner of FULL ARENA 🌀",
+      "The physics of ECHO ORB will BLOW your mind 🧠"
+    ],
+    "caption": "#clone #echo #satisfying #gaming #physics #bossfight #swarm #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Time Attack. One million HP. The clock starts NOW.",
+      "orb_setup": "Echo Orb. Three ghost clones appear on contact and deal damage for three and a half seconds. It is a full swarm.",
+      "arena_setup": "Full arena. One hundred percent screen. Maximum distance between walls — maximum bounce buildup.",
+      "commentary": [
+        "Three echo clones deployed.",
+        "Swarm mode. The boss is completely surrounded.",
+        "In the full arena the clones spread and cover everything.",
+        "The clones are circling. Closing in from all sides."
+      ],
+      "result": "BOSS DEFEATED. Let's GO. 🔥",
+      "outro": "Share this with someone who needs to see this combo. 🎮",
+      "script": "[HOOK]  Time Attack. One million HP. The clock starts NOW.\n[SETUP] Echo Orb. Three ghost clones appear on contact and deal damage for three and a half seconds. It is a full swarm.\n        Full arena. One hundred percent screen. Maximum distance between walls — maximum bounce buildup.\n[—]     Three echo clones deployed.\n[—]     Swarm mode. The boss is completely surrounded.\n[—]     In the full arena the clones spread and cover everything.\n[—]     The clones are circling. Closing in from all sides.\n[END]   BOSS DEFEATED. Let's GO. 🔥\n[CTA]   Share this with someone who needs to see this combo. 🎮"
+    }
+  },
+  "clone_corridors_blitz": {
+    "tag": "clone_corridors_blitz",
+    "orb": "clone",
+    "arena": "corridors",
+    "mode": "blitz",
+    "hp": 1000000,
+    "titles": [
+      "POV: the boss sees ECHO ORB coming 😈",
+      "They need to NERF ECHO ORB immediately 🔥",
+      "New record attempt: ECHO ORB in BLITZ ⚡"
+    ],
+    "caption": "#clone #echo #satisfying #gaming #physics #bossfight #swarm #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "BLITZ mode. Thirty seconds on the clock. This is going to be INSANE.",
+      "orb_setup": "Echo Orb. Three ghost clones appear on contact and deal damage for three and a half seconds. It is a full swarm.",
+      "arena_setup": "Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.",
+      "commentary": [
+        "In the full arena the clones spread and cover everything.",
+        "Three echoes dealing continuous damage simultaneously.",
+        "The clones are circling. Closing in from all sides.",
+        "Ghost army is active. Three and a half seconds of damage."
+      ],
+      "result": "Done. Boss is DOWN. 💀",
+      "outro": "The full tier list is coming. Stay tuned. 📊",
+      "script": "[HOOK]  BLITZ mode. Thirty seconds on the clock. This is going to be INSANE.\n[SETUP] Echo Orb. Three ghost clones appear on contact and deal damage for three and a half seconds. It is a full swarm.\n        Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.\n[—]     In the full arena the clones spread and cover everything.\n[—]     Three echoes dealing continuous damage simultaneously.\n[—]     The clones are circling. Closing in from all sides.\n[—]     Ghost army is active. Three and a half seconds of damage.\n[END]   Done. Boss is DOWN. 💀\n[CTA]   The full tier list is coming. Stay tuned. 📊"
+    }
+  },
+  "clone_maze_time_attack": {
+    "tag": "clone_maze",
+    "orb": "clone",
+    "arena": "maze",
+    "mode": "time_attack",
+    "hp": 1500000,
+    "titles": [
+      "ECHO ORB vs THE BOSS 💀",
+      "New record attempt: ECHO ORB in TIME ATTACK ⚡",
+      "I put ECHO ORB in THE MAZE and this happened 👇"
+    ],
+    "caption": "#clone #echo #satisfying #gaming #physics #bossfight #swarm #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "This is Time Attack mode. One million HP. Sixty seconds. GO.",
+      "orb_setup": "Echo Orb. Three ghost clones appear on contact and deal damage for three and a half seconds. It is a full swarm.",
+      "arena_setup": "THE MAZE. L-shaped walls mirrored across the entire arena. Once the traps are set — there is no escape route.",
+      "commentary": [
+        "Three echoes dealing continuous damage simultaneously.",
+        "Three echo clones deployed.",
+        "In the full arena the clones spread and cover everything.",
+        "The clones are circling. Closing in from all sides."
+      ],
+      "result": "Timer is up — but look at that damage number.",
+      "outro": "Like if this orb deserves S-tier. ✅",
+      "script": "[HOOK]  This is Time Attack mode. One million HP. Sixty seconds. GO.\n[SETUP] Echo Orb. Three ghost clones appear on contact and deal damage for three and a half seconds. It is a full swarm.\n        THE MAZE. L-shaped walls mirrored across the entire arena. Once the traps are set — there is no escape route.\n[—]     Three echoes dealing continuous damage simultaneously.\n[—]     Three echo clones deployed.\n[—]     In the full arena the clones spread and cover everything.\n[—]     The clones are circling. Closing in from all sides.\n[END]   Timer is up — but look at that damage number.\n[CTA]   Like if this orb deserves S-tier. ✅"
+    }
+  },
+  "fire_corridors_time_attack": {
+    "tag": "fire_corridors",
+    "orb": "fire",
+    "arena": "corridors",
+    "mode": "time_attack",
+    "hp": 1000000,
+    "titles": [
+      "The BEST orb in Boss Ball? Testing INFERNO ORB 🥇",
+      "POV: INFERNO ORB in CORRIDOR ARENA hits different 💀",
+      "Nobody told me INFERNO ORB does THIS 😱"
+    ],
+    "caption": "#fire #inferno #satisfying #gaming #physics #bossfight #burn #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "One minute. One boss. One orb. Let's find out.",
+      "orb_setup": "Inferno Orb. Places burning fire zones everywhere it bounces. Damage over time. The floor becomes lava.",
+      "arena_setup": "Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.",
+      "commentary": [
+        "The corridors trap the fire zones in every lane.",
+        "The fire zones are stacking everywhere it goes.",
+        "The arena floor is on fire.",
+        "Boss walked right into the burn zone."
+      ],
+      "result": "Done. Boss is DOWN. 💀",
+      "outro": "Share this with someone who needs to see this combo. 🎮",
+      "script": "[HOOK]  One minute. One boss. One orb. Let's find out.\n[SETUP] Inferno Orb. Places burning fire zones everywhere it bounces. Damage over time. The floor becomes lava.\n        Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.\n[—]     The corridors trap the fire zones in every lane.\n[—]     The fire zones are stacking everywhere it goes.\n[—]     The arena floor is on fire.\n[—]     Boss walked right into the burn zone.\n[END]   Done. Boss is DOWN. 💀\n[CTA]   Share this with someone who needs to see this combo. 🎮"
+    }
+  },
+  "fire_maze_time_attack": {
+    "tag": "fire_maze",
+    "orb": "fire",
+    "arena": "maze",
+    "mode": "time_attack",
+    "hp": 1500000,
+    "titles": [
+      "The BEST orb in Boss Ball? Testing INFERNO ORB 🥇",
+      "Can INFERNO ORB beat TIME ATTACK in THE MAZE? 🤔",
+      "Watch INFERNO ORB fill every corner of THE MAZE 🌀"
+    ],
+    "caption": "#fire #inferno #satisfying #gaming #physics #bossfight #burn #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Sixty seconds. One million HP boss. Let's see if this combo works.",
+      "orb_setup": "Inferno Orb. Places burning fire zones everywhere it bounces. Damage over time. The floor becomes lava.",
+      "arena_setup": "THE MAZE. L-shaped walls mirrored across the entire arena. Once the traps are set — there is no escape route.",
+      "commentary": [
+        "Damage over time. Every second. Non-stop.",
+        "The arena floor is on fire.",
+        "Boss walked right into the burn zone.",
+        "The fire zones are stacking everywhere it goes."
+      ],
+      "result": "That is how you do it. Easy work.",
+      "outro": "Like if this orb deserves S-tier. ✅",
+      "script": "[HOOK]  Sixty seconds. One million HP boss. Let's see if this combo works.\n[SETUP] Inferno Orb. Places burning fire zones everywhere it bounces. Damage over time. The floor becomes lava.\n        THE MAZE. L-shaped walls mirrored across the entire arena. Once the traps are set — there is no escape route.\n[—]     Damage over time. Every second. Non-stop.\n[—]     The arena floor is on fire.\n[—]     Boss walked right into the burn zone.\n[—]     The fire zones are stacking everywhere it goes.\n[END]   That is how you do it. Easy work.\n[CTA]   Like if this orb deserves S-tier. ✅"
+    }
+  },
+  "firetrap_maze_time_attack": {
+    "tag": "firetrap_maze",
+    "orb": "firetrap",
+    "arena": "maze",
+    "mode": "time_attack",
+    "hp": 2000000,
+    "titles": [
+      "Rating every orb: FIRE TRAP review 🏅",
+      "FIRE TRAP just broke THE MAZE 💥",
+      "This FIRE TRAP combo is UNPLAYABLE 😭"
+    ],
+    "caption": "#fire #trap #satisfying #gaming #physics #bossfight #explosion #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Sixty seconds on the clock. That boss is going DOWN.",
+      "orb_setup": "Fire Trap Orb. Sets burning trap zones on every bounce. The entire arena becomes a fire minefield.",
+      "arena_setup": "THE MAZE. L-shaped walls mirrored across the entire arena. Once the traps are set — there is no escape route.",
+      "commentary": [
+        "Trap activated. Burning.",
+        "The boss cannot cross without triggering something.",
+        "Another trap. And another one.",
+        "Fire everywhere. Every path is blocked."
+      ],
+      "result": "Timer is up — but look at that damage number.",
+      "outro": "Which orb should I test next? Drop it in the comments. 👇",
+      "script": "[HOOK]  Sixty seconds on the clock. That boss is going DOWN.\n[SETUP] Fire Trap Orb. Sets burning trap zones on every bounce. The entire arena becomes a fire minefield.\n        THE MAZE. L-shaped walls mirrored across the entire arena. Once the traps are set — there is no escape route.\n[—]     Trap activated. Burning.\n[—]     The boss cannot cross without triggering something.\n[—]     Another trap. And another one.\n[—]     Fire everywhere. Every path is blocked.\n[END]   Timer is up — but look at that damage number.\n[CTA]   Which orb should I test next? Drop it in the comments. 👇"
+    }
+  },
+  "firetrap_corridors_blitz": {
+    "tag": "firetrap_corridors_blitz",
+    "orb": "firetrap",
+    "arena": "corridors",
+    "mode": "blitz",
+    "hp": 1000000,
+    "titles": [
+      "FIRE TRAP vs THE BOSS 💀",
+      "New record attempt: FIRE TRAP in BLITZ ⚡",
+      "What happens when you put FIRE TRAP in CORRIDOR ARENA? 👀"
+    ],
+    "caption": "#fire #trap #satisfying #gaming #physics #bossfight #explosion #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Two million HP. Half a minute. Watch what happens.",
+      "orb_setup": "Fire Trap Orb. Sets burning trap zones on every bounce. The entire arena becomes a fire minefield.",
+      "arena_setup": "Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.",
+      "commentary": [
+        "Another trap. And another one.",
+        "The maze is completely covered in fire traps now.",
+        "Trap set.",
+        "The boss cannot cross without triggering something."
+      ],
+      "result": "That is how you do it. Easy work.",
+      "outro": "Like if this orb deserves S-tier. ✅",
+      "script": "[HOOK]  Two million HP. Half a minute. Watch what happens.\n[SETUP] Fire Trap Orb. Sets burning trap zones on every bounce. The entire arena becomes a fire minefield.\n        Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.\n[—]     Another trap. And another one.\n[—]     The maze is completely covered in fire traps now.\n[—]     Trap set.\n[—]     The boss cannot cross without triggering something.\n[END]   That is how you do it. Easy work.\n[CTA]   Like if this orb deserves S-tier. ✅"
+    }
+  },
+  "prismatic_full_time_attack": {
+    "tag": "prismatic_full",
+    "orb": "prismatic",
+    "arena": "full",
+    "mode": "time_attack",
+    "hp": 2000000,
+    "titles": [
+      "Boss Ball Battle: PRISMATIC ORB Edition 🔥",
+      "PRISMATIC ORB BATTLE ROYALE 🏹",
+      "POV: the boss sees PRISMATIC ORB coming 😈"
+    ],
+    "caption": "#prism #beam #satisfying #gaming #physics #bossfight #reflect #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "This is Time Attack mode. One million HP. Sixty seconds. GO.",
+      "orb_setup": "Prismatic Orb. Wall bounces fire reflective beams across the whole arena. A full beam web forms.",
+      "arena_setup": "Full arena. One hundred percent screen. Maximum distance between walls — maximum bounce buildup.",
+      "commentary": [
+        "The full arena gives the beams maximum room to spread.",
+        "Beam web forming. The arena is completely covered.",
+        "Look at those beams crossing the entire arena.",
+        "Reflective beam fired."
+      ],
+      "result": "BOSS DEFEATED. Let's GO. 🔥",
+      "outro": "Which orb should I test next? Drop it in the comments. 👇",
+      "script": "[HOOK]  This is Time Attack mode. One million HP. Sixty seconds. GO.\n[SETUP] Prismatic Orb. Wall bounces fire reflective beams across the whole arena. A full beam web forms.\n        Full arena. One hundred percent screen. Maximum distance between walls — maximum bounce buildup.\n[—]     The full arena gives the beams maximum room to spread.\n[—]     Beam web forming. The arena is completely covered.\n[—]     Look at those beams crossing the entire arena.\n[—]     Reflective beam fired.\n[END]   BOSS DEFEATED. Let's GO. 🔥\n[CTA]   Which orb should I test next? Drop it in the comments. 👇"
+    }
+  },
+  "prismatic_pillarsBig_time_attack": {
+    "tag": "prismatic_pillars_big",
+    "orb": "prismatic",
+    "arena": "pillarsBig",
+    "mode": "time_attack",
+    "hp": 1500000,
+    "titles": [
+      "Can this orb one-shot the boss? 💥",
+      "Can this orb one-shot the boss? 💥",
+      "How much damage can PRISMATIC ORB do in TIME ATTACK? 🔢"
+    ],
+    "caption": "#prism #beam #satisfying #gaming #physics #bossfight #reflect #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "This is Time Attack mode. One million HP. Sixty seconds. GO.",
+      "orb_setup": "Prismatic Orb. Wall bounces fire reflective beams across the whole arena. A full beam web forms.",
+      "arena_setup": "MEGA pillar arena. Two giant pillars flanking the center. Absolute ricochet chaos.",
+      "commentary": [
+        "Look at those beams crossing the entire arena.",
+        "The full arena gives the beams maximum room to spread.",
+        "It bounced off the wall and hit the boss from behind.",
+        "Reflective beam fired."
+      ],
+      "result": "BOSS DEFEATED. Let's GO. 🔥",
+      "outro": "Follow for more orb battles. 🏹",
+      "script": "[HOOK]  This is Time Attack mode. One million HP. Sixty seconds. GO.\n[SETUP] Prismatic Orb. Wall bounces fire reflective beams across the whole arena. A full beam web forms.\n        MEGA pillar arena. Two giant pillars flanking the center. Absolute ricochet chaos.\n[—]     Look at those beams crossing the entire arena.\n[—]     The full arena gives the beams maximum room to spread.\n[—]     It bounced off the wall and hit the boss from behind.\n[—]     Reflective beam fired.\n[END]   BOSS DEFEATED. Let's GO. 🔥\n[CTA]   Follow for more orb battles. 🏹"
+    }
+  },
+  "basic_tiny_blitz": {
+    "tag": "basic_tiny_blitz",
+    "orb": "basic",
+    "arena": "tiny",
+    "mode": "blitz",
+    "hp": 500000,
+    "titles": [
+      "How much damage can SHOCK ORB do in BLITZ? 🔢",
+      "I put SHOCK ORB in TINY ARENA and this happened 👇",
+      "POV: SHOCK ORB in TINY ARENA hits different 💀"
+    ],
+    "caption": "#shock #satisfying #gaming #physics #bossfight #simulation #classic #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "BLITZ mode. Thirty seconds on the clock. This is going to be INSANE.",
+      "orb_setup": "Shock Orb. Classic. A shockwave ring fires on every bounce. Plus three thousand bonus damage every single hit.",
+      "arena_setup": "We are in the TINY arena. Fifty-two percent of screen. The boss has absolutely NOWHERE to go.",
+      "commentary": [
+        "Shockwave ring expanding.",
+        "Every wall hit sends out another shockwave ring.",
+        "Simple. Reliable. Satisfying.",
+        "In the maze the shockwaves bounce off every wall."
+      ],
+      "result": "That score speaks for itself.",
+      "outro": "Follow for more orb battles. 🏹",
+      "script": "[HOOK]  BLITZ mode. Thirty seconds on the clock. This is going to be INSANE.\n[SETUP] Shock Orb. Classic. A shockwave ring fires on every bounce. Plus three thousand bonus damage every single hit.\n        We are in the TINY arena. Fifty-two percent of screen. The boss has absolutely NOWHERE to go.\n[—]     Shockwave ring expanding.\n[—]     Every wall hit sends out another shockwave ring.\n[—]     Simple. Reliable. Satisfying.\n[—]     In the maze the shockwaves bounce off every wall.\n[END]   That score speaks for itself.\n[CTA]   Follow for more orb battles. 🏹"
+    }
+  },
+  "basic_maze_time_attack": {
+    "tag": "basic_maze_endurance",
+    "orb": "basic",
+    "arena": "maze",
+    "mode": "time_attack",
+    "hp": 3000000,
+    "titles": [
+      "POV: you unlock SHOCK ORB for the first time 😳",
+      "TOURNAMENT ARC: SHOCK ORB vs Boss 🏟️",
+      "SHOCK ORB max damage run 📈"
+    ],
+    "caption": "#shock #satisfying #gaming #physics #bossfight #simulation #classic #bossbattle #ballgame #physicsgame #simulation #weaponball",
+    "voiceover": {
+      "hook": "Sixty seconds on the clock. That boss is going DOWN.",
+      "orb_setup": "Shock Orb. Classic. A shockwave ring fires on every bounce. Plus three thousand bonus damage every single hit.",
+      "arena_setup": "THE MAZE. L-shaped walls mirrored across the entire arena. Once the traps are set — there is no escape route.",
+      "commentary": [
+        "In the maze the shockwaves bounce off every wall.",
+        "Shockwave ring expanding.",
+        "Plus three thousand bonus on every single bounce.",
+        "Simple. Reliable. Satisfying."
+      ],
+      "result": "That score speaks for itself.",
+      "outro": "Which orb should I test next? Drop it in the comments. 👇",
+      "script": "[HOOK]  Sixty seconds on the clock. That boss is going DOWN.\n[SETUP] Shock Orb. Classic. A shockwave ring fires on every bounce. Plus three thousand bonus damage every single hit.\n        THE MAZE. L-shaped walls mirrored across the entire arena. Once the traps are set — there is no escape route.\n[—]     In the maze the shockwaves bounce off every wall.\n[—]     Shockwave ring expanding.\n[—]     Plus three thousand bonus on every single bounce.\n[—]     Simple. Reliable. Satisfying.\n[END]   That score speaks for itself.\n[CTA]   Which orb should I test next? Drop it in the comments. 👇"
+    }
+  }
+}

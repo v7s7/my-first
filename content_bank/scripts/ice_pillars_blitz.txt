@@ -1,0 +1,40 @@
+# ICE ORB  ×  PILLAR ARENA  ×  BLITZ
+# Tag: ice_pillars_blitz
+# HP:  1200000
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  Nobody told me ICE ORB does THIS 😱
+  2.  WEAPON BALL: ICE ORB enters PILLAR ARENA ⚡
+  3.  Can this orb one-shot the boss? 💥
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#ice #freeze #satisfying #physics #bossfight #gaming #simulation #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  Okay. Thirty seconds. Two million HP. Let's GO.
+
+[ORB SETUP]
+  Ice Orb. Every hit freezes the boss for two and a half seconds. While frozen — double damage. It cannot fight back.
+
+[ARENA SETUP]
+  Pillar arena. Four pillars at every corner. The orb ricochets off everything in here.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — It cannot run. It cannot dodge. It just takes every hit.
+  — Freeze. Hit. Freeze. Hit. The cycle never ends.
+  — Frozen solid. Hit it again.
+  — Watch — the moment it hits — FREEZE.
+
+[RESULT]
+  That score speaks for itself.
+
+[OUTRO / CTA]
+  Share this with someone who needs to see this combo. 🎮

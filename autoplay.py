@@ -1,21 +1,23 @@
 #!/usr/bin/env python3
 """
-Boss Ball Blitz – AI game automation with video replay.
+Boss Ball Blitz — free automation agent with video replay.
 
-Claude (via the Anthropic API) picks a random orb, arena, HP, and mode,
-then a headless Chromium session plays the game and saves a .webm replay.
+Picks an exciting orb + arena + mode combo automatically (no API, no cost),
+records a headless Chromium gameplay session, and saves a .webm video plus
+a JSON metadata file and a ready-to-read voiceover script alongside it.
 
 Usage
 -----
-    export ANTHROPIC_API_KEY="sk-ant-..."
-    python autoplay.py                        # save to replay.webm
-    python autoplay.py -o my_run.webm         # custom output path
+    python autoplay.py                        # one video → replay.webm
+    python autoplay.py -o runs/run.webm       # custom output path
     python autoplay.py --build                # force Flutter rebuild first
     python autoplay.py --duration 45          # override recording length (s)
+    python autoplay.py --batch 10             # record 10 videos in sequence
+    python autoplay.py --batch 10 -o runs/    # save batch into a folder
 
 Requirements
 ------------
-    pip install anthropic playwright
+    pip install playwright
     python -m playwright install chromium
     flutter SDK must be on PATH
 """
@@ -23,13 +25,13 @@ Requirements
 import argparse
 import asyncio
 import json
-import os
+import random
 import subprocess
 import sys
 import time
 from pathlib import Path
 
-import anthropic
+from content import generate_content
 
 # ── Game constants ─────────────────────────────────────────────────────────────
 
@@ -69,61 +71,146 @@ AVAILABLE_MODES = {
     "speed_run":   "15 s, score = total damage dealt",
 }
 
-# How long (seconds) to keep recording after the timer starts
-# (adds a 5 s buffer so the game-over screen is captured)
 MODE_DURATIONS = {
     "time_attack": 68,
     "blitz":       38,
     "speed_run":   23,
 }
 
+# ── 53 curated synergy combos ──────────────────────────────────────────────────
 
-# ── Claude parameter selection ─────────────────────────────────────────────────
+SYNERGY_COMBOS = [
+    # ICE — constant freeze loop
+    {"orb": "ice",       "arena": "tiny",        "mode": "blitz",       "hp": 1000000, "tag": "ice_tiny_blitz"},
+    {"orb": "ice",       "arena": "small",       "mode": "blitz",       "hp":  800000, "tag": "ice_small_blitz"},
+    {"orb": "ice",       "arena": "corridors",   "mode": "time_attack", "hp": 1500000, "tag": "ice_corridors"},
+    {"orb": "ice",       "arena": "maze",        "mode": "speed_run",   "hp":    None, "tag": "ice_maze_speedrun"},
+    {"orb": "ice",       "arena": "pillarsSmall","mode": "blitz",       "hp": 1200000, "tag": "ice_pillars_blitz"},
 
-def choose_parameters_with_claude(api_key: str) -> dict:
-    """Ask Claude to pick an entertaining orb / arena / mode / HP combo."""
-    client = anthropic.Anthropic(api_key=api_key)
+    # MINE — fill the arena with explosives
+    {"orb": "mine",      "arena": "maze",        "mode": "time_attack", "hp":    None, "tag": "mine_maze"},
+    {"orb": "mine",      "arena": "corridors",   "mode": "time_attack", "hp": 1000000, "tag": "mine_corridors"},
+    {"orb": "mine",      "arena": "tiny",        "mode": "blitz",       "hp":  500000, "tag": "mine_tiny_blitz"},
+    {"orb": "mine",      "arena": "pillarsSmall","mode": "time_attack", "hp": 1500000, "tag": "mine_pillars_small"},
+    {"orb": "mine",      "arena": "pillarsBig",  "mode": "time_attack", "hp": 2000000, "tag": "mine_pillars_big"},
 
-    orb_lines   = "\n".join(f"  {k}: {v}" for k, v in AVAILABLE_ORBS.items())
-    arena_lines = "\n".join(f"  {k}: {v}" for k, v in AVAILABLE_ARENAS.items())
-    mode_lines  = "\n".join(f"  {k}: {v}" for k, v in AVAILABLE_MODES.items())
+    # BLACKHOLE — inescapable vortex
+    {"orb": "blackhole", "arena": "corridors",   "mode": "blitz",       "hp": 1500000, "tag": "blackhole_corridors"},
+    {"orb": "blackhole", "arena": "tiny",        "mode": "blitz",       "hp": 1000000, "tag": "blackhole_tiny"},
+    {"orb": "blackhole", "arena": "maze",        "mode": "time_attack", "hp": 2000000, "tag": "blackhole_maze"},
+    {"orb": "blackhole", "arena": "small",       "mode": "speed_run",   "hp":    None, "tag": "blackhole_small_speedrun"},
+    {"orb": "blackhole", "arena": "pillarsSmall","mode": "blitz",       "hp": 1200000, "tag": "blackhole_pillars"},
 
-    prompt = f"""You are a game master for Boss Ball Blitz, a physics-based arcade game.
-Choose parameters that will produce an exciting, visually dramatic demo run.
+    # COMBO — build the multiplier
+    {"orb": "combo",     "arena": "full",        "mode": "time_attack", "hp": 2000000, "tag": "combo_full"},
+    {"orb": "combo",     "arena": "pillarsBig",  "mode": "time_attack", "hp": 3000000, "tag": "combo_pillars_big"},
+    {"orb": "combo",     "arena": "normal",      "mode": "time_attack", "hp": 1500000, "tag": "combo_normal"},
+    {"orb": "combo",     "arena": "maze",        "mode": "time_attack", "hp": 2500000, "tag": "combo_maze"},
 
-Available orbs (ball types):
-{orb_lines}
+    # LASER — consistent beam DPS
+    {"orb": "laser",     "arena": "small",       "mode": "speed_run",   "hp":    None, "tag": "laser_small_speedrun"},
+    {"orb": "laser",     "arena": "tiny",        "mode": "blitz",       "hp":  800000, "tag": "laser_tiny_blitz"},
+    {"orb": "laser",     "arena": "corridors",   "mode": "speed_run",   "hp":    None, "tag": "laser_corridors_speedrun"},
+    {"orb": "laser",     "arena": "normal",      "mode": "time_attack", "hp": 1000000, "tag": "laser_normal"},
 
-Available arenas (maps):
-{arena_lines}
+    # CHAIN — triple lightning
+    {"orb": "chain",     "arena": "pillarsSmall","mode": "blitz",       "hp": 1000000, "tag": "chain_pillars_small"},
+    {"orb": "chain",     "arena": "maze",        "mode": "time_attack", "hp": 1500000, "tag": "chain_maze"},
+    {"orb": "chain",     "arena": "tiny",        "mode": "blitz",       "hp":  800000, "tag": "chain_tiny_blitz"},
+    {"orb": "chain",     "arena": "pillarsBig",  "mode": "time_attack", "hp": 2000000, "tag": "chain_pillars_big"},
 
-Available modes:
-{mode_lines}
+    # NOVA — explosion burst
+    {"orb": "nova",      "arena": "tiny",        "mode": "speed_run",   "hp":  500000, "tag": "nova_tiny_speedrun"},
+    {"orb": "nova",      "arena": "small",       "mode": "blitz",       "hp":  800000, "tag": "nova_small_blitz"},
+    {"orb": "nova",      "arena": "corridors",   "mode": "time_attack", "hp": 1000000, "tag": "nova_corridors"},
 
-Custom Boss HP: integer between 500000 and 5000000, or null to use mode default.
+    # HOOK — homing precision
+    {"orb": "hook",      "arena": "pillarsBig",  "mode": "time_attack", "hp":    None, "tag": "hook_pillars_big"},
+    {"orb": "hook",      "arena": "full",        "mode": "time_attack", "hp": 2000000, "tag": "hook_full"},
+    {"orb": "hook",      "arena": "corridors",   "mode": "blitz",       "hp": 1000000, "tag": "hook_corridors_blitz"},
 
-Think about interesting synergies, e.g.:
-- ice orb in tiny arena  → constant freezing chaos
-- mine orb in maze       → mines fill every corridor
-- blackhole in corridors → vortex in a tight lane
-- combo orb in full      → long bounces build huge multipliers
+    # SPLITTER — shuriken blades
+    {"orb": "splitter",  "arena": "corridors",   "mode": "speed_run",   "hp":    None, "tag": "splitter_corridors_speedrun"},
+    {"orb": "splitter",  "arena": "tiny",        "mode": "blitz",       "hp":  500000, "tag": "splitter_tiny_blitz"},
+    {"orb": "splitter",  "arena": "maze",        "mode": "time_attack", "hp": 1500000, "tag": "splitter_maze"},
 
-Respond with ONLY valid JSON (no markdown fences):
-{{"orb": "<id>", "arena": "<id>", "mode": "<id>", "hp": <int or null>, "reason": "<one exciting sentence>"}}"""
+    # ZAPPER — thunder zone area denial
+    {"orb": "zapper",    "arena": "maze",        "mode": "time_attack", "hp": 2000000, "tag": "zapper_maze"},
+    {"orb": "zapper",    "arena": "corridors",   "mode": "blitz",       "hp": 1500000, "tag": "zapper_corridors_blitz"},
+    {"orb": "zapper",    "arena": "pillarsSmall","mode": "time_attack", "hp": 1000000, "tag": "zapper_pillars_small"},
 
-    message = client.messages.create(
-        model="claude-opus-4-7",
-        max_tokens=300,
-        messages=[{"role": "user", "content": prompt}],
-    )
+    # VOID — phase through walls
+    {"orb": "void",      "arena": "maze",        "mode": "blitz",       "hp": 1000000, "tag": "void_maze_blitz"},
+    {"orb": "void",      "arena": "tiny",        "mode": "speed_run",   "hp":    None, "tag": "void_tiny_speedrun"},
+    {"orb": "void",      "arena": "corridors",   "mode": "time_attack", "hp": 1500000, "tag": "void_corridors"},
 
-    raw = message.content[0].text.strip()
-    # Strip accidental markdown code fences if present
-    if raw.startswith("```"):
-        raw = raw.split("```")[1]
-        if raw.startswith("json"):
-            raw = raw[4:]
-    return json.loads(raw.strip())
+    # CLONE — ghost echo swarm
+    {"orb": "clone",     "arena": "full",        "mode": "time_attack", "hp": 2000000, "tag": "clone_full"},
+    {"orb": "clone",     "arena": "corridors",   "mode": "blitz",       "hp": 1000000, "tag": "clone_corridors_blitz"},
+    {"orb": "clone",     "arena": "maze",        "mode": "time_attack", "hp": 1500000, "tag": "clone_maze"},
+
+    # FIRE — burn zones
+    {"orb": "fire",      "arena": "corridors",   "mode": "time_attack", "hp": 1000000, "tag": "fire_corridors"},
+    {"orb": "fire",      "arena": "maze",        "mode": "time_attack", "hp": 1500000, "tag": "fire_maze"},
+
+    # FIRETRAP — trap zone coverage
+    {"orb": "firetrap",  "arena": "maze",        "mode": "time_attack", "hp": 2000000, "tag": "firetrap_maze"},
+    {"orb": "firetrap",  "arena": "corridors",   "mode": "blitz",       "hp": 1000000, "tag": "firetrap_corridors_blitz"},
+
+    # PRISMATIC — reflective beam web
+    {"orb": "prismatic", "arena": "full",        "mode": "time_attack", "hp": 2000000, "tag": "prismatic_full"},
+    {"orb": "prismatic", "arena": "pillarsBig",  "mode": "time_attack", "hp": 1500000, "tag": "prismatic_pillars_big"},
+
+    # BASIC — classic shock, extreme conditions
+    {"orb": "basic",     "arena": "tiny",        "mode": "blitz",       "hp":  500000, "tag": "basic_tiny_blitz"},
+    {"orb": "basic",     "arena": "maze",        "mode": "time_attack", "hp": 3000000, "tag": "basic_maze_endurance"},
+]  # 53 total
+
+# ── Combo log (duplicate avoidance) ───────────────────────────────────────────
+
+_LOG_FILE = Path("combo_log.json")
+
+
+def _load_log() -> dict:
+    if _LOG_FILE.exists():
+        return json.loads(_LOG_FILE.read_text())
+    return {"played": [], "total_runs": 0, "videos": []}
+
+
+def _save_log(log: dict) -> None:
+    _LOG_FILE.write_text(json.dumps(log, indent=2))
+
+
+def _combo_key(params: dict) -> str:
+    return f"{params['orb']}_{params['arena']}_{params['mode']}"
+
+
+# ── Parameter selection ────────────────────────────────────────────────────────
+
+def choose_parameters_random(log: dict | None = None) -> dict:
+    """Pick an unplayed synergy combo (50%) or fully random (50%)."""
+    played = set((log or {}).get("played", []))
+    unplayed = [c for c in SYNERGY_COMBOS if _combo_key(c) not in played]
+
+    if not unplayed:
+        print("All 53 synergy combos recorded — cycling from the beginning…")
+        if log is not None:
+            log["played"] = []
+        unplayed = list(SYNERGY_COMBOS)
+
+    if random.random() < 0.5:
+        params = random.choice(unplayed).copy()
+    else:
+        params = {
+            "orb":   random.choice(list(AVAILABLE_ORBS.keys())),
+            "arena": random.choice(list(AVAILABLE_ARENAS.keys())),
+            "mode":  random.choice(list(AVAILABLE_MODES.keys())),
+            "hp":    random.choice([500000, 1000000, 1500000, 2000000, 3000000, None]),
+            "tag":   "random",
+        }
+
+    params["reason"] = f"{AVAILABLE_ORBS[params['orb']]} in {params['arena']} arena"
+    return params
 
 
 # ── Flutter build & serve ──────────────────────────────────────────────────────
@@ -145,7 +232,7 @@ def serve_flutter_web(project_dir: Path, port: int) -> subprocess.Popen:
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
-    time.sleep(2)  # give the server a moment to bind
+    time.sleep(2)
     return proc
 
 
@@ -170,8 +257,8 @@ async def record_gameplay(
         f"?autoplay=true&orb={orb}&arena={arena}&mode={mode}{hp_param}"
     )
 
-    print(f"\nGame URL : {url}")
-    print(f"Recording: {duration} s  →  {output_path}\n")
+    print(f"\nGame URL  : {url}")
+    print(f"Recording : {duration} s  →  {output_path}\n")
 
     tmp_video_dir = output_path.parent / "_playwright_tmp"
     tmp_video_dir.mkdir(parents=True, exist_ok=True)
@@ -188,19 +275,17 @@ async def record_gameplay(
             ],
         )
 
+        # TikTok portrait format: 1080×1920
         context = await browser.new_context(
-            viewport={"width": 390, "height": 844},
+            viewport={"width": 1080, "height": 1920},
             record_video_dir=str(tmp_video_dir),
-            record_video_size={"width": 390, "height": 844},
+            record_video_size={"width": 1080, "height": 1920},
         )
 
         page = await context.new_page()
 
-        # Wait for Flutter canvas to be ready
         print("Loading game…")
         await page.goto(url, wait_until="networkidle", timeout=60_000)
-
-        # Give the game engine 2 s to initialise before the timer starts
         await asyncio.sleep(2)
 
         print(f"Game running… waiting {duration} s")
@@ -211,16 +296,12 @@ async def record_gameplay(
         await context.close()
         await browser.close()
 
-    # Playwright names the file automatically — rename to what the user wants
     candidates = sorted(tmp_video_dir.glob("*.webm"), key=lambda p: p.stat().st_mtime)
     if not candidates:
         print("ERROR: Playwright did not produce a video file.")
         return False
 
-    latest = candidates[-1]
-    latest.rename(output_path)
-
-    # Clean up temp dir
+    candidates[-1].rename(output_path)
     try:
         tmp_video_dir.rmdir()
     except OSError:
@@ -229,90 +310,144 @@ async def record_gameplay(
     return True
 
 
+# ── Metadata & script saving ───────────────────────────────────────────────────
+
+def save_run_files(output_path: Path, params: dict, content: dict, run_num: int) -> None:
+    """Save .json metadata and _script.txt alongside the video."""
+    vo = content["voiceover"]
+
+    meta = {
+        "run":     run_num,
+        "video":   str(output_path),
+        "orb":     params["orb"],
+        "arena":   params["arena"],
+        "mode":    params["mode"],
+        "hp":      params.get("hp"),
+        "tag":     params.get("tag", "random"),
+        "title":   content["title"],
+        "caption": content["caption"],
+    }
+
+    meta_path   = output_path.with_suffix(".json")
+    script_path = output_path.with_name(output_path.stem + "_script.txt")
+
+    meta_path.write_text(json.dumps(meta, indent=2, ensure_ascii=False))
+    script_path.write_text(vo["script"], encoding="utf-8")
+
+
 # ── Entry point ────────────────────────────────────────────────────────────────
 
 async def run(args: argparse.Namespace) -> None:
     project_dir = Path(__file__).parent.resolve()
-    output_path = Path(args.output).resolve()
-    output_path.parent.mkdir(parents=True, exist_ok=True)
+    log         = _load_log()
+    batch       = args.batch
 
-    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
-    if not api_key:
-        print("ERROR: ANTHROPIC_API_KEY environment variable is not set.")
-        sys.exit(1)
+    # Resolve output path(s)
+    out_arg = Path(args.output)
+    if batch > 1 and out_arg.suffix == "":
+        # Treat as directory
+        out_dir = out_arg.resolve()
+        out_dir.mkdir(parents=True, exist_ok=True)
+        def make_output(i: int) -> Path:
+            return out_dir / f"run_{log['total_runs'] + i + 1:04d}.webm"
+    elif batch > 1:
+        stem = out_arg.stem
+        ext  = out_arg.suffix
+        out_dir = out_arg.parent.resolve()
+        out_dir.mkdir(parents=True, exist_ok=True)
+        def make_output(i: int) -> Path:
+            return out_dir / f"{stem}_{i + 1:03d}{ext}"
+    else:
+        single = out_arg.resolve()
+        single.parent.mkdir(parents=True, exist_ok=True)
+        def make_output(_: int) -> Path:
+            return single
 
-    # 1 ── Ask Claude to pick game parameters
-    print("Asking Claude to choose game parameters…")
-    params = choose_parameters_with_claude(api_key)
-
-    print("\n" + "=" * 56)
-    print("  Claude's pick")
-    print("=" * 56)
-    print(f"  Orb   : {params.get('orb',  '?')}  ({AVAILABLE_ORBS.get(params.get('orb',''), '')})")
-    print(f"  Arena : {params.get('arena','?')}  ({AVAILABLE_ARENAS.get(params.get('arena',''), '')})")
-    print(f"  Mode  : {params.get('mode', '?')}  ({AVAILABLE_MODES.get(params.get('mode',''), '')})")
-    hp_display = str(params['hp']) if params.get('hp') else "mode default"
-    print(f"  HP    : {hp_display}")
-    print(f"  Reason: {params.get('reason', '')}")
-    print("=" * 56 + "\n")
-
-    # 2 ── Build Flutter web if needed
+    # Build Flutter once
     web_index = project_dir / "build" / "web" / "index.html"
     if args.build or not web_index.exists():
         if not build_flutter_web(project_dir):
             print("Flutter build failed.")
             sys.exit(1)
     else:
-        print("Flutter web build already exists. Use --build to force a rebuild.")
+        print("Flutter web build exists. Use --build to force a rebuild.")
 
-    # 3 ── Start local HTTP server
     server = serve_flutter_web(project_dir, args.port)
 
     try:
-        # 4 ── Record gameplay
-        duration = args.duration or MODE_DURATIONS.get(params.get("mode", "time_attack"), 70)
-        success  = await record_gameplay(params, output_path, args.port, duration)
+        for i in range(batch):
+            if batch > 1:
+                print(f"\n{'='*56}")
+                print(f"  Video {i+1} of {batch}")
 
-        if success:
-            size_mb = output_path.stat().st_size / 1_048_576
-            print(f"\nDone!  Replay saved → {output_path}  ({size_mb:.1f} MB)")
-            print(json.dumps(params, indent=2))
-        else:
-            print("\nRecording failed – no video file was produced.")
-            sys.exit(1)
+            params  = choose_parameters_random(log)
+            content = generate_content(params)
+
+            print("\n" + "=" * 56)
+            print("  Random pick")
+            print("=" * 56)
+            print(f"  Orb    : {params.get('orb','?')}  ({AVAILABLE_ORBS.get(params.get('orb',''), '')})")
+            print(f"  Arena  : {params.get('arena','?')}  ({AVAILABLE_ARENAS.get(params.get('arena',''), '')})")
+            print(f"  Mode   : {params.get('mode','?')}  ({AVAILABLE_MODES.get(params.get('mode',''), '')})")
+            hp_display = str(params['hp']) if params.get('hp') else "mode default"
+            print(f"  HP     : {hp_display}")
+            print(f"  Title  : {content['title']}")
+            print(f"  Hook   : {content['voiceover']['hook']}")
+            print("=" * 56 + "\n")
+
+            output_path = make_output(i)
+            duration    = args.duration or MODE_DURATIONS.get(params.get("mode", "time_attack"), 70)
+            success     = await record_gameplay(params, output_path, args.port, duration)
+
+            if success:
+                size_mb = output_path.stat().st_size / 1_048_576
+                print(f"\nSaved → {output_path}  ({size_mb:.1f} MB)")
+
+                # Mark as played and persist
+                key = _combo_key(params)
+                if key not in log["played"] and params.get("tag") != "random":
+                    log["played"].append(key)
+                log["total_runs"] += 1
+                log["videos"].append({
+                    "run":   log["total_runs"],
+                    "file":  str(output_path),
+                    "key":   key,
+                    "title": content["title"],
+                })
+                _save_log(log)
+
+                save_run_files(output_path, params, content, log["total_runs"])
+                print(f"  Metadata → {output_path.with_suffix('.json').name}")
+                print(f"  Script   → {output_path.stem}_script.txt")
+            else:
+                print("\nRecording failed – no video file was produced.")
+                if batch == 1:
+                    sys.exit(1)
+
     finally:
         server.terminate()
         server.wait()
 
+    print(f"\nAll done. Total runs recorded: {log['total_runs']}")
+    print(f"Synergy combos played so far : {len(log['played'])} / {len(SYNERGY_COMBOS)}")
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Play Boss Ball Blitz with Claude AI and capture a video replay.",
+        description="Record Boss Ball Blitz gameplay videos — free, no API needed.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )
-    parser.add_argument(
-        "--output", "-o",
-        default="replay.webm",
-        help="Output video file (default: replay.webm)",
-    )
-    parser.add_argument(
-        "--duration", "-d",
-        type=int,
-        default=None,
-        help="Recording length in seconds (default: auto from mode timer + buffer)",
-    )
-    parser.add_argument(
-        "--port", "-p",
-        type=int,
-        default=8765,
-        help="Local HTTP server port (default: 8765)",
-    )
-    parser.add_argument(
-        "--build",
-        action="store_true",
-        help="Force a Flutter web rebuild before recording",
-    )
+    parser.add_argument("--output", "-o", default="replay.webm",
+        help="Output file or directory for batch mode (default: replay.webm)")
+    parser.add_argument("--duration", "-d", type=int, default=None,
+        help="Recording length in seconds (default: auto from mode)")
+    parser.add_argument("--port", "-p", type=int, default=8765,
+        help="Local HTTP server port (default: 8765)")
+    parser.add_argument("--build", action="store_true",
+        help="Force a Flutter web rebuild before recording")
+    parser.add_argument("--batch", "-b", type=int, default=1,
+        help="Number of videos to record in sequence (default: 1)")
 
     asyncio.run(run(parser.parse_args()))
 

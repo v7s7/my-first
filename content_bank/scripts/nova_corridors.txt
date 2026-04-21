@@ -1,0 +1,40 @@
+# NOVA STAR  ×  CORRIDOR ARENA  ×  TIME ATTACK
+# Tag: nova_corridors
+# HP:  1000000
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  Rating every orb: NOVA STAR review 🏅
+  2.  Satisfying NOVA STAR run — no commentary 🎵
+  3.  NOVA STAR vs TIME ATTACK — who wins? 🏆
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#explosion #nova #satisfying #gaming #physics #bossfight #boom #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  One minute. One boss. One orb. Let's find out.
+
+[ORB SETUP]
+  Nova Star Orb. Radial explosion burst on every boss hit. It is basically a bomb with legs.
+
+[ARENA SETUP]
+  Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — Nova going off again.
+  — Radial burst — everything in range takes the hit.
+  — The boss has nowhere to run from a radial explosion.
+  — EXPLOSION.
+
+[RESULT]
+  Done. Boss is DOWN. 💀
+
+[OUTRO / CTA]
+  The full tier list is coming. Stay tuned. 📊

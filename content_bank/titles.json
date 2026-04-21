@@ -1,0 +1,691 @@
+{
+  "ice_tiny_blitz": {
+    "tag": "ice_tiny_blitz",
+    "orb": "ice",
+    "arena": "tiny",
+    "mode": "blitz",
+    "hp": 1000000,
+    "titles": [
+      "Wait… ICE ORB can do THAT?! 😳",
+      "ICE ORB just broke TINY ARENA 💥",
+      "POV: you find the most broken combo in Boss Ball 🤯"
+    ],
+    "caption": "#ice #freeze #satisfying #physics #bossfight #gaming #simulation #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "ice_small_blitz": {
+    "tag": "ice_small_blitz",
+    "orb": "ice",
+    "arena": "small",
+    "mode": "blitz",
+    "hp": 800000,
+    "titles": [
+      "POV: ICE ORB in SMALL ARENA hits different 💀",
+      "WEAPON BALL: ICE ORB enters SMALL ARENA ⚡",
+      "ICE ORB vs BLITZ — who wins? 🏆"
+    ],
+    "caption": "#ice #freeze #satisfying #physics #bossfight #gaming #simulation #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "ice_corridors_time_attack": {
+    "tag": "ice_corridors",
+    "orb": "ice",
+    "arena": "corridors",
+    "mode": "time_attack",
+    "hp": 1500000,
+    "titles": [
+      "Boss Ball Battle: ICE ORB Edition 🔥",
+      "Is ICE ORB actually broken? 🧐",
+      "Can this orb one-shot the boss? 💥"
+    ],
+    "caption": "#ice #freeze #satisfying #physics #bossfight #gaming #simulation #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "ice_maze_speed_run": {
+    "tag": "ice_maze_speedrun",
+    "orb": "ice",
+    "arena": "maze",
+    "mode": "speed_run",
+    "hp": null,
+    "titles": [
+      "The devs didn't want you to find this combo 🚫",
+      "POV: you find the most broken combo in Boss Ball 🤯",
+      "Can this orb one-shot the boss? 💥"
+    ],
+    "caption": "#ice #freeze #satisfying #physics #bossfight #gaming #simulation #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "ice_pillarsSmall_blitz": {
+    "tag": "ice_pillars_blitz",
+    "orb": "ice",
+    "arena": "pillarsSmall",
+    "mode": "blitz",
+    "hp": 1200000,
+    "titles": [
+      "Nobody told me ICE ORB does THIS 😱",
+      "WEAPON BALL: ICE ORB enters PILLAR ARENA ⚡",
+      "Can this orb one-shot the boss? 💥"
+    ],
+    "caption": "#ice #freeze #satisfying #physics #bossfight #gaming #simulation #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "mine_maze_time_attack": {
+    "tag": "mine_maze",
+    "orb": "mine",
+    "arena": "maze",
+    "mode": "time_attack",
+    "hp": null,
+    "titles": [
+      "I put MINE ORB in THE MAZE and this happened 👇",
+      "They need to NERF MINE ORB immediately 🔥",
+      "POV: you unlock MINE ORB for the first time 😳"
+    ],
+    "caption": "#mines #explosion #satisfying #physics #gaming #trap #bossfight #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "mine_corridors_time_attack": {
+    "tag": "mine_corridors",
+    "orb": "mine",
+    "arena": "corridors",
+    "mode": "time_attack",
+    "hp": 1000000,
+    "titles": [
+      "MINE ORB just broke CORRIDOR ARENA 💥",
+      "The devs didn't want you to find this combo 🚫",
+      "FINAL ROUND: MINE ORB in CORRIDOR ARENA ⚔️"
+    ],
+    "caption": "#mines #explosion #satisfying #physics #gaming #trap #bossfight #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "mine_tiny_blitz": {
+    "tag": "mine_tiny_blitz",
+    "orb": "mine",
+    "arena": "tiny",
+    "mode": "blitz",
+    "hp": 500000,
+    "titles": [
+      "Rating every orb: MINE ORB review 🏅",
+      "POV: MINE ORB in TINY ARENA hits different 💀",
+      "Can this orb one-shot the boss? 💥"
+    ],
+    "caption": "#mines #explosion #satisfying #physics #gaming #trap #bossfight #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "mine_pillarsSmall_time_attack": {
+    "tag": "mine_pillars_small",
+    "orb": "mine",
+    "arena": "pillarsSmall",
+    "mode": "time_attack",
+    "hp": 1500000,
+    "titles": [
+      "How much damage can MINE ORB do in TIME ATTACK? 🔢",
+      "Satisfying MINE ORB run — no commentary 🎵",
+      "Satisfying MINE ORB run — no commentary 🎵"
+    ],
+    "caption": "#mines #explosion #satisfying #physics #gaming #trap #bossfight #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "mine_pillarsBig_time_attack": {
+    "tag": "mine_pillars_big",
+    "orb": "mine",
+    "arena": "pillarsBig",
+    "mode": "time_attack",
+    "hp": 2000000,
+    "titles": [
+      "POV: you find the most broken combo in Boss Ball 🤯",
+      "POV: you find the most broken combo in Boss Ball 🤯",
+      "FINAL ROUND: MINE ORB in MEGA PILLAR ARENA ⚔️"
+    ],
+    "caption": "#mines #explosion #satisfying #physics #gaming #trap #bossfight #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "blackhole_corridors_blitz": {
+    "tag": "blackhole_corridors",
+    "orb": "blackhole",
+    "arena": "corridors",
+    "mode": "blitz",
+    "hp": 1500000,
+    "titles": [
+      "The physics of VOID STAR will BLOW your mind 🧠",
+      "FASTEST boss kill: VOID STAR edition 💨",
+      "The physics of VOID STAR will BLOW your mind 🧠"
+    ],
+    "caption": "#blackhole #vortex #satisfying #physics #gaming #simulation #bossfight #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "blackhole_tiny_blitz": {
+    "tag": "blackhole_tiny",
+    "orb": "blackhole",
+    "arena": "tiny",
+    "mode": "blitz",
+    "hp": 1000000,
+    "titles": [
+      "Wait… VOID STAR can do THAT?! 😳",
+      "FINAL ROUND: VOID STAR in TINY ARENA ⚔️",
+      "WEAPON BALL: VOID STAR enters TINY ARENA ⚡"
+    ],
+    "caption": "#blackhole #vortex #satisfying #physics #gaming #simulation #bossfight #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "blackhole_maze_time_attack": {
+    "tag": "blackhole_maze",
+    "orb": "blackhole",
+    "arena": "maze",
+    "mode": "time_attack",
+    "hp": 2000000,
+    "titles": [
+      "VOID STAR bouncing in THE MAZE is pure ASMR 🔊",
+      "Nobody told me VOID STAR does THIS 😱",
+      "POV: the boss sees VOID STAR coming 😈"
+    ],
+    "caption": "#blackhole #vortex #satisfying #physics #gaming #simulation #bossfight #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "blackhole_small_speed_run": {
+    "tag": "blackhole_small_speedrun",
+    "orb": "blackhole",
+    "arena": "small",
+    "mode": "speed_run",
+    "hp": null,
+    "titles": [
+      "VOID STAR + SMALL ARENA = perfect chaos 💫",
+      "POV: you unlock VOID STAR for the first time 😳",
+      "POV: the boss sees VOID STAR coming 😈"
+    ],
+    "caption": "#blackhole #vortex #satisfying #physics #gaming #simulation #bossfight #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "blackhole_pillarsSmall_blitz": {
+    "tag": "blackhole_pillars",
+    "orb": "blackhole",
+    "arena": "pillarsSmall",
+    "mode": "blitz",
+    "hp": 1200000,
+    "titles": [
+      "FINAL ROUND: VOID STAR in PILLAR ARENA ⚔️",
+      "VOID STAR vs BLITZ — who wins? 🏆",
+      "Nobody told me VOID STAR does THIS 😱"
+    ],
+    "caption": "#blackhole #vortex #satisfying #physics #gaming #simulation #bossfight #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "combo_full_time_attack": {
+    "tag": "combo_full",
+    "orb": "combo",
+    "arena": "full",
+    "mode": "time_attack",
+    "hp": 2000000,
+    "titles": [
+      "The devs didn't want you to find this combo 🚫",
+      "I put COMBO ORB in FULL ARENA and this happened 👇",
+      "New record attempt: COMBO ORB in TIME ATTACK ⚡"
+    ],
+    "caption": "#combo #multiplier #satisfying #gaming #bossfight #streak #physics #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "combo_pillarsBig_time_attack": {
+    "tag": "combo_pillars_big",
+    "orb": "combo",
+    "arena": "pillarsBig",
+    "mode": "time_attack",
+    "hp": 3000000,
+    "titles": [
+      "COMBO ORB + MEGA PILLAR ARENA = perfect chaos 💫",
+      "Nobody told me COMBO ORB does THIS 😱",
+      "TOURNAMENT ARC: COMBO ORB vs Boss 🏟️"
+    ],
+    "caption": "#combo #multiplier #satisfying #gaming #bossfight #streak #physics #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "combo_normal_time_attack": {
+    "tag": "combo_normal",
+    "orb": "combo",
+    "arena": "normal",
+    "mode": "time_attack",
+    "hp": 1500000,
+    "titles": [
+      "FINAL ROUND: COMBO ORB in NORMAL ARENA ⚔️",
+      "This COMBO ORB combo is UNPLAYABLE 😭",
+      "WEAPON BALL: COMBO ORB enters NORMAL ARENA ⚡"
+    ],
+    "caption": "#combo #multiplier #satisfying #gaming #bossfight #streak #physics #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "combo_maze_time_attack": {
+    "tag": "combo_maze",
+    "orb": "combo",
+    "arena": "maze",
+    "mode": "time_attack",
+    "hp": 2500000,
+    "titles": [
+      "COMBO ORB is carrying this entire run 💪",
+      "The physics of COMBO ORB will BLOW your mind 🧠",
+      "COMBO ORB just broke THE MAZE 💥"
+    ],
+    "caption": "#combo #multiplier #satisfying #gaming #bossfight #streak #physics #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "laser_small_speed_run": {
+    "tag": "laser_small_speedrun",
+    "orb": "laser",
+    "arena": "small",
+    "mode": "speed_run",
+    "hp": null,
+    "titles": [
+      "LASER ORB BATTLE ROYALE 🏹",
+      "LASER ORB in SMALL ARENA is the most satisfying thing 🎯",
+      "LASER ORB is carrying this entire run 💪"
+    ],
+    "caption": "#laser #beam #satisfying #gaming #physics #bossfight #simulation #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "laser_tiny_blitz": {
+    "tag": "laser_tiny_blitz",
+    "orb": "laser",
+    "arena": "tiny",
+    "mode": "blitz",
+    "hp": 800000,
+    "titles": [
+      "LASER ORB in TINY ARENA is the most satisfying thing 🎯",
+      "What happens when you put LASER ORB in TINY ARENA? 👀",
+      "POV: the boss sees LASER ORB coming 😈"
+    ],
+    "caption": "#laser #beam #satisfying #gaming #physics #bossfight #simulation #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "laser_corridors_speed_run": {
+    "tag": "laser_corridors_speedrun",
+    "orb": "laser",
+    "arena": "corridors",
+    "mode": "speed_run",
+    "hp": null,
+    "titles": [
+      "New record attempt: LASER ORB in SPEED RUN ⚡",
+      "LASER ORB max damage run 📈",
+      "LASER ORB + CORRIDOR ARENA = perfect chaos 💫"
+    ],
+    "caption": "#laser #beam #satisfying #gaming #physics #bossfight #simulation #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "laser_normal_time_attack": {
+    "tag": "laser_normal",
+    "orb": "laser",
+    "arena": "normal",
+    "mode": "time_attack",
+    "hp": 1000000,
+    "titles": [
+      "Rating every orb: LASER ORB review 🏅",
+      "They need to NERF LASER ORB immediately 🔥",
+      "Can this orb one-shot the boss? 💥"
+    ],
+    "caption": "#laser #beam #satisfying #gaming #physics #bossfight #simulation #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "chain_pillarsSmall_blitz": {
+    "tag": "chain_pillars_small",
+    "orb": "chain",
+    "arena": "pillarsSmall",
+    "mode": "blitz",
+    "hp": 1000000,
+    "titles": [
+      "POV: you unlock CHAIN ORB for the first time 😳",
+      "How much damage can CHAIN ORB do in BLITZ? 🔢",
+      "CHAIN ORB in PILLAR ARENA is the most satisfying thing 🎯"
+    ],
+    "caption": "#lightning #chain #satisfying #gaming #electric #bossfight #physics #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "chain_maze_time_attack": {
+    "tag": "chain_maze",
+    "orb": "chain",
+    "arena": "maze",
+    "mode": "time_attack",
+    "hp": 1500000,
+    "titles": [
+      "I put CHAIN ORB in THE MAZE and this happened 👇",
+      "CHAIN ORB vs THE BOSS 💀",
+      "New record attempt: CHAIN ORB in TIME ATTACK ⚡"
+    ],
+    "caption": "#lightning #chain #satisfying #gaming #electric #bossfight #physics #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "chain_tiny_blitz": {
+    "tag": "chain_tiny_blitz",
+    "orb": "chain",
+    "arena": "tiny",
+    "mode": "blitz",
+    "hp": 800000,
+    "titles": [
+      "Boss Ball Battle: CHAIN ORB Edition 🔥",
+      "What happens when you put CHAIN ORB in TINY ARENA? 👀",
+      "POV: the boss sees CHAIN ORB coming 😈"
+    ],
+    "caption": "#lightning #chain #satisfying #gaming #electric #bossfight #physics #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "chain_pillarsBig_time_attack": {
+    "tag": "chain_pillars_big",
+    "orb": "chain",
+    "arena": "pillarsBig",
+    "mode": "time_attack",
+    "hp": 2000000,
+    "titles": [
+      "Wait… CHAIN ORB can do THAT?! 😳",
+      "Boss Ball Battle: CHAIN ORB Edition 🔥",
+      "Wait… CHAIN ORB can do THAT?! 😳"
+    ],
+    "caption": "#lightning #chain #satisfying #gaming #electric #bossfight #physics #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "nova_tiny_speed_run": {
+    "tag": "nova_tiny_speedrun",
+    "orb": "nova",
+    "arena": "tiny",
+    "mode": "speed_run",
+    "hp": 500000,
+    "titles": [
+      "NOVA STAR + TINY ARENA = perfect chaos 💫",
+      "Boss Ball Battle: NOVA STAR Edition 🔥",
+      "TOURNAMENT ARC: NOVA STAR vs Boss 🏟️"
+    ],
+    "caption": "#explosion #nova #satisfying #gaming #physics #bossfight #boom #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "nova_small_blitz": {
+    "tag": "nova_small_blitz",
+    "orb": "nova",
+    "arena": "small",
+    "mode": "blitz",
+    "hp": 800000,
+    "titles": [
+      "New record attempt: NOVA STAR in BLITZ ⚡",
+      "POV: NOVA STAR in SMALL ARENA hits different 💀",
+      "FINAL ROUND: NOVA STAR in SMALL ARENA ⚔️"
+    ],
+    "caption": "#explosion #nova #satisfying #gaming #physics #bossfight #boom #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "nova_corridors_time_attack": {
+    "tag": "nova_corridors",
+    "orb": "nova",
+    "arena": "corridors",
+    "mode": "time_attack",
+    "hp": 1000000,
+    "titles": [
+      "Rating every orb: NOVA STAR review 🏅",
+      "Satisfying NOVA STAR run — no commentary 🎵",
+      "NOVA STAR vs TIME ATTACK — who wins? 🏆"
+    ],
+    "caption": "#explosion #nova #satisfying #gaming #physics #bossfight #boom #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "hook_pillarsBig_time_attack": {
+    "tag": "hook_pillars_big",
+    "orb": "hook",
+    "arena": "pillarsBig",
+    "mode": "time_attack",
+    "hp": null,
+    "titles": [
+      "HOOK ORB in MEGA PILLAR ARENA is the most satisfying thing 🎯",
+      "WEAPON BALL: HOOK ORB enters MEGA PILLAR ARENA ⚡",
+      "Orb tier list: where does HOOK ORB land? 📊"
+    ],
+    "caption": "#homing #hook #satisfying #gaming #physics #bossfight #tracking #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "hook_full_time_attack": {
+    "tag": "hook_full",
+    "orb": "hook",
+    "arena": "full",
+    "mode": "time_attack",
+    "hp": 2000000,
+    "titles": [
+      "WEAPON BALL: HOOK ORB enters FULL ARENA ⚡",
+      "I put HOOK ORB in FULL ARENA and this happened 👇",
+      "FINAL ROUND: HOOK ORB in FULL ARENA ⚔️"
+    ],
+    "caption": "#homing #hook #satisfying #gaming #physics #bossfight #tracking #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "hook_corridors_blitz": {
+    "tag": "hook_corridors_blitz",
+    "orb": "hook",
+    "arena": "corridors",
+    "mode": "blitz",
+    "hp": 1000000,
+    "titles": [
+      "Boss Ball Battle: HOOK ORB Edition 🔥",
+      "HOOK ORB BATTLE ROYALE 🏹",
+      "HOOK ORB max damage run 📈"
+    ],
+    "caption": "#homing #hook #satisfying #gaming #physics #bossfight #tracking #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "splitter_corridors_speed_run": {
+    "tag": "splitter_corridors_speedrun",
+    "orb": "splitter",
+    "arena": "corridors",
+    "mode": "speed_run",
+    "hp": null,
+    "titles": [
+      "They need to NERF SHURIKEN ORB immediately 🔥",
+      "POV: you unlock SHURIKEN ORB for the first time 😳",
+      "SHURIKEN ORB bouncing in CORRIDOR ARENA is pure ASMR 🔊"
+    ],
+    "caption": "#shuriken #blades #satisfying #gaming #physics #bossfight #spin #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "splitter_tiny_blitz": {
+    "tag": "splitter_tiny_blitz",
+    "orb": "splitter",
+    "arena": "tiny",
+    "mode": "blitz",
+    "hp": 500000,
+    "titles": [
+      "This SHURIKEN ORB combo is UNPLAYABLE 😭",
+      "I put SHURIKEN ORB in TINY ARENA and this happened 👇",
+      "What happens when you put SHURIKEN ORB in TINY ARENA? 👀"
+    ],
+    "caption": "#shuriken #blades #satisfying #gaming #physics #bossfight #spin #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "splitter_maze_time_attack": {
+    "tag": "splitter_maze",
+    "orb": "splitter",
+    "arena": "maze",
+    "mode": "time_attack",
+    "hp": 1500000,
+    "titles": [
+      "SHURIKEN ORB + THE MAZE = perfect chaos 💫",
+      "SHURIKEN ORB vs TIME ATTACK — who wins? 🏆",
+      "Can SHURIKEN ORB beat TIME ATTACK in THE MAZE? 🤔"
+    ],
+    "caption": "#shuriken #blades #satisfying #gaming #physics #bossfight #spin #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "zapper_maze_time_attack": {
+    "tag": "zapper_maze",
+    "orb": "zapper",
+    "arena": "maze",
+    "mode": "time_attack",
+    "hp": 2000000,
+    "titles": [
+      "ZAPPER ORB = S TIER? Let's find out 👇",
+      "ZAPPER ORB max damage run 📈",
+      "The BEST orb in Boss Ball? Testing ZAPPER ORB 🥇"
+    ],
+    "caption": "#lightning #thunder #satisfying #gaming #electric #bossfight #zap #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "zapper_corridors_blitz": {
+    "tag": "zapper_corridors_blitz",
+    "orb": "zapper",
+    "arena": "corridors",
+    "mode": "blitz",
+    "hp": 1500000,
+    "titles": [
+      "ZAPPER ORB just broke CORRIDOR ARENA 💥",
+      "Rating every orb: ZAPPER ORB review 🏅",
+      "ZAPPER ORB just broke CORRIDOR ARENA 💥"
+    ],
+    "caption": "#lightning #thunder #satisfying #gaming #electric #bossfight #zap #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "zapper_pillarsSmall_time_attack": {
+    "tag": "zapper_pillars_small",
+    "orb": "zapper",
+    "arena": "pillarsSmall",
+    "mode": "time_attack",
+    "hp": 1000000,
+    "titles": [
+      "Boss Ball Battle: ZAPPER ORB Edition 🔥",
+      "WEAPON BALL: ZAPPER ORB enters PILLAR ARENA ⚡",
+      "ZAPPER ORB BATTLE ROYALE 🏹"
+    ],
+    "caption": "#lightning #thunder #satisfying #gaming #electric #bossfight #zap #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "void_maze_blitz": {
+    "tag": "void_maze_blitz",
+    "orb": "void",
+    "arena": "maze",
+    "mode": "blitz",
+    "hp": 1000000,
+    "titles": [
+      "VOID ORB = S TIER? Let's find out 👇",
+      "New record attempt: VOID ORB in BLITZ ⚡",
+      "VOID ORB = S TIER? Let's find out 👇"
+    ],
+    "caption": "#void #warp #satisfying #gaming #physics #bossfight #teleport #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "void_tiny_speed_run": {
+    "tag": "void_tiny_speedrun",
+    "orb": "void",
+    "arena": "tiny",
+    "mode": "speed_run",
+    "hp": null,
+    "titles": [
+      "Satisfying VOID ORB run — no commentary 🎵",
+      "This VOID ORB combo is UNPLAYABLE 😭",
+      "VOID ORB is carrying this entire run 💪"
+    ],
+    "caption": "#void #warp #satisfying #gaming #physics #bossfight #teleport #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "void_corridors_time_attack": {
+    "tag": "void_corridors",
+    "orb": "void",
+    "arena": "corridors",
+    "mode": "time_attack",
+    "hp": 1500000,
+    "titles": [
+      "Is VOID ORB actually broken? 🧐",
+      "This VOID ORB combo is UNPLAYABLE 😭",
+      "They need to NERF VOID ORB immediately 🔥"
+    ],
+    "caption": "#void #warp #satisfying #gaming #physics #bossfight #teleport #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "clone_full_time_attack": {
+    "tag": "clone_full",
+    "orb": "clone",
+    "arena": "full",
+    "mode": "time_attack",
+    "hp": 2000000,
+    "titles": [
+      "POV: you unlock ECHO ORB for the first time 😳",
+      "Watch ECHO ORB fill every corner of FULL ARENA 🌀",
+      "The physics of ECHO ORB will BLOW your mind 🧠"
+    ],
+    "caption": "#clone #echo #satisfying #gaming #physics #bossfight #swarm #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "clone_corridors_blitz": {
+    "tag": "clone_corridors_blitz",
+    "orb": "clone",
+    "arena": "corridors",
+    "mode": "blitz",
+    "hp": 1000000,
+    "titles": [
+      "POV: the boss sees ECHO ORB coming 😈",
+      "They need to NERF ECHO ORB immediately 🔥",
+      "New record attempt: ECHO ORB in BLITZ ⚡"
+    ],
+    "caption": "#clone #echo #satisfying #gaming #physics #bossfight #swarm #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "clone_maze_time_attack": {
+    "tag": "clone_maze",
+    "orb": "clone",
+    "arena": "maze",
+    "mode": "time_attack",
+    "hp": 1500000,
+    "titles": [
+      "ECHO ORB vs THE BOSS 💀",
+      "New record attempt: ECHO ORB in TIME ATTACK ⚡",
+      "I put ECHO ORB in THE MAZE and this happened 👇"
+    ],
+    "caption": "#clone #echo #satisfying #gaming #physics #bossfight #swarm #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "fire_corridors_time_attack": {
+    "tag": "fire_corridors",
+    "orb": "fire",
+    "arena": "corridors",
+    "mode": "time_attack",
+    "hp": 1000000,
+    "titles": [
+      "The BEST orb in Boss Ball? Testing INFERNO ORB 🥇",
+      "POV: INFERNO ORB in CORRIDOR ARENA hits different 💀",
+      "Nobody told me INFERNO ORB does THIS 😱"
+    ],
+    "caption": "#fire #inferno #satisfying #gaming #physics #bossfight #burn #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "fire_maze_time_attack": {
+    "tag": "fire_maze",
+    "orb": "fire",
+    "arena": "maze",
+    "mode": "time_attack",
+    "hp": 1500000,
+    "titles": [
+      "The BEST orb in Boss Ball? Testing INFERNO ORB 🥇",
+      "Can INFERNO ORB beat TIME ATTACK in THE MAZE? 🤔",
+      "Watch INFERNO ORB fill every corner of THE MAZE 🌀"
+    ],
+    "caption": "#fire #inferno #satisfying #gaming #physics #bossfight #burn #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "firetrap_maze_time_attack": {
+    "tag": "firetrap_maze",
+    "orb": "firetrap",
+    "arena": "maze",
+    "mode": "time_attack",
+    "hp": 2000000,
+    "titles": [
+      "Rating every orb: FIRE TRAP review 🏅",
+      "FIRE TRAP just broke THE MAZE 💥",
+      "This FIRE TRAP combo is UNPLAYABLE 😭"
+    ],
+    "caption": "#fire #trap #satisfying #gaming #physics #bossfight #explosion #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "firetrap_corridors_blitz": {
+    "tag": "firetrap_corridors_blitz",
+    "orb": "firetrap",
+    "arena": "corridors",
+    "mode": "blitz",
+    "hp": 1000000,
+    "titles": [
+      "FIRE TRAP vs THE BOSS 💀",
+      "New record attempt: FIRE TRAP in BLITZ ⚡",
+      "What happens when you put FIRE TRAP in CORRIDOR ARENA? 👀"
+    ],
+    "caption": "#fire #trap #satisfying #gaming #physics #bossfight #explosion #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "prismatic_full_time_attack": {
+    "tag": "prismatic_full",
+    "orb": "prismatic",
+    "arena": "full",
+    "mode": "time_attack",
+    "hp": 2000000,
+    "titles": [
+      "Boss Ball Battle: PRISMATIC ORB Edition 🔥",
+      "PRISMATIC ORB BATTLE ROYALE 🏹",
+      "POV: the boss sees PRISMATIC ORB coming 😈"
+    ],
+    "caption": "#prism #beam #satisfying #gaming #physics #bossfight #reflect #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "prismatic_pillarsBig_time_attack": {
+    "tag": "prismatic_pillars_big",
+    "orb": "prismatic",
+    "arena": "pillarsBig",
+    "mode": "time_attack",
+    "hp": 1500000,
+    "titles": [
+      "Can this orb one-shot the boss? 💥",
+      "Can this orb one-shot the boss? 💥",
+      "How much damage can PRISMATIC ORB do in TIME ATTACK? 🔢"
+    ],
+    "caption": "#prism #beam #satisfying #gaming #physics #bossfight #reflect #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "basic_tiny_blitz": {
+    "tag": "basic_tiny_blitz",
+    "orb": "basic",
+    "arena": "tiny",
+    "mode": "blitz",
+    "hp": 500000,
+    "titles": [
+      "How much damage can SHOCK ORB do in BLITZ? 🔢",
+      "I put SHOCK ORB in TINY ARENA and this happened 👇",
+      "POV: SHOCK ORB in TINY ARENA hits different 💀"
+    ],
+    "caption": "#shock #satisfying #gaming #physics #bossfight #simulation #classic #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  },
+  "basic_maze_time_attack": {
+    "tag": "basic_maze_endurance",
+    "orb": "basic",
+    "arena": "maze",
+    "mode": "time_attack",
+    "hp": 3000000,
+    "titles": [
+      "POV: you unlock SHOCK ORB for the first time 😳",
+      "TOURNAMENT ARC: SHOCK ORB vs Boss 🏟️",
+      "SHOCK ORB max damage run 📈"
+    ],
+    "caption": "#shock #satisfying #gaming #physics #bossfight #simulation #classic #bossbattle #ballgame #physicsgame #simulation #weaponball"
+  }
+}

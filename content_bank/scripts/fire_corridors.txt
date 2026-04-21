@@ -1,0 +1,40 @@
+# INFERNO ORB  ×  CORRIDOR ARENA  ×  TIME ATTACK
+# Tag: fire_corridors
+# HP:  1000000
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  The BEST orb in Boss Ball? Testing INFERNO ORB 🥇
+  2.  POV: INFERNO ORB in CORRIDOR ARENA hits different 💀
+  3.  Nobody told me INFERNO ORB does THIS 😱
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#fire #inferno #satisfying #gaming #physics #bossfight #burn #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  One minute. One boss. One orb. Let's find out.
+
+[ORB SETUP]
+  Inferno Orb. Places burning fire zones everywhere it bounces. Damage over time. The floor becomes lava.
+
+[ARENA SETUP]
+  Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — The corridors trap the fire zones in every lane.
+  — The fire zones are stacking everywhere it goes.
+  — The arena floor is on fire.
+  — Boss walked right into the burn zone.
+
+[RESULT]
+  Done. Boss is DOWN. 💀
+
+[OUTRO / CTA]
+  Share this with someone who needs to see this combo. 🎮

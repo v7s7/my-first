@@ -1,0 +1,40 @@
+# VOID STAR  ×  CORRIDOR ARENA  ×  BLITZ
+# Tag: blackhole_corridors
+# HP:  1500000
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  The physics of VOID STAR will BLOW your mind 🧠
+  2.  FASTEST boss kill: VOID STAR edition 💨
+  3.  The physics of VOID STAR will BLOW your mind 🧠
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#blackhole #vortex #satisfying #physics #gaming #simulation #bossfight #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  BLITZ. Maximum pressure. Let's see what this orb can do.
+
+[ORB SETUP]
+  Void Star Orb. Creates a gravitational vortex. The boss gets PULLED into it and cannot escape.
+
+[ARENA SETUP]
+  Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — It cannot escape the gravitational field.
+  — The boss is trapped in orbit. It has absolutely no choice.
+  — There is the vortex — the boss is getting PULLED IN.
+  — Fifteen hundred damage every point three seconds from suction alone.
+
+[RESULT]
+  This orb is S-tier. No debate.
+
+[OUTRO / CTA]
+  Which orb should I test next? Drop it in the comments. 👇

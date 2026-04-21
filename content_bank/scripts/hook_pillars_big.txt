@@ -1,0 +1,40 @@
+# HOOK ORB  ×  MEGA PILLAR ARENA  ×  TIME ATTACK
+# Tag: hook_pillars_big
+# HP:  mode default
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  HOOK ORB in MEGA PILLAR ARENA is the most satisfying thing 🎯
+  2.  WEAPON BALL: HOOK ORB enters MEGA PILLAR ARENA ⚡
+  3.  Orb tier list: where does HOOK ORB land? 📊
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#homing #hook #satisfying #gaming #physics #bossfight #tracking #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  Time Attack. One million HP. The clock starts NOW.
+
+[ORB SETUP]
+  Hook Orb. Once it gets within four hundred pixels of the boss — it homes in automatically. You cannot dodge it.
+
+[ARENA SETUP]
+  MEGA pillar arena. Two giant pillars flanking the center. Absolute ricochet chaos.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — Track. Lock. Hit. Repeat.
+  — You cannot dodge a homing orb. That is literally the point.
+  — Straight at the boss. No hesitation. No mercy.
+  — The pillars deflect it but the homing pulls it right back.
+
+[RESULT]
+  That score speaks for itself.
+
+[OUTRO / CTA]
+  Subscribe for the full orb rankings. 🏆

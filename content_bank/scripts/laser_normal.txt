@@ -1,0 +1,40 @@
+# LASER ORB  ×  NORMAL ARENA  ×  TIME ATTACK
+# Tag: laser_normal
+# HP:  1000000
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  Rating every orb: LASER ORB review 🏅
+  2.  They need to NERF LASER ORB immediately 🔥
+  3.  Can this orb one-shot the boss? 💥
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#laser #beam #satisfying #gaming #physics #bossfight #simulation #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  Time Attack. One million HP. The clock starts NOW.
+
+[ORB SETUP]
+  Laser Orb. Thirty ticks of beam damage on contact. Consistent. Relentless. Absolutely deadly.
+
+[ARENA SETUP]
+  Normal arena. Balanced field. This is where the orb really shows what it can do.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — The beam does not stop until the cooldown ends.
+  — No RNG. No luck. Just consistent damage every time.
+  — Thirty thousand damage. Every single hit.
+  — Thirty ticks of beam damage on contact.
+
+[RESULT]
+  ELIMINATED. No contest.
+
+[OUTRO / CTA]
+  Share this with someone who needs to see this combo. 🎮

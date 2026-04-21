@@ -1,0 +1,40 @@
+# MINE ORB  ×  CORRIDOR ARENA  ×  TIME ATTACK
+# Tag: mine_corridors
+# HP:  1000000
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  MINE ORB just broke CORRIDOR ARENA 💥
+  2.  The devs didn't want you to find this combo 🚫
+  3.  FINAL ROUND: MINE ORB in CORRIDOR ARENA ⚔️
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#mines #explosion #satisfying #physics #gaming #trap #bossfight #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  Sixty seconds. One million HP boss. Let's see if this combo works.
+
+[ORB SETUP]
+  Mine Orb. Plants a proximity mine on every single bounce. Watch the arena fill up with explosives.
+
+[ARENA SETUP]
+  Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — It stepped right into it. Every time.
+  — The boss just walked into three mines at once.
+  — Mine down.
+  — The entire floor is a death trap.
+
+[RESULT]
+  ELIMINATED. No contest.
+
+[OUTRO / CTA]
+  Share this with someone who needs to see this combo. 🎮

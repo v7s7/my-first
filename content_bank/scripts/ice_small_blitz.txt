@@ -1,0 +1,40 @@
+# ICE ORB  ×  SMALL ARENA  ×  BLITZ
+# Tag: ice_small_blitz
+# HP:  800000
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  POV: ICE ORB in SMALL ARENA hits different 💀
+  2.  WEAPON BALL: ICE ORB enters SMALL ARENA ⚡
+  3.  ICE ORB vs BLITZ — who wins? 🏆
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#ice #freeze #satisfying #physics #bossfight #gaming #simulation #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  Okay. Thirty seconds. Two million HP. Let's GO.
+
+[ORB SETUP]
+  Ice Orb. Every hit freezes the boss for two and a half seconds. While frozen — double damage. It cannot fight back.
+
+[ARENA SETUP]
+  Small arena. Close quarters. Every bounce comes back instantly.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — It cannot run. It cannot dodge. It just takes every hit.
+  — The tiny arena makes this even more brutal.
+  — Frozen solid. Hit it again.
+  — The boss cannot move. It is completely stuck.
+
+[RESULT]
+  This orb is S-tier. No debate.
+
+[OUTRO / CTA]
+  Tag someone who would pick this orb. 👀

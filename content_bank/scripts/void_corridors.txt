@@ -1,0 +1,40 @@
+# VOID ORB  ×  CORRIDOR ARENA  ×  TIME ATTACK
+# Tag: void_corridors
+# HP:  1500000
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  Is VOID ORB actually broken? 🧐
+  2.  This VOID ORB combo is UNPLAYABLE 😭
+  3.  They need to NERF VOID ORB immediately 🔥
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#void #warp #satisfying #gaming #physics #bossfight #teleport #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  Sixty seconds on the clock. That boss is going DOWN.
+
+[ORB SETUP]
+  Void Orb. Phases through walls. Warps across the arena. The boss has absolutely nowhere to hide.
+
+[ARENA SETUP]
+  Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — The boss had no idea where it was coming from.
+  — It phased out and reappeared on the other side instantly.
+  — No wall can stop the Void Orb. None.
+  — In the maze the void just ignores every wall entirely.
+
+[RESULT]
+  Done. Boss is DOWN. 💀
+
+[OUTRO / CTA]
+  Comment your favorite orb below. 💬

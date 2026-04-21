@@ -1,0 +1,40 @@
+# FIRE TRAP  ×  CORRIDOR ARENA  ×  BLITZ
+# Tag: firetrap_corridors_blitz
+# HP:  1000000
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  FIRE TRAP vs THE BOSS 💀
+  2.  New record attempt: FIRE TRAP in BLITZ ⚡
+  3.  What happens when you put FIRE TRAP in CORRIDOR ARENA? 👀
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#fire #trap #satisfying #gaming #physics #bossfight #explosion #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  Two million HP. Half a minute. Watch what happens.
+
+[ORB SETUP]
+  Fire Trap Orb. Sets burning trap zones on every bounce. The entire arena becomes a fire minefield.
+
+[ARENA SETUP]
+  Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — Another trap. And another one.
+  — The maze is completely covered in fire traps now.
+  — Trap set.
+  — The boss cannot cross without triggering something.
+
+[RESULT]
+  That is how you do it. Easy work.
+
+[OUTRO / CTA]
+  Like if this orb deserves S-tier. ✅

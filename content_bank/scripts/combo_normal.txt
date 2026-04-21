@@ -1,0 +1,40 @@
+# COMBO ORB  ×  NORMAL ARENA  ×  TIME ATTACK
+# Tag: combo_normal
+# HP:  1500000
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  FINAL ROUND: COMBO ORB in NORMAL ARENA ⚔️
+  2.  This COMBO ORB combo is UNPLAYABLE 😭
+  3.  WEAPON BALL: COMBO ORB enters NORMAL ARENA ⚡
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#combo #multiplier #satisfying #gaming #bossfight #streak #physics #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  Sixty seconds on the clock. That boss is going DOWN.
+
+[ORB SETUP]
+  Combo Orb. The damage doubles every wall bounce. At max streak — sixty four thousand damage per hit.
+
+[ARENA SETUP]
+  Normal arena. Balanced field. This is where the orb really shows what it can do.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — Sixteen times multiplier — one more bounce.
+  — The multiplier resets. Build it again from scratch.
+  — Four times damage now.
+  — Multiplier building. Two times.
+
+[RESULT]
+  Clean run. Perfect execution.
+
+[OUTRO / CTA]
+  More boss battles every single day. 🔥

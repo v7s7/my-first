@@ -1,0 +1,40 @@
+# MINE ORB  ×  PILLAR ARENA  ×  TIME ATTACK
+# Tag: mine_pillars_small
+# HP:  1500000
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  How much damage can MINE ORB do in TIME ATTACK? 🔢
+  2.  Satisfying MINE ORB run — no commentary 🎵
+  3.  Satisfying MINE ORB run — no commentary 🎵
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#mines #explosion #satisfying #physics #gaming #trap #bossfight #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  Time Attack. One million HP. The clock starts NOW.
+
+[ORB SETUP]
+  Mine Orb. Plants a proximity mine on every single bounce. Watch the arena fill up with explosives.
+
+[ARENA SETUP]
+  Pillar arena. Four pillars at every corner. The orb ricochets off everything in here.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — Another mine. And another.
+  — Every bounce plants another mine. There is no safe zone left.
+  — Mine down.
+  — BOOM. There goes another cluster.
+
+[RESULT]
+  That score speaks for itself.
+
+[OUTRO / CTA]
+  Follow for more orb battles. 🏹

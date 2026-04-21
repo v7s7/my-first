@@ -21,6 +21,7 @@ class PlayerOrb extends PositionComponent {
   static const double hitCooldown = 0.25; // ثواني بين كل ضرر والآخر
 
   double speed = baseSpeed;
+  double speedMultiplier = 1.0; // multiplied by Speed pickup
   late Vector2 velocity;
 
   final Random _rng = Random();
@@ -83,7 +84,7 @@ class PlayerOrb extends PositionComponent {
       }
     }
 
-    position += velocity * dt;
+    position += velocity * dt * speedMultiplier;
     
     _handleWallBounce();
     _resolveCollision();

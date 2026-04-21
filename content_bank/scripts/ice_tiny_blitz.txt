@@ -1,0 +1,40 @@
+# ICE ORB  ×  TINY ARENA  ×  BLITZ
+# Tag: ice_tiny_blitz
+# HP:  1000000
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  Wait… ICE ORB can do THAT?! 😳
+  2.  ICE ORB just broke TINY ARENA 💥
+  3.  POV: you find the most broken combo in Boss Ball 🤯
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#ice #freeze #satisfying #physics #bossfight #gaming #simulation #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  BLITZ mode. Thirty seconds on the clock. This is going to be INSANE.
+
+[ORB SETUP]
+  Ice Orb. Every hit freezes the boss for two and a half seconds. While frozen — double damage. It cannot fight back.
+
+[ARENA SETUP]
+  We are in the TINY arena. Fifty-two percent of screen. The boss has absolutely NOWHERE to go.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — Freeze. Hit. Freeze. Hit. The cycle never ends.
+  — Frozen again. Double damage window is OPEN.
+  — Watch — the moment it hits — FREEZE.
+  — Frozen solid. Hit it again.
+
+[RESULT]
+  ELIMINATED. No contest.
+
+[OUTRO / CTA]
+  Follow for more orb battles. 🏹
