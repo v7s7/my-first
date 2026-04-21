@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 """
-Boss Ball Blitz – AI game automation with video replay.
+Boss Ball Blitz – game automation with video replay (100% free, no API needed).
 
-Claude (via the Anthropic API) picks a random orb, arena, HP, and mode,
-then a headless Chromium session plays the game and saves a .webm replay.
+A random orb, arena, HP, and mode are chosen automatically, then a headless
+Chromium session plays the game and saves a .webm replay.
 
 Usage
 -----
-    export ANTHROPIC_API_KEY="sk-ant-..."
     python autoplay.py                        # save to replay.webm
     python autoplay.py -o my_run.webm         # custom output path
     python autoplay.py --build                # force Flutter rebuild first
@@ -15,7 +14,7 @@ Usage
 
 Requirements
 ------------
-    pip install anthropic playwright
+    pip install playwright
     python -m playwright install chromium
     flutter SDK must be on PATH
 """
@@ -29,7 +28,7 @@ import sys
 import time
 from pathlib import Path
 
-import anthropic
+import random
 
 # ── Game constants ─────────────────────────────────────────────────────────────
 
@@ -78,52 +77,36 @@ MODE_DURATIONS = {
 }
 
 
-# ── Claude parameter selection ─────────────────────────────────────────────────
+# ── Random parameter selection ─────────────────────────────────────────────────
 
-def choose_parameters_with_claude(api_key: str) -> dict:
-    """Ask Claude to pick an entertaining orb / arena / mode / HP combo."""
-    client = anthropic.Anthropic(api_key=api_key)
+# Pre-defined high-synergy combos — picked 50% of the time for exciting runs
+SYNERGY_COMBOS = [
+    {"orb": "ice",       "arena": "tiny",       "mode": "blitz",       "hp": 1000000},
+    {"orb": "mine",      "arena": "maze",        "mode": "time_attack", "hp": None},
+    {"orb": "blackhole", "arena": "corridors",   "mode": "blitz",       "hp": 1500000},
+    {"orb": "combo",     "arena": "full",        "mode": "time_attack", "hp": 2000000},
+    {"orb": "laser",     "arena": "small",       "mode": "speed_run",   "hp": None},
+    {"orb": "chain",     "arena": "pillarsSmall","mode": "blitz",       "hp": 1000000},
+    {"orb": "nova",      "arena": "tiny",        "mode": "speed_run",   "hp": 500000},
+    {"orb": "hook",      "arena": "pillarsBig",  "mode": "time_attack", "hp": None},
+    {"orb": "splitter",  "arena": "corridors",   "mode": "speed_run",   "hp": None},
+    {"orb": "zapper",    "arena": "maze",        "mode": "time_attack", "hp": 2000000},
+]
 
-    orb_lines   = "\n".join(f"  {k}: {v}" for k, v in AVAILABLE_ORBS.items())
-    arena_lines = "\n".join(f"  {k}: {v}" for k, v in AVAILABLE_ARENAS.items())
-    mode_lines  = "\n".join(f"  {k}: {v}" for k, v in AVAILABLE_MODES.items())
 
-    prompt = f"""You are a game master for Boss Ball Blitz, a physics-based arcade game.
-Choose parameters that will produce an exciting, visually dramatic demo run.
-
-Available orbs (ball types):
-{orb_lines}
-
-Available arenas (maps):
-{arena_lines}
-
-Available modes:
-{mode_lines}
-
-Custom Boss HP: integer between 500000 and 5000000, or null to use mode default.
-
-Think about interesting synergies, e.g.:
-- ice orb in tiny arena  → constant freezing chaos
-- mine orb in maze       → mines fill every corridor
-- blackhole in corridors → vortex in a tight lane
-- combo orb in full      → long bounces build huge multipliers
-
-Respond with ONLY valid JSON (no markdown fences):
-{{"orb": "<id>", "arena": "<id>", "mode": "<id>", "hp": <int or null>, "reason": "<one exciting sentence>"}}"""
-
-    message = client.messages.create(
-        model="claude-opus-4-7",
-        max_tokens=300,
-        messages=[{"role": "user", "content": prompt}],
-    )
-
-    raw = message.content[0].text.strip()
-    # Strip accidental markdown code fences if present
-    if raw.startswith("```"):
-        raw = raw.split("```")[1]
-        if raw.startswith("json"):
-            raw = raw[4:]
-    return json.loads(raw.strip())
+def choose_parameters_random() -> dict:
+    """Pick an entertaining orb / arena / mode / HP combo — no API needed."""
+    if random.random() < 0.5:
+        params = random.choice(SYNERGY_COMBOS).copy()
+    else:
+        params = {
+            "orb":   random.choice(list(AVAILABLE_ORBS.keys())),
+            "arena": random.choice(list(AVAILABLE_ARENAS.keys())),
+            "mode":  random.choice(list(AVAILABLE_MODES.keys())),
+            "hp":    random.choice([500000, 1000000, 1500000, 2000000, 3000000, None]),
+        }
+    params["reason"] = f"{AVAILABLE_ORBS[params['orb']]} in {params['arena']} arena"
+    return params
 
 
 # ── Flutter build & serve ──────────────────────────────────────────────────────
@@ -236,17 +219,11 @@ async def run(args: argparse.Namespace) -> None:
     output_path = Path(args.output).resolve()
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
-    if not api_key:
-        print("ERROR: ANTHROPIC_API_KEY environment variable is not set.")
-        sys.exit(1)
-
-    # 1 ── Ask Claude to pick game parameters
-    print("Asking Claude to choose game parameters…")
-    params = choose_parameters_with_claude(api_key)
+    # 1 ── Pick random game parameters
+    params = choose_parameters_random()
 
     print("\n" + "=" * 56)
-    print("  Claude's pick")
+    print("  Random pick")
     print("=" * 56)
     print(f"  Orb   : {params.get('orb',  '?')}  ({AVAILABLE_ORBS.get(params.get('orb',''), '')})")
     print(f"  Arena : {params.get('arena','?')}  ({AVAILABLE_ARENAS.get(params.get('arena',''), '')})")
