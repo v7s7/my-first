@@ -1,0 +1,40 @@
+# LASER ORB  ×  SMALL ARENA  ×  SPEED RUN
+# Tag: laser_small_speedrun
+# HP:  mode default
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  LASER ORB BATTLE ROYALE 🏹
+  2.  LASER ORB in SMALL ARENA is the most satisfying thing 🎯
+  3.  LASER ORB is carrying this entire run 💪
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#laser #beam #satisfying #gaming #physics #bossfight #simulation #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  Fifteen seconds. Every single hit counts.
+
+[ORB SETUP]
+  Laser Orb. Thirty ticks of beam damage on contact. Consistent. Relentless. Absolutely deadly.
+
+[ARENA SETUP]
+  Small arena. Close quarters. Every bounce comes back instantly.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — It hits the boss and the laser just keeps going.
+  — Clean. Efficient. Brutal.
+  — Thirty ticks of beam damage on contact.
+  — Thirty thousand damage. Every single hit.
+
+[RESULT]
+  Done. Boss is DOWN. 💀
+
+[OUTRO / CTA]
+  Which orb should I test next? Drop it in the comments. 👇

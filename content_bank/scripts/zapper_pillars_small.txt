@@ -1,0 +1,40 @@
+# ZAPPER ORB  ×  PILLAR ARENA  ×  TIME ATTACK
+# Tag: zapper_pillars_small
+# HP:  1000000
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  Boss Ball Battle: ZAPPER ORB Edition 🔥
+  2.  WEAPON BALL: ZAPPER ORB enters PILLAR ARENA ⚡
+  3.  ZAPPER ORB BATTLE ROYALE 🏹
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#lightning #thunder #satisfying #gaming #electric #bossfight #zap #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  Sixty seconds on the clock. That boss is going DOWN.
+
+[ORB SETUP]
+  Zapper Orb. Every bounce drops a crackling thunder zone across the entire arena.
+
+[ARENA SETUP]
+  Pillar arena. Four pillars at every corner. The orb ricochets off everything in here.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — Every square meter of this maze is now dangerous.
+  — The whole arena is electric now.
+  — Thunder zone placed.
+  — Boss walked directly into the thunder field.
+
+[RESULT]
+  That score speaks for itself.
+
+[OUTRO / CTA]
+  Tag someone who would pick this orb. 👀

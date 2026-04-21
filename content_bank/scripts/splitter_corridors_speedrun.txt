@@ -1,0 +1,40 @@
+# SHURIKEN ORB  ×  CORRIDOR ARENA  ×  SPEED RUN
+# Tag: splitter_corridors_speedrun
+# HP:  mode default
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  They need to NERF SHURIKEN ORB immediately 🔥
+  2.  POV: you unlock SHURIKEN ORB for the first time 😳
+  3.  SHURIKEN ORB bouncing in CORRIDOR ARENA is pure ASMR 🔊
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#shuriken #blades #satisfying #gaming #physics #bossfight #spin #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  Fifteen seconds. Every single hit counts.
+
+[ORB SETUP]
+  Shuriken Orb. Spawns three spinning blades on each hit. Eight thousand damage each. Do the math.
+
+[ARENA SETUP]
+  Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — In the corridors the blades have nowhere to go but the boss.
+  — Three blades. Eight thousand each. Twenty-four thousand damage total.
+  — The blades fan out and surround the boss completely.
+  — The blades are bouncing all over the arena.
+
+[RESULT]
+  That score speaks for itself.
+
+[OUTRO / CTA]
+  Like if this orb deserves S-tier. ✅

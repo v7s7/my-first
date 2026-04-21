@@ -1,0 +1,40 @@
+# ECHO ORB  ×  FULL ARENA  ×  TIME ATTACK
+# Tag: clone_full
+# HP:  2000000
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  POV: you unlock ECHO ORB for the first time 😳
+  2.  Watch ECHO ORB fill every corner of FULL ARENA 🌀
+  3.  The physics of ECHO ORB will BLOW your mind 🧠
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#clone #echo #satisfying #gaming #physics #bossfight #swarm #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  Time Attack. One million HP. The clock starts NOW.
+
+[ORB SETUP]
+  Echo Orb. Three ghost clones appear on contact and deal damage for three and a half seconds. It is a full swarm.
+
+[ARENA SETUP]
+  Full arena. One hundred percent screen. Maximum distance between walls — maximum bounce buildup.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — Three echo clones deployed.
+  — Swarm mode. The boss is completely surrounded.
+  — In the full arena the clones spread and cover everything.
+  — The clones are circling. Closing in from all sides.
+
+[RESULT]
+  BOSS DEFEATED. Let's GO. 🔥
+
+[OUTRO / CTA]
+  Share this with someone who needs to see this combo. 🎮

@@ -1,0 +1,40 @@
+# VOID STAR  ×  TINY ARENA  ×  BLITZ
+# Tag: blackhole_tiny
+# HP:  1000000
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  Wait… VOID STAR can do THAT?! 😳
+  2.  FINAL ROUND: VOID STAR in TINY ARENA ⚔️
+  3.  WEAPON BALL: VOID STAR enters TINY ARENA ⚡
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#blackhole #vortex #satisfying #physics #gaming #simulation #bossfight #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  Okay. Thirty seconds. Two million HP. Let's GO.
+
+[ORB SETUP]
+  Void Star Orb. Creates a gravitational vortex. The boss gets PULLED into it and cannot escape.
+
+[ARENA SETUP]
+  We are in the TINY arena. Fifty-two percent of screen. The boss has absolutely NOWHERE to go.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — Fully locked in. Completely helpless.
+  — It cannot escape the gravitational field.
+  — The vortex does not stop. The damage does not stop.
+  — Fifteen hundred damage every point three seconds from suction alone.
+
+[RESULT]
+  That is how you do it. Easy work.
+
+[OUTRO / CTA]
+  Follow for more orb battles. 🏹

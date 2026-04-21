@@ -1,0 +1,40 @@
+# LASER ORB  ×  CORRIDOR ARENA  ×  SPEED RUN
+# Tag: laser_corridors_speedrun
+# HP:  mode default
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  New record attempt: LASER ORB in SPEED RUN ⚡
+  2.  LASER ORB max damage run 📈
+  3.  LASER ORB + CORRIDOR ARENA = perfect chaos 💫
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#laser #beam #satisfying #gaming #physics #bossfight #simulation #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  Speed Run. Pure chaos. Fifteen seconds to do as much damage as possible.
+
+[ORB SETUP]
+  Laser Orb. Thirty ticks of beam damage on contact. Consistent. Relentless. Absolutely deadly.
+
+[ARENA SETUP]
+  Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — No RNG. No luck. Just consistent damage every time.
+  — Clean. Efficient. Brutal.
+  — It hits the boss and the laser just keeps going.
+  — The beam does not stop until the cooldown ends.
+
+[RESULT]
+  That score speaks for itself.
+
+[OUTRO / CTA]
+  Follow for more orb battles. 🏹

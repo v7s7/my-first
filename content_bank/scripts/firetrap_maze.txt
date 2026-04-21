@@ -1,0 +1,40 @@
+# FIRE TRAP  ×  THE MAZE  ×  TIME ATTACK
+# Tag: firetrap_maze
+# HP:  2000000
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  Rating every orb: FIRE TRAP review 🏅
+  2.  FIRE TRAP just broke THE MAZE 💥
+  3.  This FIRE TRAP combo is UNPLAYABLE 😭
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#fire #trap #satisfying #gaming #physics #bossfight #explosion #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  Sixty seconds on the clock. That boss is going DOWN.
+
+[ORB SETUP]
+  Fire Trap Orb. Sets burning trap zones on every bounce. The entire arena becomes a fire minefield.
+
+[ARENA SETUP]
+  THE MAZE. L-shaped walls mirrored across the entire arena. Once the traps are set — there is no escape route.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — Trap activated. Burning.
+  — The boss cannot cross without triggering something.
+  — Another trap. And another one.
+  — Fire everywhere. Every path is blocked.
+
+[RESULT]
+  Timer is up — but look at that damage number.
+
+[OUTRO / CTA]
+  Which orb should I test next? Drop it in the comments. 👇

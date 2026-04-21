@@ -1,0 +1,40 @@
+# ICE ORB  ×  THE MAZE  ×  SPEED RUN
+# Tag: ice_maze_speedrun
+# HP:  mode default
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  The devs didn't want you to find this combo 🚫
+  2.  POV: you find the most broken combo in Boss Ball 🤯
+  3.  Can this orb one-shot the boss? 💥
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#ice #freeze #satisfying #physics #bossfight #gaming #simulation #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  Fifteen seconds. Every single hit counts.
+
+[ORB SETUP]
+  Ice Orb. Every hit freezes the boss for two and a half seconds. While frozen — double damage. It cannot fight back.
+
+[ARENA SETUP]
+  THE MAZE. L-shaped walls mirrored across the entire arena. Once the traps are set — there is no escape route.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — Watch — the moment it hits — FREEZE.
+  — Freeze. Hit. Freeze. Hit. The cycle never ends.
+  — It cannot run. It cannot dodge. It just takes every hit.
+  — The tiny arena makes this even more brutal.
+
+[RESULT]
+  ELIMINATED. No contest.
+
+[OUTRO / CTA]
+  Follow for more orb battles. 🏹

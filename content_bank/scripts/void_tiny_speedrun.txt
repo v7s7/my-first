@@ -1,0 +1,40 @@
+# VOID ORB  ×  TINY ARENA  ×  SPEED RUN
+# Tag: void_tiny_speedrun
+# HP:  mode default
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  Satisfying VOID ORB run — no commentary 🎵
+  2.  This VOID ORB combo is UNPLAYABLE 😭
+  3.  VOID ORB is carrying this entire run 💪
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#void #warp #satisfying #gaming #physics #bossfight #teleport #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  The fastest fifteen seconds you'll ever watch.
+
+[ORB SETUP]
+  Void Orb. Phases through walls. Warps across the arena. The boss has absolutely nowhere to hide.
+
+[ARENA SETUP]
+  We are in the TINY arena. Fifty-two percent of screen. The boss has absolutely NOWHERE to go.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — Phase warp. Through the wall.
+  — In the maze the void just ignores every wall entirely.
+  — The boss had no idea where it was coming from.
+  — It phased out and reappeared on the other side instantly.
+
+[RESULT]
+  That score speaks for itself.
+
+[OUTRO / CTA]
+  Tag someone who would pick this orb. 👀

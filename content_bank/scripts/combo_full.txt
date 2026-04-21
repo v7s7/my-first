@@ -1,0 +1,40 @@
+# COMBO ORB  ×  FULL ARENA  ×  TIME ATTACK
+# Tag: combo_full
+# HP:  2000000
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  The devs didn't want you to find this combo 🚫
+  2.  I put COMBO ORB in FULL ARENA and this happened 👇
+  3.  New record attempt: COMBO ORB in TIME ATTACK ⚡
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#combo #multiplier #satisfying #gaming #bossfight #streak #physics #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  Sixty seconds on the clock. That boss is going DOWN.
+
+[ORB SETUP]
+  Combo Orb. The damage doubles every wall bounce. At max streak — sixty four thousand damage per hit.
+
+[ARENA SETUP]
+  Full arena. One hundred percent screen. Maximum distance between walls — maximum bounce buildup.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — Sixteen times multiplier — one more bounce.
+  — Every wall bounce is worth more than the last.
+  — Multiplier building. Two times.
+  — Four times damage now.
+
+[RESULT]
+  Done. Boss is DOWN. 💀
+
+[OUTRO / CTA]
+  Subscribe for the full orb rankings. 🏆

@@ -1,0 +1,40 @@
+# ICE ORB  ×  CORRIDOR ARENA  ×  TIME ATTACK
+# Tag: ice_corridors
+# HP:  1500000
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  Boss Ball Battle: ICE ORB Edition 🔥
+  2.  Is ICE ORB actually broken? 🧐
+  3.  Can this orb one-shot the boss? 💥
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#ice #freeze #satisfying #physics #bossfight #gaming #simulation #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  This is Time Attack mode. One million HP. Sixty seconds. GO.
+
+[ORB SETUP]
+  Ice Orb. Every hit freezes the boss for two and a half seconds. While frozen — double damage. It cannot fight back.
+
+[ARENA SETUP]
+  Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — It cannot run. It cannot dodge. It just takes every hit.
+  — Frozen again. Double damage window is OPEN.
+  — Watch — the moment it hits — FREEZE.
+  — The tiny arena makes this even more brutal.
+
+[RESULT]
+  BOSS DEFEATED. Let's GO. 🔥
+
+[OUTRO / CTA]
+  Subscribe for the full orb rankings. 🏆

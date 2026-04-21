@@ -1,0 +1,40 @@
+# HOOK ORB  ×  FULL ARENA  ×  TIME ATTACK
+# Tag: hook_full
+# HP:  2000000
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  WEAPON BALL: HOOK ORB enters FULL ARENA ⚡
+  2.  I put HOOK ORB in FULL ARENA and this happened 👇
+  3.  FINAL ROUND: HOOK ORB in FULL ARENA ⚔️
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#homing #hook #satisfying #gaming #physics #bossfight #tracking #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  This is Time Attack mode. One million HP. Sixty seconds. GO.
+
+[ORB SETUP]
+  Hook Orb. Once it gets within four hundred pixels of the boss — it homes in automatically. You cannot dodge it.
+
+[ARENA SETUP]
+  Full arena. One hundred percent screen. Maximum distance between walls — maximum bounce buildup.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — Straight at the boss. No hesitation. No mercy.
+  — Track. Lock. Hit. Repeat.
+  — You cannot dodge a homing orb. That is literally the point.
+  — The pillars deflect it but the homing pulls it right back.
+
+[RESULT]
+  This orb is S-tier. No debate.
+
+[OUTRO / CTA]
+  Which orb should I test next? Drop it in the comments. 👇

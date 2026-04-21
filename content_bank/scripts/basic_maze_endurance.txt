@@ -1,0 +1,40 @@
+# SHOCK ORB  ×  THE MAZE  ×  TIME ATTACK
+# Tag: basic_maze_endurance
+# HP:  3000000
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  POV: you unlock SHOCK ORB for the first time 😳
+  2.  TOURNAMENT ARC: SHOCK ORB vs Boss 🏟️
+  3.  SHOCK ORB max damage run 📈
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#shock #satisfying #gaming #physics #bossfight #simulation #classic #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  Sixty seconds on the clock. That boss is going DOWN.
+
+[ORB SETUP]
+  Shock Orb. Classic. A shockwave ring fires on every bounce. Plus three thousand bonus damage every single hit.
+
+[ARENA SETUP]
+  THE MAZE. L-shaped walls mirrored across the entire arena. Once the traps are set — there is no escape route.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — In the maze the shockwaves bounce off every wall.
+  — Shockwave ring expanding.
+  — Plus three thousand bonus on every single bounce.
+  — Simple. Reliable. Satisfying.
+
+[RESULT]
+  That score speaks for itself.
+
+[OUTRO / CTA]
+  Which orb should I test next? Drop it in the comments. 👇

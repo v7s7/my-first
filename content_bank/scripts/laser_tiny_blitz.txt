@@ -1,0 +1,40 @@
+# LASER ORB  ×  TINY ARENA  ×  BLITZ
+# Tag: laser_tiny_blitz
+# HP:  800000
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  LASER ORB in TINY ARENA is the most satisfying thing 🎯
+  2.  What happens when you put LASER ORB in TINY ARENA? 👀
+  3.  POV: the boss sees LASER ORB coming 😈
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#laser #beam #satisfying #gaming #physics #bossfight #simulation #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  Okay. Thirty seconds. Two million HP. Let's GO.
+
+[ORB SETUP]
+  Laser Orb. Thirty ticks of beam damage on contact. Consistent. Relentless. Absolutely deadly.
+
+[ARENA SETUP]
+  We are in the TINY arena. Fifty-two percent of screen. The boss has absolutely NOWHERE to go.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — Thirty ticks of beam damage on contact.
+  — Clean. Efficient. Brutal.
+  — The beam does not stop until the cooldown ends.
+  — No RNG. No luck. Just consistent damage every time.
+
+[RESULT]
+  BOSS DEFEATED. Let's GO. 🔥
+
+[OUTRO / CTA]
+  Follow for more orb battles. 🏹

@@ -1,0 +1,40 @@
+# VOID ORB  ×  THE MAZE  ×  BLITZ
+# Tag: void_maze_blitz
+# HP:  1000000
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  VOID ORB = S TIER? Let's find out 👇
+  2.  New record attempt: VOID ORB in BLITZ ⚡
+  3.  VOID ORB = S TIER? Let's find out 👇
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#void #warp #satisfying #gaming #physics #bossfight #teleport #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  BLITZ mode. Thirty seconds on the clock. This is going to be INSANE.
+
+[ORB SETUP]
+  Void Orb. Phases through walls. Warps across the arena. The boss has absolutely nowhere to hide.
+
+[ARENA SETUP]
+  THE MAZE. L-shaped walls mirrored across the entire arena. Once the traps are set — there is no escape route.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — In the maze the void just ignores every wall entirely.
+  — The boss had no idea where it was coming from.
+  — It phased out and reappeared on the other side instantly.
+  — Void teleport. Completely unpredictable trajectory.
+
+[RESULT]
+  ELIMINATED. No contest.
+
+[OUTRO / CTA]
+  Which orb should I test next? Drop it in the comments. 👇

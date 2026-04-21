@@ -1,0 +1,40 @@
+# ECHO ORB  ×  CORRIDOR ARENA  ×  BLITZ
+# Tag: clone_corridors_blitz
+# HP:  1000000
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  POV: the boss sees ECHO ORB coming 😈
+  2.  They need to NERF ECHO ORB immediately 🔥
+  3.  New record attempt: ECHO ORB in BLITZ ⚡
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#clone #echo #satisfying #gaming #physics #bossfight #swarm #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  BLITZ mode. Thirty seconds on the clock. This is going to be INSANE.
+
+[ORB SETUP]
+  Echo Orb. Three ghost clones appear on contact and deal damage for three and a half seconds. It is a full swarm.
+
+[ARENA SETUP]
+  Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — In the full arena the clones spread and cover everything.
+  — Three echoes dealing continuous damage simultaneously.
+  — The clones are circling. Closing in from all sides.
+  — Ghost army is active. Three and a half seconds of damage.
+
+[RESULT]
+  Done. Boss is DOWN. 💀
+
+[OUTRO / CTA]
+  The full tier list is coming. Stay tuned. 📊

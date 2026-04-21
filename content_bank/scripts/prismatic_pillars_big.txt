@@ -1,0 +1,40 @@
+# PRISMATIC ORB  ×  MEGA PILLAR ARENA  ×  TIME ATTACK
+# Tag: prismatic_pillars_big
+# HP:  1500000
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  Can this orb one-shot the boss? 💥
+  2.  Can this orb one-shot the boss? 💥
+  3.  How much damage can PRISMATIC ORB do in TIME ATTACK? 🔢
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#prism #beam #satisfying #gaming #physics #bossfight #reflect #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  This is Time Attack mode. One million HP. Sixty seconds. GO.
+
+[ORB SETUP]
+  Prismatic Orb. Wall bounces fire reflective beams across the whole arena. A full beam web forms.
+
+[ARENA SETUP]
+  MEGA pillar arena. Two giant pillars flanking the center. Absolute ricochet chaos.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — Look at those beams crossing the entire arena.
+  — The full arena gives the beams maximum room to spread.
+  — It bounced off the wall and hit the boss from behind.
+  — Reflective beam fired.
+
+[RESULT]
+  BOSS DEFEATED. Let's GO. 🔥
+
+[OUTRO / CTA]
+  Follow for more orb battles. 🏹

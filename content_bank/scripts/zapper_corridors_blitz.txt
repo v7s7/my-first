@@ -1,0 +1,40 @@
+# ZAPPER ORB  ×  CORRIDOR ARENA  ×  BLITZ
+# Tag: zapper_corridors_blitz
+# HP:  1500000
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  ZAPPER ORB just broke CORRIDOR ARENA 💥
+  2.  Rating every orb: ZAPPER ORB review 🏅
+  3.  ZAPPER ORB just broke CORRIDOR ARENA 💥
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#lightning #thunder #satisfying #gaming #electric #bossfight #zap #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  Okay. Thirty seconds. Two million HP. Let's GO.
+
+[ORB SETUP]
+  Zapper Orb. Every bounce drops a crackling thunder zone across the entire arena.
+
+[ARENA SETUP]
+  Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — The zapper fills the maze faster than anything else.
+  — Every square meter of this maze is now dangerous.
+  — The whole arena is electric now.
+  — Boss walked directly into the thunder field.
+
+[RESULT]
+  That score speaks for itself.
+
+[OUTRO / CTA]
+  Follow for more orb battles. 🏹

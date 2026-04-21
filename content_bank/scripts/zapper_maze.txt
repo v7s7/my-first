@@ -1,0 +1,40 @@
+# ZAPPER ORB  ×  THE MAZE  ×  TIME ATTACK
+# Tag: zapper_maze
+# HP:  2000000
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  ZAPPER ORB = S TIER? Let's find out 👇
+  2.  ZAPPER ORB max damage run 📈
+  3.  The BEST orb in Boss Ball? Testing ZAPPER ORB 🥇
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#lightning #thunder #satisfying #gaming #electric #bossfight #zap #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  Time Attack. One million HP. The clock starts NOW.
+
+[ORB SETUP]
+  Zapper Orb. Every bounce drops a crackling thunder zone across the entire arena.
+
+[ARENA SETUP]
+  THE MAZE. L-shaped walls mirrored across the entire arena. Once the traps are set — there is no escape route.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — Boss walked directly into the thunder field.
+  — The zapper fills the maze faster than anything else.
+  — The whole arena is electric now.
+  — Every square meter of this maze is now dangerous.
+
+[RESULT]
+  Timer is up — but look at that damage number.
+
+[OUTRO / CTA]
+  Follow for more orb battles. 🏹

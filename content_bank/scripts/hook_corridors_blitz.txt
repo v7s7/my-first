@@ -1,0 +1,40 @@
+# HOOK ORB  ×  CORRIDOR ARENA  ×  BLITZ
+# Tag: hook_corridors_blitz
+# HP:  1000000
+
+────────────────────────────────────────────────────────────
+TITLE OPTIONS
+────────────────────────────────────────────────────────────
+  1.  Boss Ball Battle: HOOK ORB Edition 🔥
+  2.  HOOK ORB BATTLE ROYALE 🏹
+  3.  HOOK ORB max damage run 📈
+
+────────────────────────────────────────────────────────────
+CAPTION / HASHTAGS
+────────────────────────────────────────────────────────────
+#homing #hook #satisfying #gaming #physics #bossfight #tracking #bossbattle #ballgame #physicsgame #simulation #weaponball
+
+────────────────────────────────────────────────────────────
+VOICEOVER SCRIPT
+────────────────────────────────────────────────────────────
+
+[HOOK]
+  Two million HP. Half a minute. Watch what happens.
+
+[ORB SETUP]
+  Hook Orb. Once it gets within four hundred pixels of the boss — it homes in automatically. You cannot dodge it.
+
+[ARENA SETUP]
+  Corridor arena. Tight S-curve lanes. Once the orb fills these corridors — nothing survives.
+
+[COMMENTARY — read 3-4 of these during gameplay footage]
+  — Straight at the boss. No hesitation. No mercy.
+  — Track. Lock. Hit. Repeat.
+  — You cannot dodge a homing orb. That is literally the point.
+  — It locked on. The boss cannot outrun it.
+
+[RESULT]
+  Done. Boss is DOWN. 💀
+
+[OUTRO / CTA]
+  Comment your favorite orb below. 💬
