@@ -141,6 +141,88 @@ class HudComponent extends PositionComponent {
       Paint()..color = const Color(0xCC050510),
     );
     super.render(canvas);
+    _renderPickupEffects(canvas);
+  }
+
+  void _renderPickupEffects(Canvas canvas) {
+    final indicators = <_EffectIndicator>[];
+
+    if (gameRef.shieldTimer > 0) {
+      indicators.add(_EffectIndicator(
+        emoji: '🛡️',
+        label: 'SHIELD',
+        color: const Color(0xFF44AAFF),
+        progress: gameRef.shieldTimer / 8.0,
+      ));
+    }
+    if (gameRef.speedTimer > 0) {
+      indicators.add(_EffectIndicator(
+        emoji: '💨',
+        label: 'SPEED',
+        color: const Color(0xFF00FFEE),
+        progress: gameRef.speedTimer / 6.0,
+      ));
+    }
+    if (gameRef.starHitsRemaining > 0) {
+      indicators.add(_EffectIndicator(
+        emoji: '⭐',
+        label: '×3  (${gameRef.starHitsRemaining} left)',
+        color: const Color(0xFFFFCC00),
+        progress: gameRef.starHitsRemaining / 3.0,
+      ));
+    }
+
+    if (indicators.isEmpty) return;
+
+    const pillW  = 110.0;
+    const pillH  = 32.0;
+    const gap    = 8.0;
+    const bottomPad = 14.0;
+
+    final totalW = indicators.length * pillW + (indicators.length - 1) * gap;
+    double x = (gameRef.size.x - totalW) / 2;
+    final y = gameRef.size.y - pillH - bottomPad;
+
+    for (final ind in indicators) {
+      final rect = RRect.fromRectAndRadius(
+        Rect.fromLTWH(x, y, pillW, pillH),
+        const Radius.circular(16),
+      );
+
+      // Background pill
+      canvas.drawRRect(rect, Paint()..color = const Color(0xCC0A0A20));
+      canvas.drawRRect(
+        rect,
+        Paint()
+          ..color = ind.color.withOpacity(0.5)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5,
+      );
+
+      // Progress bar fill
+      final barRect = Rect.fromLTWH(x, y + pillH - 4, pillW * ind.progress.clamp(0.0, 1.0), 4);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(barRect, const Radius.circular(2)),
+        Paint()..color = ind.color.withOpacity(0.8),
+      );
+
+      // Emoji + label text
+      final tp = TextPainter(
+        text: TextSpan(
+          text: '${ind.emoji} ${ind.label}',
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: Colors.white.withOpacity(0.92),
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout(maxWidth: pillW - 8);
+
+      tp.paint(canvas, Offset(x + (pillW - tp.width) / 2, y + (pillH - 4 - tp.height) / 2));
+
+      x += pillW + gap;
+    }
   }
 
   static String _formatHp(int hp) {
@@ -148,4 +230,18 @@ class HudComponent extends PositionComponent {
     if (hp >= 1000) return '${(hp / 1000).toStringAsFixed(1)}K';
     return '$hp';
   }
+}
+
+class _EffectIndicator {
+  final String emoji;
+  final String label;
+  final Color  color;
+  final double progress; // 0.0 – 1.0 for progress bar
+
+  const _EffectIndicator({
+    required this.emoji,
+    required this.label,
+    required this.color,
+    required this.progress,
+  });
 }
