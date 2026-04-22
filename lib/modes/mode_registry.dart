@@ -33,6 +33,30 @@ class ModeRegistry {
       scoreMode: ScoreMode.timeRemaining,
     ),
     GameMode(
+      id: 'dual_ball',
+      name: 'DUAL BALL',
+      subtitle: '2 orbs · 2M HP · 90s',
+      accentColor: Color(0xFF44FF88),
+      bossMaxHp: 2000000,
+      timeLimitSeconds: 90.0,
+      winOnBossKill: true,
+      loseOnTimeExpiry: true,
+      scoreMode: ScoreMode.timeRemaining,
+      orbCount: 2,
+    ),
+    GameMode(
+      id: 'survival',
+      name: 'SURVIVAL',
+      subtitle: 'Boss heals · outlast it',
+      accentColor: Color(0xFFFF44AA),
+      bossMaxHp: 1500000,
+      timeLimitSeconds: 0.0,
+      winOnBossKill: true,
+      loseOnTimeExpiry: false,
+      scoreMode: ScoreMode.damageDealt,
+      bossRegenPerSecond: 4000,
+    ),
+    GameMode(
       id: 'endless',
       name: 'ENDLESS',
       subtitle: 'Max DPS · no limit',
@@ -54,7 +78,6 @@ class ModeRegistry {
       loseOnTimeExpiry: false,
       scoreMode: ScoreMode.damageDealt,
     ),
-    // GameMode(id: 'survival', name: 'SURVIVAL', ...)  ← add here
   ];
 
   static GameMode findById(String id) =>

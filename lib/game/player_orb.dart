@@ -13,22 +13,22 @@ class PlayerOrb extends PositionComponent {
   final OrbBehavior behavior;
   final BossBallGame gameRef;
   final ArenaConfig arena;
+  final int orbIndex; // 0 = primary, 1+ = additional orbs (Dual Ball mode)
 
   static const double radius = 18.0;
   static const double baseSpeed = 280.0;
   static const double speedGrowthPerBounce = 0.03;
   static const double maxSpeed = 900.0;
-  static const double hitCooldown = 0.25; // ثواني بين كل ضرر والآخر
+  static const double hitCooldown = 0.25;
 
   double speed = baseSpeed;
-  double speedMultiplier = 1.0; // multiplied by Speed pickup
+  double speedMultiplier = 1.0;
   late Vector2 velocity;
 
   final Random _rng = Random();
   double _hitCooldownTimer = 0.0;
   double _bounceSquashTimer = 0.0;
 
-  // 🔴 قائمة لتخزين المواقع السابقة للكرة لرسم الذيل الحركي
   final Queue<Vector2> _trail = Queue<Vector2>();
   static const int _maxTrailLength = 24;
 
@@ -36,6 +36,7 @@ class PlayerOrb extends PositionComponent {
     required this.behavior,
     required this.gameRef,
     required this.arena,
+    this.orbIndex = 0,
   }) : super(
           size: Vector2.all(radius * 2),
           anchor: Anchor.center,
@@ -44,14 +45,35 @@ class PlayerOrb extends PositionComponent {
 
   @override
   Future<void> onLoad() async {
-    // تحديد موقع بداية الكرة داخل الميدان
-    position = Vector2(
-      arena.minX(radius) + _rng.nextDouble() * (arena.maxX(radius) - arena.minX(radius)) * 0.35,
-      arena.minY(radius) + _rng.nextDouble() * (arena.maxY(radius) - arena.minY(radius)) * 0.25,
-    );
-
-    final angle = (pi * 0.2) + _rng.nextDouble() * (pi * 0.6);
-    velocity = Vector2(cos(angle), sin(angle)) * speed;
+    if (orbIndex == 0) {
+      // Primary orb: top-left region
+      position = Vector2(
+        arena.minX(radius) +
+            _rng.nextDouble() *
+                (arena.maxX(radius) - arena.minX(radius)) *
+                0.35,
+        arena.minY(radius) +
+            _rng.nextDouble() *
+                (arena.maxY(radius) - arena.minY(radius)) *
+                0.25,
+      );
+      final angle = (pi * 0.2) + _rng.nextDouble() * (pi * 0.6);
+      velocity = Vector2(cos(angle), sin(angle)) * speed;
+    } else {
+      // Second orb: bottom-right region, opposite launch direction
+      position = Vector2(
+        arena.maxX(radius) -
+            _rng.nextDouble() *
+                (arena.maxX(radius) - arena.minX(radius)) *
+                0.35,
+        arena.maxY(radius) -
+            _rng.nextDouble() *
+                (arena.maxY(radius) - arena.minY(radius)) *
+                0.25,
+      );
+      final angle = pi + (pi * 0.2) + _rng.nextDouble() * (pi * 0.6);
+      velocity = Vector2(cos(angle), sin(angle)) * speed;
+    }
 
     behavior.onAttach(this);
   }
@@ -64,7 +86,6 @@ class PlayerOrb extends PositionComponent {
     if (_hitCooldownTimer > 0) _hitCooldownTimer -= dt;
     if (_bounceSquashTimer > 0) _bounceSquashTimer -= dt;
 
-    // Update motion trail
     _trail.addFirst(position.clone());
     if (_trail.length > _maxTrailLength) {
       _trail.removeLast();
@@ -72,11 +93,10 @@ class PlayerOrb extends PositionComponent {
 
     behavior.onUpdate(dt, this);
 
-    // Hook Orb homing behavior
+    // Hook orb homing
     if (behavior.id == 'hook') {
       final bossPos = gameRef.boss.position;
       final distanceToBoss = position.distanceTo(bossPos);
-      
       if (distanceToBoss < 400) {
         final directionToBoss = (bossPos - position).normalized();
         velocity.lerp(directionToBoss * speed, dt * 2.5);
@@ -84,8 +104,19 @@ class PlayerOrb extends PositionComponent {
       }
     }
 
+    // Magnet pickup homing — works for any orb type
+    if (gameRef.magnetTimer > 0) {
+      final bossPos = gameRef.boss.position;
+      final dist = position.distanceTo(bossPos);
+      if (dist > 0.01) {
+        final dir = (bossPos - position).normalized();
+        velocity.lerp(dir * speed, dt * 3.5);
+        velocity = velocity.normalized() * speed;
+      }
+    }
+
     position += velocity * dt * speedMultiplier;
-    
+
     _handleWallBounce();
     _resolveCollision();
   }
@@ -121,7 +152,6 @@ class PlayerOrb extends PositionComponent {
       behavior.onWallBounce(this);
     }
 
-    // الاصطدام مع الجدران الداخلية والعقبات في الميدان
     if (arena.bounceOffObstacles(position, velocity, radius)) {
       speed = min(speed * (1.0 + speedGrowthPerBounce), maxSpeed);
       if (velocity.length > 0.01) velocity = velocity.normalized() * speed;
@@ -146,27 +176,18 @@ class PlayerOrb extends PositionComponent {
     position += n * overlap;
     position = arena.clamp(position, radius);
 
-    // Calculate relative velocity and apply collision physics
     final relVel = velocity - boss.velocity;
     final velAlongNormal = relVel.dot(n);
 
     if (velAlongNormal < 0) {
-      // Bounce with realistic physics
-      const m1 = 1.0; // Orb mass
-      final m2 = BossComponent.mass; // Boss mass
-      
-      // Impulse calculation
-      final restitution = 0.8; // Bounciness
+      const m1 = 1.0;
+      final m2 = BossComponent.mass;
+      const restitution = 0.8;
       final j = -(1.0 + restitution) * velAlongNormal / (m1 + m2);
-      
-      // Apply impulse to orb
       final impulse = n * j;
       velocity = velocity + impulse * m2;
-      
-      // Apply impulse to boss
       boss.velocity = boss.velocity - impulse * m1 * 0.7;
-      
-      // Maintain orb speed
+
       if (velocity.length < speed * 0.3) {
         velocity = velocity.length < 0.01
             ? n * (speed * 0.5)
@@ -174,8 +195,11 @@ class PlayerOrb extends PositionComponent {
       }
     }
 
+    // Rapid pickup halves hit cooldown for double DPS
+    final effectiveCooldown =
+        hitCooldown * (gameRef.rapidTimer > 0 ? 0.5 : 1.0);
     if (_hitCooldownTimer <= 0) {
-      _hitCooldownTimer = hitCooldown;
+      _hitCooldownTimer = effectiveCooldown;
       behavior.onBossHit(this);
     }
   }
@@ -185,17 +209,14 @@ class PlayerOrb extends PositionComponent {
     const cx = radius;
     const cy = radius;
 
-    // 🔴 رسم الذيل الحركي أولاً ليكون خلف الكرة
+    // Motion trail
     int i = 0;
     for (final trailPos in _trail) {
-      final progress = i / _trail.length; // قيمة من 0 إلى 1
+      final progress = i / _trail.length;
       final trailOpacity = (1.0 - progress) * 0.65;
       final trailRadius = radius * (1.0 - progress * 0.6);
-
-      // تحويل إحداثيات الذيل العالمية إلى إحداثيات محلية ليتم رسمها في المكان الصحيح
       final dx = trailPos.x - position.x;
       final dy = trailPos.y - position.y;
-
       canvas.drawCircle(
         Offset(cx + dx, cy + dy),
         trailRadius,
@@ -206,7 +227,6 @@ class PlayerOrb extends PositionComponent {
       i++;
     }
 
-    // Bounce squash effect
     final squash = _bounceSquashTimer > 0 ? 1.15 : 1.0;
     final stretch = _bounceSquashTimer > 0 ? 0.88 : 1.0;
 
@@ -217,19 +237,19 @@ class PlayerOrb extends PositionComponent {
 
     final color = behavior.color;
 
-    // Speed-reactive outer glow — intensifies and expands as ball accelerates
     final speedRatio = (speed / maxSpeed).clamp(0.25, 1.0);
     canvas.drawCircle(
       const Offset(cx, cy),
       radius + 10.0 + speedRatio * 12.0,
       Paint()
         ..color = color.withOpacity(0.18 + speedRatio * 0.22)
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, 16.0 + speedRatio * 12.0),
+        ..maskFilter =
+            MaskFilter.blur(BlurStyle.normal, 16.0 + speedRatio * 12.0),
     );
 
-    // Bounce flash ring — expands outward and fades when squash is active
     if (_bounceSquashTimer > 0) {
-      final flashProgress = (1.0 - _bounceSquashTimer / 0.08).clamp(0.0, 1.0);
+      final flashProgress =
+          (1.0 - _bounceSquashTimer / 0.08).clamp(0.0, 1.0);
       final flashR = radius + 6.0 + flashProgress * radius * 1.4;
       canvas.drawCircle(
         const Offset(cx, cy),
@@ -242,10 +262,8 @@ class PlayerOrb extends PositionComponent {
       );
     }
 
-    // Main sphere body
     canvas.drawCircle(const Offset(cx, cy), radius, Paint()..color = color);
 
-    // Metallic highlight
     canvas.drawCircle(
       const Offset(cx - radius * 0.35, cy - radius * 0.35),
       radius * 0.38,
@@ -254,7 +272,6 @@ class PlayerOrb extends PositionComponent {
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
     );
 
-    // Inner glow for depth
     canvas.drawCircle(
       const Offset(cx, cy),
       radius * 0.8,
@@ -263,7 +280,6 @@ class PlayerOrb extends PositionComponent {
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
     );
 
-    // Rim highlight
     canvas.drawCircle(
       const Offset(cx, cy),
       radius,
@@ -272,6 +288,32 @@ class PlayerOrb extends PositionComponent {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2.0,
     );
+
+    // Magnet pickup indicator ring
+    if (gameRef.magnetTimer > 0) {
+      canvas.drawCircle(
+        const Offset(cx, cy),
+        radius + 8,
+        Paint()
+          ..color = const Color(0xAAFF44CC)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.5
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
+      );
+    }
+
+    // Rapid pickup indicator ring
+    if (gameRef.rapidTimer > 0) {
+      canvas.drawCircle(
+        const Offset(cx, cy),
+        radius + 14,
+        Paint()
+          ..color = const Color(0xAAFF6600)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.0
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
+      );
+    }
 
     canvas.restore();
 

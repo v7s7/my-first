@@ -46,12 +46,14 @@ class PickupItemComponent extends PositionComponent {
       return;
     }
 
-    // Collision with orb
-    final dist = gameRef.orb.position.distanceTo(position);
-    if (dist < pickupRadius + PlayerOrb.radius) {
-      _collected = true;
-      _collect();
-      removeFromParent();
+    // Collision with any active orb (supports Dual Ball mode)
+    for (final o in gameRef.orbs) {
+      if (o.position.distanceTo(position) < pickupRadius + PlayerOrb.radius) {
+        _collected = true;
+        _collect();
+        removeFromParent();
+        return;
+      }
     }
   }
 

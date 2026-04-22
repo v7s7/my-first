@@ -123,7 +123,11 @@ class HudComponent extends PositionComponent {
     }
 
     _hpText.text = _formatHp(gameRef.bossHp);
-    _orbLabel.text = '${gameRef.orbBehavior.name} ORB  ·  ${gameRef.mode.name}';
+    final regenSuffix = gameRef.mode.bossRegenPerSecond > 0
+        ? '  +${_formatHp(gameRef.mode.bossRegenPerSecond)}/s'
+        : '';
+    _orbLabel.text =
+        '${gameRef.orbBehavior.name} ORB  ·  ${gameRef.mode.name}$regenSuffix';
 
     // Live DPS
     if (_dpsText != null) {
@@ -163,12 +167,36 @@ class HudComponent extends PositionComponent {
         progress: gameRef.speedTimer / 6.0,
       ));
     }
+    if (gameRef.rapidTimer > 0) {
+      indicators.add(_EffectIndicator(
+        emoji: '🔥',
+        label: 'RAPID',
+        color: const Color(0xFFFF6600),
+        progress: gameRef.rapidTimer / 6.0,
+      ));
+    }
+    if (gameRef.magnetTimer > 0) {
+      indicators.add(_EffectIndicator(
+        emoji: '🧲',
+        label: 'MAGNET',
+        color: const Color(0xFFFF44CC),
+        progress: gameRef.magnetTimer / 8.0,
+      ));
+    }
     if (gameRef.starHitsRemaining > 0) {
       indicators.add(_EffectIndicator(
         emoji: '⭐',
-        label: '×3  (${gameRef.starHitsRemaining} left)',
+        label: '×2.5 (${gameRef.starHitsRemaining})',
         color: const Color(0xFFFFCC00),
         progress: gameRef.starHitsRemaining / 3.0,
+      ));
+    }
+    if (gameRef.barrierHitsRemaining > 0) {
+      indicators.add(_EffectIndicator(
+        emoji: '💎',
+        label: '×3  (${gameRef.barrierHitsRemaining})',
+        color: const Color(0xFF44FFEE),
+        progress: gameRef.barrierHitsRemaining / 4.0,
       ));
     }
 
