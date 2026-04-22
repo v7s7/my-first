@@ -52,6 +52,9 @@ class GameMode {
   /// HP the boss regenerates per second (0 = no regen). Used for Survival mode.
   final int bossRegenPerSecond;
 
+  /// Whether items/pickups spawn in this mode. False = pure physics, no items.
+  final bool hasPickups;
+
   const GameMode({
     required this.id,
     required this.name,
@@ -64,5 +67,6 @@ class GameMode {
     this.scoreMode = ScoreMode.damageDealt,
     this.orbCount = 1,
     this.bossRegenPerSecond = 0,
+    this.hasPickups = true,
   });
 }

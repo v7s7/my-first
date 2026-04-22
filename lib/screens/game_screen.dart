@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
 import '../game/boss_ball_game.dart';
@@ -12,12 +13,20 @@ class GameScreen extends StatelessWidget {
   final ArenaPreset arenaPreset;
   final int? customBossHp;
 
+  /// Image bytes for each player orb (index matches orb index).
+  final List<Uint8List?> orbImageBytes;
+
+  /// Image bytes for the boss ball face.
+  final Uint8List? bossImageBytes;
+
   const GameScreen({
     super.key,
     required this.orbBehavior,
     required this.mode,
     this.arenaPreset = ArenaPreset.normal,
     this.customBossHp,
+    this.orbImageBytes = const [],
+    this.bossImageBytes,
   });
 
   @override
@@ -27,6 +36,8 @@ class GameScreen extends StatelessWidget {
       mode: mode,
       arenaPreset: arenaPreset,
       customBossHp: customBossHp,
+      orbImageBytes: orbImageBytes,
+      bossImageBytes: bossImageBytes,
     );
     return GameWidget(
       game: game,

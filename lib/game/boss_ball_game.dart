@@ -1,4 +1,6 @@
 import 'dart:math';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flame/particles.dart';
@@ -22,6 +24,10 @@ class BossBallGame extends FlameGame {
   final ArenaPreset arenaPreset;
   final int? customBossHp;
 
+  /// Raw image bytes kept so the retry button can reconstruct the game.
+  final List<Uint8List?> orbImageBytes;
+  final Uint8List? bossImageBytes;
+
   late ArenaConfig arenaConfig;
 
   late int bossMaxHp;
@@ -40,6 +46,14 @@ class BossBallGame extends FlameGame {
   final List<PlayerOrb> _orbs = [];
   List<PlayerOrb> get orbs => _orbs;
   PlayerOrb get orb => _orbs.first;
+
+  // Decoded face images — set during onLoad, read by orb/boss render
+  final List<ui.Image?> _orbImages = [];
+  ui.Image? _bossUiImage;
+
+  ui.Image? orbImage(int index) =>
+      index < _orbImages.length ? _orbImages[index] : null;
+  ui.Image? get bossUiImage => _bossUiImage;
 
   double _shakeIntensity = 0.0;
   double _shakeTimer = 0.0;
@@ -68,7 +82,7 @@ class BossBallGame extends FlameGame {
   int    get starHitsRemaining    => _starHitsRemaining;
   int    get barrierHitsRemaining => _barrierHitsRemaining;
 
-  // Stacked damage multiplier from all active buffs
+  // Stacked damage multiplier from all active buffs (capped at 8×)
   double get _effectiveMultiplier {
     double m = 1.0;
     if (_shieldTimer > 0) m *= 2.0;
@@ -82,6 +96,8 @@ class BossBallGame extends FlameGame {
     required this.mode,
     this.arenaPreset = ArenaPreset.normal,
     this.customBossHp,
+    this.orbImageBytes = const [],
+    this.bossImageBytes,
   });
 
   @override
@@ -99,12 +115,29 @@ class BossBallGame extends FlameGame {
     totalDamage = 0;
     totalTime = 0.0;
 
+    // Decode face images before building components so they're ready to render
+    for (final bytes in orbImageBytes) {
+      _orbImages.add(await _decodeUiImage(bytes));
+    }
+    _bossUiImage = await _decodeUiImage(bossImageBytes);
+
     _buildArenaBackground();
     _buildWalls();
     _buildBoss();
     _buildOrbs();
     add(HudComponent(gameRef: this));
     playing = true;
+  }
+
+  static Future<ui.Image?> _decodeUiImage(Uint8List? bytes) async {
+    if (bytes == null) return null;
+    final codec = await ui.instantiateImageCodec(
+      bytes,
+      targetWidth: 300,
+      targetHeight: 300,
+    );
+    final frame = await codec.getNextFrame();
+    return frame.image;
   }
 
   void _buildArenaBackground() {
@@ -182,8 +215,8 @@ class BossBallGame extends FlameGame {
                     ..color = color
                     ..blendMode = BlendMode.screen
                     ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
-                  final radius = 6.0 * (1.0 - particle.progress);
-                  canvas.drawCircle(Offset.zero, radius, paint);
+                  final r = 6.0 * (1.0 - particle.progress);
+                  canvas.drawCircle(Offset.zero, r, paint);
                 },
               ),
             );
@@ -199,7 +232,6 @@ class BossBallGame extends FlameGame {
     final mult = isLaserTick ? 1.0 : _effectiveMultiplier;
     final boostedBase = (baseDamage * mult).round();
 
-    // Consume hit-based buffs
     if (!isLaserTick) {
       if (_barrierHitsRemaining > 0) _barrierHitsRemaining--;
       if (_starHitsRemaining > 0) _starHitsRemaining--;
@@ -220,10 +252,7 @@ class BossBallGame extends FlameGame {
       final shakePower = isCrit
           ? 50.0
           : ((finalDamage / bossMaxHp) * 300).clamp(4.0, 28.0);
-      triggerShake(
-        intensity: shakePower,
-        duration: isCrit ? 0.3 : 0.18,
-      );
+      triggerShake(intensity: shakePower, duration: isCrit ? 0.3 : 0.18);
       spawnFireExplosion(orb.position.clone());
       add(DamageNumber(
         position: boss.position.clone() +
@@ -236,18 +265,16 @@ class BossBallGame extends FlameGame {
       triggerShake(intensity: 1.8, duration: 0.04);
       if (_rng.nextDouble() > 0.5) {
         spawnFireExplosion(
-          boss.position.clone() +
-              Vector2(
-                (_rng.nextDouble() - 0.5) * 40,
-                (_rng.nextDouble() - 0.5) * 40,
-              ),
+          boss.position.clone() + Vector2(
+            (_rng.nextDouble() - 0.5) * 40,
+            (_rng.nextDouble() - 0.5) * 40,
+          ),
         );
         add(DamageNumber(
-          position: boss.position.clone() +
-              Vector2(
-                (_rng.nextDouble() - 0.5) * 50,
-                (_rng.nextDouble() - 0.5) * 50,
-              ),
+          position: boss.position.clone() + Vector2(
+            (_rng.nextDouble() - 0.5) * 50,
+            (_rng.nextDouble() - 0.5) * 50,
+          ),
           damage: finalDamage,
           isSmall: true,
           driftX: (_rng.nextDouble() - 0.5) * 40,
@@ -289,7 +316,7 @@ class BossBallGame extends FlameGame {
       if (_magnetTimer < 0) _magnetTimer = 0;
     }
 
-    // Revolver burst sequence — balanced at 28K × 6 = 168K total
+    // Revolver burst — 28K × 6 = 168K total
     if (_revolverBurstsLeft > 0) {
       _revolverBurstTimer -= dt;
       if (_revolverBurstTimer <= 0) {
@@ -301,6 +328,7 @@ class BossBallGame extends FlameGame {
   }
 
   void _maybeSpawnPickup(double dt) {
+    if (!mode.hasPickups) return; // CLASSIC mode: no item spawning
     _pickupSpawnTimer -= dt;
     if (_pickupSpawnTimer > 0) return;
     if (_activePickups >= _maxPickups) return;
@@ -319,9 +347,8 @@ class BossBallGame extends FlameGame {
     final y = arenaConfig.minY(r) +
         _rng.nextDouble() * (arenaConfig.maxY(r) - arenaConfig.minY(r));
     final pos = Vector2(x, y);
-    final tooCloseOrb = _orbs.any((o) => pos.distanceTo(o.position) < 80);
-    if (retries > 0 &&
-        (pos.distanceTo(boss.position) < 80 || tooCloseOrb)) {
+    final tooClose = _orbs.any((o) => pos.distanceTo(o.position) < 80);
+    if (retries > 0 && (pos.distanceTo(boss.position) < 80 || tooClose)) {
       return _randomPickupPosition(retries: retries - 1);
     }
     return pos;
@@ -330,57 +357,34 @@ class BossBallGame extends FlameGame {
   void onPickupCollected(PickupType type) {
     switch (type) {
       case PickupType.apple:
-        // Instant 60K nuke (balanced from 80K)
         onOrbHitBoss(60000);
-
       case PickupType.revolver:
         _revolverBurstsLeft = 6;
         _revolverBurstTimer = 0.2;
-
       case PickupType.lightning:
-        // 120K instant + freeze (balanced from 200K)
         onOrbHitBoss(120000);
         boss.freezeBoss(1.0);
         triggerShake(intensity: 35, duration: 0.3);
-
       case PickupType.shield:
-        // 2× damage multiplier for 8s
         _shieldTimer = 8.0;
-
       case PickupType.speed:
         for (final o in _orbs) o.speedMultiplier = 2.0;
         _speedTimer = 6.0;
-
       case PickupType.ice:
         boss.freezeBoss(3.0);
-
       case PickupType.bomb:
-        // 280K burst (balanced from 500K)
         onOrbHitBoss(280000);
         triggerShake(intensity: 60, duration: 0.45);
-
       case PickupType.vortex:
-        add(VortexPickupZone(
-          position: _randomPickupPosition(),
-          gameRef: this,
-        ));
-
+        add(VortexPickupZone(position: _randomPickupPosition(), gameRef: this));
       case PickupType.star:
-        // 2.5× damage for next 3 hits (balanced from 3×)
         _starHitsRemaining = 3;
-
       case PickupType.rapid:
-        // Halves hit cooldown (double DPS) for 6s
         _rapidTimer = 6.0;
-
       case PickupType.magnet:
-        // Orb homes toward boss for 8s
         _magnetTimer = 8.0;
-
       case PickupType.barrier:
-        // 3× damage for next 4 hits
         _barrierHitsRemaining = 4;
-
       case PickupType.mystery:
         onPickupCollected(PickupTypeInfo.randomNonMystery(_rng));
     }

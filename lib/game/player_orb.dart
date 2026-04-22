@@ -262,13 +262,28 @@ class PlayerOrb extends PositionComponent {
       );
     }
 
-    canvas.drawCircle(const Offset(cx, cy), radius, Paint()..color = color);
+    // Main sphere body — solid color OR custom face image
+    final faceImg = gameRef.orbImage(orbIndex);
+    if (faceImg != null) {
+      final dst = Rect.fromCircle(center: Offset(cx, cy), radius: radius);
+      canvas.save();
+      canvas.clipPath(Path()..addOval(dst));
+      canvas.drawImageRect(
+        faceImg,
+        Rect.fromLTWH(0, 0, faceImg.width.toDouble(), faceImg.height.toDouble()),
+        dst,
+        Paint()..filterQuality = FilterQuality.medium,
+      );
+      canvas.restore();
+    } else {
+      canvas.drawCircle(const Offset(cx, cy), radius, Paint()..color = color);
+    }
 
     canvas.drawCircle(
       const Offset(cx - radius * 0.35, cy - radius * 0.35),
       radius * 0.38,
       Paint()
-        ..color = Colors.white.withOpacity(0.45)
+        ..color = Colors.white.withOpacity(0.30)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
     );
 
