@@ -27,7 +27,7 @@ class IceOrb extends OrbBehavior {
   @override
   void onBossHit(PlayerOrb orb) {
     final boss = orb.gameRef.boss;
-    // 2× bonus while boss is already frozen
+    if (boss == null) return;
     final dmg  = boss.isFrozen ? _hitDamage * 2 : _hitDamage;
     orb.gameRef.onOrbHitBoss(dmg);
     boss.freezeBoss(_freezeDur);

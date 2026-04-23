@@ -46,8 +46,10 @@ class FireZoneComponent extends PositionComponent {
     }
 
     // Deal DoT while boss is in zone
-    final dist = position.distanceTo(gameRef.boss.position);
-    if (dist < gameRef.boss.radius + zoneR && _tick <= 0) {
+    final fzBoss = gameRef.boss;
+    if (fzBoss == null) return;
+    final dist = position.distanceTo(fzBoss.position);
+    if (dist < fzBoss.radius + zoneR && _tick <= 0) {
       _tick = tickInterval;
       gameRef.onOrbHitBoss(tickDamage, isLaserTick: true);
     }

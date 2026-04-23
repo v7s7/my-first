@@ -26,8 +26,10 @@ class HookOrb extends OrbBehavior {
   @override
   void onUpdate(double dt, PlayerOrb orb) {
     _time  += dt;
-    final bp   = orb.gameRef.boss.position;
-    final dist = orb.position.distanceTo(bp);
+    final boss = orb.gameRef.boss;
+    if (boss == null) return;
+    final bp   = boss.position;
+    final dist = orb.position.distanceTo(boss.position);
     _locked    = dist < 450;
     if (dist > 1) {
       final dx = bp.x - orb.position.x;

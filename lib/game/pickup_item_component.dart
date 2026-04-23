@@ -46,17 +46,21 @@ class PickupItemComponent extends PositionComponent {
       return;
     }
 
-    // Collision with orb
-    final dist = gameRef.orb.position.distanceTo(position);
-    if (dist < pickupRadius + PlayerOrb.radius) {
-      _collected = true;
-      _collect();
-      removeFromParent();
+    // Collision with any active orb (supports Dual Ball / PVP mode)
+    final orbs = gameRef.orbs;
+    for (int i = 0; i < orbs.length; i++) {
+      final o = orbs[i];
+      if (o.position.distanceTo(position) < pickupRadius + o.orbRadius) {
+        _collected = true;
+        _collect(collectorIndex: i);
+        removeFromParent();
+        return;
+      }
     }
   }
 
-  void _collect() {
-    gameRef.onPickupCollected(type);
+  void _collect({int collectorIndex = 0}) {
+    gameRef.onPickupCollected(type, collectorIndex: collectorIndex);
     gameRef.onPickupExpired(); // decrement active count
 
     // Floating name label

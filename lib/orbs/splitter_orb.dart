@@ -37,11 +37,13 @@ class SplitterOrb extends OrbBehavior {
 
   @override
   void onBossHit(PlayerOrb orb) {
+    final boss = orb.gameRef.boss;
+    if (boss == null) return;
     orb.gameRef.onOrbHitBoss(_baseDamage);
     _active      = true;
     _activeTimer = _activeDuration;
     // Spawn 3 shuriken projectiles
-    final bossPos = orb.gameRef.boss.position;
+    final bossPos = boss.position;
     for (int i = 0; i < _bladeCount; i++) {
       final angle = i * (2 * pi / _bladeCount) + _time;
       orb.gameRef.add(_ShurikenBlade(
@@ -148,7 +150,9 @@ class _ShurikenBlade extends PositionComponent {
     }
 
     // Hit boss
-    if (!_hit && position.distanceTo(game.boss.position) < game.boss.radius + bladeR) {
+    final shurikenBoss = game.boss;
+    if (!_hit && shurikenBoss != null &&
+        position.distanceTo(shurikenBoss.position) < shurikenBoss.radius + bladeR) {
       _hit = true;
       game.onOrbHitBoss(damage);
       removeFromParent();

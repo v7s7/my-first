@@ -45,10 +45,11 @@ class ShockwaveRingComponent extends PositionComponent {
     }
 
     // Fire bonus damage once when ring edge sweeps through boss
-    if (!_bonusHit) {
-      final bossCenter = gameRef.boss.position;
+    final swBoss = gameRef.boss;
+    if (!_bonusHit && swBoss != null) {
+      final bossCenter = swBoss.position;
       final dist       = position.distanceTo(bossCenter);
-      final bossR      = gameRef.boss.radius;
+      final bossR      = swBoss.radius;
       // Ring edge is at _radius from this component's centre
       if ((dist - bossR - _radius).abs() < 28) {
         _bonusHit = true;

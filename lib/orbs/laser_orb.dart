@@ -43,7 +43,7 @@ class LaserOrb extends OrbBehavior {
     _tickTimer   -= dt;
 
     _beam?.startPos = orb.position;
-    _beam?.endPos   = orb.gameRef.boss.position;
+    _beam?.endPos   = orb.gameRef.boss?.position ?? orb.position;
     _beam?.timeLeft = _firingTimer;
 
     if (_tickTimer <= 0) {
@@ -61,12 +61,14 @@ class LaserOrb extends OrbBehavior {
   @override
   void onBossHit(PlayerOrb orb) {
     if (_firing) return;
+    final boss = orb.gameRef.boss;
+    if (boss == null) return;
     _firing      = true;
     _firingTimer = _laserDuration;
     _tickTimer   = 0;
     _beam = LaserBeam(
       startPos: orb.position.clone(),
-      endPos: orb.gameRef.boss.position.clone(),
+      endPos: boss.position.clone(),
       totalDuration: _laserDuration,
       timeLeft: _laserDuration,
     );

@@ -122,15 +122,29 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
           ..color = bossColor.withOpacity(0.50)
           ..maskFilter = const MaskFilter.blur(BlurStyle.solid, 8));
 
-    // Main body
-    canvas.drawCircle(Offset.zero, radius, Paint()..color = bossColor);
+    // Main body — solid color OR custom face image
+    final faceImg = gameRef.bossUiImage;
+    if (faceImg != null) {
+      final dst = Rect.fromCircle(center: Offset.zero, radius: radius);
+      canvas.save();
+      canvas.clipPath(Path()..addOval(dst));
+      canvas.drawImageRect(
+        faceImg,
+        Rect.fromLTWH(0, 0, faceImg.width.toDouble(), faceImg.height.toDouble()),
+        dst,
+        Paint()..filterQuality = FilterQuality.medium,
+      );
+      canvas.restore();
+    } else {
+      canvas.drawCircle(Offset.zero, radius, Paint()..color = bossColor);
+    }
 
     // Metallic highlight
     canvas.drawCircle(
         Offset(-radius * 0.3, -radius * 0.3),
         radius * 0.45,
         Paint()
-          ..color = Colors.white.withOpacity(0.40)
+          ..color = Colors.white.withOpacity(0.25)
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4));
 
     // Rage aura at low HP

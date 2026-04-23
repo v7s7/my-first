@@ -39,10 +39,13 @@ class VortexPickupZone extends PositionComponent {
       return;
     }
 
-    // Pull boss toward this position
-    final toZone = position - gameRef.boss.position;
-    if (toZone.length > 1) {
-      gameRef.boss.velocity += toZone.normalized() * _pullForce * dt;
+    // Pull boss toward this position (no-op in PVP)
+    final vortexBoss = gameRef.boss;
+    if (vortexBoss != null) {
+      final toZone = position - vortexBoss.position;
+      if (toZone.length > 1) {
+        vortexBoss.velocity += toZone.normalized() * _pullForce * dt;
+      }
     }
 
     // DoT ticks

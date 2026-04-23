@@ -46,6 +46,18 @@ class GameMode {
   /// Controls what the game-over screen reports as the primary score.
   final ScoreMode scoreMode;
 
+  /// How many player orbs to spawn (1 = normal, 2 = Dual Ball mode).
+  final int orbCount;
+
+  /// HP the boss regenerates per second (0 = no regen). Used for Survival mode.
+  final int bossRegenPerSecond;
+
+  /// Whether items/pickups spawn in this mode. False = pure physics, no items.
+  final bool hasPickups;
+
+  /// PVP mode: no boss, two orbs fight each other.
+  final bool isPvp;
+
   const GameMode({
     required this.id,
     required this.name,
@@ -56,5 +68,9 @@ class GameMode {
     this.winOnBossKill = true,
     this.loseOnTimeExpiry = true,
     this.scoreMode = ScoreMode.damageDealt,
+    this.orbCount = 1,
+    this.bossRegenPerSecond = 0,
+    this.hasPickups = true,
+    this.isPvp = false,
   });
 }

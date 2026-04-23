@@ -43,10 +43,12 @@ class BlackHoleOrb extends OrbBehavior {
     _tickTimer   -= dt;
 
     // Pull boss toward orb
-    final toOrb = (orb.position - orb.gameRef.boss.position);
-    if (toOrb.length > 1) {
-      orb.gameRef.boss.velocity +=
-          toOrb.normalized() * _pullForce * dt;
+    final vortexBoss = orb.gameRef.boss;
+    if (vortexBoss != null) {
+      final toOrb = (orb.position - vortexBoss.position);
+      if (toOrb.length > 1) {
+        vortexBoss.velocity += toOrb.normalized() * _pullForce * dt;
+      }
     }
 
     // DoT ticks

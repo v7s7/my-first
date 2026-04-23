@@ -12,6 +12,9 @@ enum PickupType {
   vortex,
   star,
   mystery,
+  rapid,   // halves hit cooldown for 6s
+  magnet,  // homes orb toward boss for 8s
+  barrier, // 3× damage for 4 hits
 }
 
 extension PickupTypeInfo on PickupType {
@@ -27,6 +30,9 @@ extension PickupTypeInfo on PickupType {
       case PickupType.vortex:   return '🌀';
       case PickupType.star:     return '⭐';
       case PickupType.mystery:  return '❓';
+      case PickupType.rapid:    return '🔥';
+      case PickupType.magnet:   return '🧲';
+      case PickupType.barrier:  return '💎';
     }
   }
 
@@ -42,6 +48,9 @@ extension PickupTypeInfo on PickupType {
       case PickupType.vortex:   return 'VORTEX';
       case PickupType.star:     return 'STAR x3';
       case PickupType.mystery:  return '???';
+      case PickupType.rapid:    return 'RAPID';
+      case PickupType.magnet:   return 'MAGNET';
+      case PickupType.barrier:  return 'BARRIER';
     }
   }
 
@@ -57,6 +66,9 @@ extension PickupTypeInfo on PickupType {
       case PickupType.vortex:   return const Color(0xFFAA44FF);
       case PickupType.star:     return const Color(0xFFFFCC00);
       case PickupType.mystery:  return const Color(0xFFFF88FF);
+      case PickupType.rapid:    return const Color(0xFFFF6600);
+      case PickupType.magnet:   return const Color(0xFFFF44CC);
+      case PickupType.barrier:  return const Color(0xFF44FFEE);
     }
   }
 
@@ -70,8 +82,11 @@ extension PickupTypeInfo on PickupType {
       case PickupType.shield:   return 2;
       case PickupType.speed:    return 2;
       case PickupType.bomb:     return 2;
+      case PickupType.rapid:    return 2;
+      case PickupType.magnet:   return 2;
       case PickupType.vortex:   return 1;
       case PickupType.star:     return 1;
+      case PickupType.barrier:  return 1;
       case PickupType.mystery:  return 1;
     }
   }

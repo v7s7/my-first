@@ -49,13 +49,15 @@ class FireOrb extends OrbBehavior {
 
   @override
   void onBossHit(PlayerOrb orb) {
+    final boss = orb.gameRef.boss;
+    if (boss == null) return;
     orb.gameRef.onOrbHitBoss(_baseDamage);
     _burning   = true;
     _burnTimer = _tickInterval;
     _ticksLeft = _burnTicks;
     // Drop a fire zone at the boss position
     orb.gameRef.add(FireZoneComponent(
-      position: orb.gameRef.boss.position.clone(),
+      position: boss.position.clone(),
       gameRef: orb.gameRef,
     ));
   }

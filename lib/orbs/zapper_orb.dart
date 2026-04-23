@@ -41,12 +41,14 @@ class ZapperOrb extends OrbBehavior {
 
   @override
   void onBossHit(PlayerOrb orb) {
+    final boss = orb.gameRef.boss;
+    if (boss == null) return;
     orb.gameRef.onOrbHitBoss(_burstDamage);
     _zapActive = true;
     _zapTimer  = _zapDuration;
     // Spawn thunder zone at boss position
     orb.gameRef.add(ThunderZoneComponent(
-      position: orb.gameRef.boss.position.clone(),
+      position: boss.position.clone(),
       gameRef: orb.gameRef,
     ));
   }

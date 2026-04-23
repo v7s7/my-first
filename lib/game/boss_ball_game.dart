@@ -1,4 +1,6 @@
 import 'dart:math';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flame/particles.dart';
@@ -9,6 +11,7 @@ import '../modes/game_mode.dart';
 import 'arena_config.dart';
 import 'arena_wall.dart';
 import 'boss_component.dart';
+import 'bullet_component.dart';
 import 'damage_number.dart';
 import 'pickup_item_component.dart';
 import 'pickup_type.dart';
@@ -20,7 +23,11 @@ class BossBallGame extends FlameGame {
   final OrbBehavior orbBehavior;
   final GameMode mode;
   final ArenaPreset arenaPreset;
-  final int? customBossHp; // overrides mode.bossMaxHp when set
+  final int? customBossHp;
+
+  /// Raw image bytes kept so the retry button can reconstruct the game.
+  final List<Uint8List?> orbImageBytes;
+  final Uint8List? bossImageBytes;
 
   late ArenaConfig arenaConfig;
 
@@ -34,36 +41,77 @@ class BossBallGame extends FlameGame {
   int totalDamage = 0;
   double totalTime = 0.0;
 
-  late BossComponent boss;
-  late PlayerOrb orb;
+  // Boss is nullable — null in PVP mode
+  BossComponent? boss;
+
+  // Multi-orb support
+  final List<PlayerOrb> _orbs = [];
+  List<PlayerOrb> get orbs => _orbs;
+  PlayerOrb get orb => _orbs.first;
+
+  // Decoded face images — set during onLoad, read by orb/boss render
+  final List<ui.Image?> _orbImages = [];
+  ui.Image? _bossUiImage;
+
+  ui.Image? orbImage(int index) =>
+      index < _orbImages.length ? _orbImages[index] : null;
+  ui.Image? get bossUiImage => _bossUiImage;
 
   double _shakeIntensity = 0.0;
   double _shakeTimer = 0.0;
   final Random _rng = Random();
 
-  // ── Pickup system ────────────────────────────────────────────────────────────
+  // ── Pickup system ─────────────────────────────────────────────────────────
   double _pickupSpawnTimer = 10.0;
   int    _activePickups    = 0;
   static const int _maxPickups = 2;
 
-  // Active effect state
-  double _damageMultiplier   = 1.0;
-  double _shieldTimer        = 0.0;
-  double _speedTimer         = 0.0;
-  int    _starHitsRemaining  = 0;
-  int    _revolverBurstsLeft = 0;
-  double _revolverBurstTimer = 0.0;
+  // Active effect timers
+  double _shieldTimer          = 0.0;
+  double _speedTimer           = 0.0;
+  double _rapidTimer           = 0.0;
+  double _magnetTimer          = 0.0;
+  int    _starHitsRemaining    = 0;
+  int    _barrierHitsRemaining = 0;
+  int    _revolverBurstsLeft    = 0;
+  double _revolverBurstTimer    = 0.0;
+  int    _revolverVictimIndex   = 0;
+  int    _revolverCollectorIndex = 0;
+  int    _speedCollectorIndex   = -1;
 
   // Public getters for HUD
-  double get shieldTimer       => _shieldTimer;
-  double get speedTimer        => _speedTimer;
-  int    get starHitsRemaining => _starHitsRemaining;
+  double get shieldTimer          => _shieldTimer;
+  double get speedTimer           => _speedTimer;
+  double get rapidTimer           => _rapidTimer;
+  double get magnetTimer          => _magnetTimer;
+  int    get starHitsRemaining    => _starHitsRemaining;
+  int    get barrierHitsRemaining => _barrierHitsRemaining;
+
+  // ── PVP state ─────────────────────────────────────────────────────────────
+  List<int> _pvpOrbHp     = [];
+  int       pvpOrbMaxHp   = 1000000;
+  int?      pvpWinner;       // 0 or 1 = winning orb index; null = in progress
+  double    _pvpHitCooldown = 0.0;
+
+  int pvpOrbHp(int index) =>
+      index < _pvpOrbHp.length ? _pvpOrbHp[index] : 0;
+
+  // Stacked damage multiplier from all active buffs (capped at 8×)
+  double get _effectiveMultiplier {
+    double m = 1.0;
+    if (_shieldTimer > 0) m *= 2.0;
+    if (_starHitsRemaining > 0) m *= 2.5;
+    if (_barrierHitsRemaining > 0) m *= 3.0;
+    return m.clamp(1.0, 8.0);
+  }
 
   BossBallGame({
     required this.orbBehavior,
     required this.mode,
     this.arenaPreset = ArenaPreset.normal,
     this.customBossHp,
+    this.orbImageBytes = const [],
+    this.bossImageBytes,
   });
 
   @override
@@ -81,15 +129,38 @@ class BossBallGame extends FlameGame {
     totalDamage = 0;
     totalTime = 0.0;
 
+    // Decode face images before building components
+    for (final bytes in orbImageBytes) {
+      _orbImages.add(await _decodeUiImage(bytes));
+    }
+    _bossUiImage = await _decodeUiImage(bossImageBytes);
+
     _buildArenaBackground();
     _buildWalls();
-    _buildBoss();
-    _buildOrb();
+    if (!mode.isPvp) _buildBoss();
+    _buildOrbs();
     add(HudComponent(gameRef: this));
+
+    // PVP: set up per-orb HP
+    if (mode.isPvp) {
+      pvpOrbMaxHp = customBossHp ?? mode.bossMaxHp;
+      _pvpOrbHp = List.filled(mode.orbCount, pvpOrbMaxHp);
+    }
+
     playing = true;
   }
 
-  /// Slightly lighter background panel that marks the playable zone.
+  static Future<ui.Image?> _decodeUiImage(Uint8List? bytes) async {
+    if (bytes == null) return null;
+    final codec = await ui.instantiateImageCodec(
+      bytes,
+      targetWidth: 300,
+      targetHeight: 300,
+    );
+    final frame = await codec.getNextFrame();
+    return frame.image;
+  }
+
   void _buildArenaBackground() {
     final cfg = arenaConfig;
     add(RectangleComponent(
@@ -103,7 +174,6 @@ class BossBallGame extends FlameGame {
   void _buildWalls() {
     final cfg = arenaConfig;
     const t = ArenaConfig.wallThickness;
-    // Border walls
     addAll([
       ArenaWall(position: Vector2(cfg.left, cfg.top),
                 size: Vector2(cfg.width, t)),
@@ -114,7 +184,6 @@ class BossBallGame extends FlameGame {
       ArenaWall(position: Vector2(cfg.left + cfg.width - t, cfg.top + t),
                 size: Vector2(t, cfg.height - t * 2)),
     ]);
-    // Internal obstacle walls / pillars
     for (final rect in cfg.obstacles) {
       add(ArenaWall(
         position: Vector2(rect.left, rect.top),
@@ -125,15 +194,24 @@ class BossBallGame extends FlameGame {
 
   void _buildBoss() {
     boss = BossComponent(position: arenaConfig.center);
-    add(boss);
+    add(boss!);
   }
 
-  void _buildOrb() {
-    orb = PlayerOrb(behavior: orbBehavior, gameRef: this, arena: arenaConfig);
-    add(orb);
+  void _buildOrbs() {
+    final pvpRadius = mode.isPvp ? 32.0 : PlayerOrb.defaultRadius;
+    for (int i = 0; i < mode.orbCount; i++) {
+      final o = PlayerOrb(
+        behavior: orbBehavior,
+        gameRef: this,
+        arena: arenaConfig,
+        orbIndex: i,
+        orbRadius: pvpRadius,
+      );
+      _orbs.add(o);
+      add(o);
+    }
   }
 
-  // 🔴 تمت إعادة إضافة دالة تأثير النار المفقودة
   void spawnFireExplosion(Vector2 position) {
     add(
       ParticleSystemComponent(
@@ -142,10 +220,13 @@ class BossBallGame extends FlameGame {
           count: 40,
           lifespan: 0.5,
           generator: (i) {
-            final speed = Vector2((_rng.nextDouble() - 0.5) * 600, (_rng.nextDouble() - 0.5) * 600);
+            final spd = Vector2(
+              (_rng.nextDouble() - 0.5) * 600,
+              (_rng.nextDouble() - 0.5) * 600,
+            );
             return AcceleratedParticle(
               acceleration: Vector2(0, 200),
-              speed: speed,
+              speed: spd,
               child: ComputedParticle(
                 renderer: (canvas, particle) {
                   final color = Color.lerp(
@@ -153,14 +234,12 @@ class BossBallGame extends FlameGame {
                     Colors.red,
                     particle.progress,
                   )!.withOpacity(1.0 - particle.progress);
-                  
                   final paint = Paint()
                     ..color = color
                     ..blendMode = BlendMode.screen
                     ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
-                    
-                  final radius = 6.0 * (1.0 - particle.progress);
-                  canvas.drawCircle(Offset.zero, radius, paint);
+                  final r = 6.0 * (1.0 - particle.progress);
+                  canvas.drawCircle(Offset.zero, r, paint);
                 },
               ),
             );
@@ -170,19 +249,18 @@ class BossBallGame extends FlameGame {
     );
   }
 
-  // ── Damage callback ────────────────────────────────────────────────────────
+  // ── Boss damage callback ───────────────────────────────────────────────────
 
   void onOrbHitBoss(int baseDamage, {bool isLaserTick = false}) {
-    // Apply active pickup damage multiplier
-    final boostedBase = isLaserTick ? baseDamage : (baseDamage * _damageMultiplier).round();
+    if (boss == null) return; // no boss in PVP
+    final mult = isLaserTick ? 1.0 : _effectiveMultiplier;
+    final boostedBase = (baseDamage * mult).round();
 
-    // Consume a star hit
-    if (!isLaserTick && _starHitsRemaining > 0) {
-      _starHitsRemaining--;
-      if (_starHitsRemaining <= 0) _damageMultiplier = 1.0;
+    if (!isLaserTick) {
+      if (_barrierHitsRemaining > 0) _barrierHitsRemaining--;
+      if (_starHitsRemaining > 0) _starHitsRemaining--;
     }
 
-    // 20% chance for critical hit
     bool isCrit = false;
     int finalDamage = boostedBase;
 
@@ -195,29 +273,32 @@ class BossBallGame extends FlameGame {
     totalDamage += finalDamage;
 
     if (!isLaserTick) {
-      final shakePower = isCrit ? 50.0 : ((finalDamage / bossMaxHp) * 300).clamp(4.0, 28.0);
-      triggerShake(
-        intensity: shakePower,
-        duration: isCrit ? 0.3 : 0.18,
-      );
-      
+      final shakePower = isCrit
+          ? 50.0
+          : ((finalDamage / bossMaxHp) * 300).clamp(4.0, 28.0);
+      triggerShake(intensity: shakePower, duration: isCrit ? 0.3 : 0.18);
       spawnFireExplosion(orb.position.clone());
-      
-      // Spawn floating damage number
       add(DamageNumber(
-        position: boss.position.clone() + Vector2((_rng.nextDouble() - 0.5) * 40, -30),
+        position: boss!.position.clone() +
+            Vector2((_rng.nextDouble() - 0.5) * 40, -30),
         damage: finalDamage,
         isSmall: false,
         driftX: (_rng.nextDouble() - 0.5) * 60,
       ));
-      
     } else {
       triggerShake(intensity: 1.8, duration: 0.04);
       if (_rng.nextDouble() > 0.5) {
-        spawnFireExplosion(boss.position.clone() + Vector2((_rng.nextDouble() - 0.5) * 40, (_rng.nextDouble() - 0.5) * 40));
-        // Small damage numbers for laser ticks
+        spawnFireExplosion(
+          boss!.position.clone() + Vector2(
+            (_rng.nextDouble() - 0.5) * 40,
+            (_rng.nextDouble() - 0.5) * 40,
+          ),
+        );
         add(DamageNumber(
-          position: boss.position.clone() + Vector2((_rng.nextDouble() - 0.5) * 50, (_rng.nextDouble() - 0.5) * 50),
+          position: boss!.position.clone() + Vector2(
+            (_rng.nextDouble() - 0.5) * 50,
+            (_rng.nextDouble() - 0.5) * 50,
+          ),
           damage: finalDamage,
           isSmall: true,
           driftX: (_rng.nextDouble() - 0.5) * 40,
@@ -232,43 +313,110 @@ class BossBallGame extends FlameGame {
     }
   }
 
-  // ── Pickup system ────────────────────────────────────────────────────────────
+  // ── PVP damage callback ────────────────────────────────────────────────────
+
+  void onPvpOrbHit({required int victimIndex, required int damage}) {
+    if (victimIndex >= _pvpOrbHp.length || pvpWinner != null) return;
+
+    _pvpOrbHp[victimIndex] =
+        (_pvpOrbHp[victimIndex] - damage).clamp(0, pvpOrbMaxHp);
+    totalDamage += damage;
+
+    triggerShake(
+      intensity: (damage / pvpOrbMaxHp * 200).clamp(4.0, 40.0),
+      duration: 0.15,
+    );
+
+    final orbPos = victimIndex < _orbs.length
+        ? _orbs[victimIndex].position.clone()
+        : orb.position.clone();
+    spawnFireExplosion(orbPos);
+    add(DamageNumber(
+      position: orbPos + Vector2((_rng.nextDouble() - 0.5) * 40, -30),
+      damage: damage,
+      isSmall: false,
+      driftX: (_rng.nextDouble() - 0.5) * 60,
+    ));
+
+    if (_pvpOrbHp[victimIndex] <= 0) {
+      pvpWinner = 1 - victimIndex;
+      playing = false;
+      Future.delayed(Duration.zero, () => overlays.add('GameOver'));
+    }
+  }
+
+  // ── Pickup system ──────────────────────────────────────────────────────────
 
   void onPickupExpired() {
     if (_activePickups > 0) _activePickups--;
   }
 
-  void _tickPickupTimers(double dt) {
-    // Shield timer
-    if (_shieldTimer > 0) {
-      _shieldTimer -= dt;
-      if (_shieldTimer <= 0) {
-        _shieldTimer = 0;
-        if (_starHitsRemaining <= 0) _damageMultiplier = 1.0;
-      }
+  void _spawnRevolverBullet() {
+    final shooter = _revolverCollectorIndex < _orbs.length
+        ? _orbs[_revolverCollectorIndex]
+        : (_orbs.isNotEmpty ? _orbs.first : null);
+    if (shooter == null) return;
+
+    final Vector2 targetPos;
+    final int? pvpVictim;
+
+    if (mode.isPvp) {
+      pvpVictim = _revolverVictimIndex;
+      targetPos = _revolverVictimIndex < _orbs.length
+          ? _orbs[_revolverVictimIndex].position.clone()
+          : shooter.position.clone();
+    } else {
+      pvpVictim = null;
+      targetPos = boss?.position.clone() ?? shooter.position.clone();
     }
 
-    // Speed timer
+    add(BulletComponent(
+      position: shooter.position.clone(),
+      target: targetPos,
+      damage: mode.isPvp ? 20000 : 28000,
+      pvpVictimIndex: pvpVictim,
+    ));
+  }
+
+  void _tickPickupTimers(double dt) {
+    if (_shieldTimer > 0) {
+      _shieldTimer -= dt;
+      if (_shieldTimer < 0) _shieldTimer = 0;
+    }
     if (_speedTimer > 0) {
       _speedTimer -= dt;
       if (_speedTimer <= 0) {
         _speedTimer = 0;
-        orb.speedMultiplier = 1.0;
+        if (mode.isPvp && _speedCollectorIndex >= 0 &&
+            _speedCollectorIndex < _orbs.length) {
+          _orbs[_speedCollectorIndex].speedMultiplier = 1.0;
+        } else {
+          for (final o in _orbs) o.speedMultiplier = 1.0;
+        }
       }
     }
+    if (_rapidTimer > 0) {
+      _rapidTimer -= dt;
+      if (_rapidTimer < 0) _rapidTimer = 0;
+    }
+    if (_magnetTimer > 0) {
+      _magnetTimer -= dt;
+      if (_magnetTimer < 0) _magnetTimer = 0;
+    }
 
-    // Revolver burst sequence
+    // Revolver burst — spawn a visible bullet each tick
     if (_revolverBurstsLeft > 0) {
       _revolverBurstTimer -= dt;
       if (_revolverBurstTimer <= 0) {
-        _revolverBurstTimer = 0.2;
+        _revolverBurstTimer = 0.22;
         _revolverBurstsLeft--;
-        onOrbHitBoss(40000);
+        _spawnRevolverBullet();
       }
     }
   }
 
   void _maybeSpawnPickup(double dt) {
+    if (!mode.hasPickups) return;
     _pickupSpawnTimer -= dt;
     if (_pickupSpawnTimer > 0) return;
     if (_activePickups >= _maxPickups) return;
@@ -282,57 +430,169 @@ class BossBallGame extends FlameGame {
 
   Vector2 _randomPickupPosition({int retries = 8}) {
     const r = PickupItemComponent.pickupRadius;
-    final x = arenaConfig.minX(r) + _rng.nextDouble() * (arenaConfig.maxX(r) - arenaConfig.minX(r));
-    final y = arenaConfig.minY(r) + _rng.nextDouble() * (arenaConfig.maxY(r) - arenaConfig.minY(r));
+    final x = arenaConfig.minX(r) +
+        _rng.nextDouble() * (arenaConfig.maxX(r) - arenaConfig.minX(r));
+    final y = arenaConfig.minY(r) +
+        _rng.nextDouble() * (arenaConfig.maxY(r) - arenaConfig.minY(r));
     final pos = Vector2(x, y);
-    if (retries > 0 &&
-        (pos.distanceTo(boss.position) < 80 || pos.distanceTo(orb.position) < 80)) {
+    final tooCloseToOrb = _orbs.any((o) => pos.distanceTo(o.position) < 80);
+    final tooCloseToBoss =
+        boss != null && pos.distanceTo(boss!.position) < 80;
+    if (retries > 0 && (tooCloseToBoss || tooCloseToOrb)) {
       return _randomPickupPosition(retries: retries - 1);
     }
     return pos;
   }
 
-  void onPickupCollected(PickupType type) {
+  void onPickupCollected(PickupType type, {int collectorIndex = 0}) {
+    if (mode.isPvp) {
+      _onPickupCollectedPvp(type, collectorIndex);
+      return;
+    }
     switch (type) {
       case PickupType.apple:
-        onOrbHitBoss(80000);
-
+        onOrbHitBoss(60000);
       case PickupType.revolver:
         _revolverBurstsLeft = 6;
-        _revolverBurstTimer = 0.2;
-
+        _revolverBurstTimer = 0.0; // fire first bullet immediately
+        _revolverCollectorIndex = collectorIndex;
       case PickupType.lightning:
-        onOrbHitBoss(200000);
-        boss.freezeBoss(1.0);
+        onOrbHitBoss(120000);
+        boss?.freezeBoss(1.0);
         triggerShake(intensity: 35, duration: 0.3);
-
       case PickupType.shield:
-        _damageMultiplier = 2.0;
         _shieldTimer = 8.0;
-
       case PickupType.speed:
-        orb.speedMultiplier = 2.0;
+        for (final o in _orbs) o.speedMultiplier = 2.0;
         _speedTimer = 6.0;
-
       case PickupType.ice:
-        boss.freezeBoss(3.0);
-
+        boss?.freezeBoss(3.0);
       case PickupType.bomb:
-        onOrbHitBoss(500000);
+        onOrbHitBoss(280000);
         triggerShake(intensity: 60, duration: 0.45);
-
       case PickupType.vortex:
-        add(VortexPickupZone(
-          position: _randomPickupPosition(),
-          gameRef: this,
-        ));
-
+        add(VortexPickupZone(position: _randomPickupPosition(), gameRef: this));
       case PickupType.star:
         _starHitsRemaining = 3;
-        _damageMultiplier  = 3.0;
-
+      case PickupType.rapid:
+        _rapidTimer = 6.0;
+      case PickupType.magnet:
+        _magnetTimer = 8.0;
+      case PickupType.barrier:
+        _barrierHitsRemaining = 4;
       case PickupType.mystery:
         onPickupCollected(PickupTypeInfo.randomNonMystery(_rng));
+    }
+  }
+
+  void _onPickupCollectedPvp(PickupType type, int collectorIndex) {
+    final opponentIndex = 1 - collectorIndex;
+    switch (type) {
+      case PickupType.apple:
+        onPvpOrbHit(victimIndex: opponentIndex, damage: 40000);
+      case PickupType.revolver:
+        _revolverBurstsLeft = 6;
+        _revolverBurstTimer = 0.0; // fire first bullet immediately
+        _revolverVictimIndex = opponentIndex;
+        _revolverCollectorIndex = collectorIndex;
+      case PickupType.lightning:
+        onPvpOrbHit(victimIndex: opponentIndex, damage: 80000);
+        if (opponentIndex < _orbs.length) {
+          _orbs[opponentIndex].freeze(1.5);
+        }
+        triggerShake(intensity: 35, duration: 0.3);
+      case PickupType.shield:
+        _shieldTimer = 8.0;
+      case PickupType.speed:
+        if (collectorIndex < _orbs.length) {
+          _orbs[collectorIndex].speedMultiplier = 2.0;
+        }
+        _speedTimer = 6.0;
+        _speedCollectorIndex = collectorIndex;
+      case PickupType.ice:
+        if (opponentIndex < _orbs.length) {
+          _orbs[opponentIndex].freeze(3.0);
+        }
+      case PickupType.bomb:
+        onPvpOrbHit(victimIndex: opponentIndex, damage: 200000);
+        triggerShake(intensity: 60, duration: 0.45);
+      case PickupType.vortex:
+        add(VortexPickupZone(position: _randomPickupPosition(), gameRef: this));
+      case PickupType.star:
+        _starHitsRemaining = 3;
+      case PickupType.rapid:
+        _rapidTimer = 6.0;
+      case PickupType.magnet:
+        _magnetTimer = 8.0;
+      case PickupType.barrier:
+        _barrierHitsRemaining = 4;
+      case PickupType.mystery:
+        _onPickupCollectedPvp(
+            PickupTypeInfo.randomNonMystery(_rng), collectorIndex);
+    }
+  }
+
+  // ── PVP orb-vs-orb collision ───────────────────────────────────────────────
+
+  void _resolvePvpOrbCollisions(double dt) {
+    if (_orbs.length < 2) return;
+    final a = _orbs[0];
+    final b = _orbs[1];
+
+    // ── 1. Physical bounce — keeps orbs from overlapping ──────────────────────
+    final dist    = a.position.distanceTo(b.position);
+    final minDist = a.orbRadius + b.orbRadius;
+
+    if (dist < minDist) {
+      final n       = dist < 0.001 ? Vector2(1, 0) : (a.position - b.position).normalized();
+      final overlap = minDist - dist;
+      a.position += n * (overlap * 0.5);
+      b.position -= n * (overlap * 0.5);
+      a.position = arenaConfig.clamp(a.position, a.orbRadius);
+      b.position = arenaConfig.clamp(b.position, b.orbRadius);
+
+      final relVel        = a.velocity - b.velocity;
+      final velAlongNormal = relVel.dot(n);
+      if (velAlongNormal < 0) {
+        const restitution = 0.85;
+        final j       = -(1.0 + restitution) * velAlongNormal / 2.0;
+        final impulse = n * j;
+        a.velocity += impulse;
+        b.velocity -= impulse;
+        for (final o in [a, b]) {
+          if (o.velocity.length < o.speed * 0.3) {
+            o.velocity = o.velocity.length < 0.01
+                ? n * (o.speed * 0.5)
+                : o.velocity.normalized() * (o.speed * 0.4);
+          }
+        }
+      }
+    }
+
+    // ── 2. Weapon-tip damage ───────────────────────────────────────────────────
+    // An orb only deals damage when its sword tip touches the opponent's body.
+    if (_pvpHitCooldown > 0) {
+      _pvpHitCooldown -= dt;
+      return;
+    }
+
+    const tipRadius = 22.0; // extra leniency around the opponent orb body
+    final aTip = a.weaponTip;
+    final bTip = b.weaponTip;
+
+    final aHitsB = aTip.distanceTo(b.position) < b.orbRadius + tipRadius;
+    final bHitsA = bTip.distanceTo(a.position) < a.orbRadius + tipRadius;
+
+    if (aHitsB || bHitsA) {
+      _pvpHitCooldown = 0.28;
+      if (aHitsB) {
+        final dmg = (a.velocity.length * 35).clamp(8000.0, 50000.0).round();
+        onPvpOrbHit(victimIndex: 1, damage: dmg);
+      }
+      if (bHitsA) {
+        final dmg = (b.velocity.length * 35).clamp(8000.0, 50000.0).round();
+        onPvpOrbHit(victimIndex: 0, damage: dmg);
+      }
     }
   }
 
@@ -347,7 +607,10 @@ class BossBallGame extends FlameGame {
 
   @override
   void update(double dt) {
-    if (_shakeTimer > 0) _shakeTimer -= dt;
+    if (_shakeTimer > 0) {
+      _shakeTimer -= dt;
+      if (_shakeTimer <= 0) _shakeIntensity = 0.0;
+    }
     if (!playing) {
       super.update(dt);
       return;
@@ -357,12 +620,23 @@ class BossBallGame extends FlameGame {
     _tickPickupTimers(dt);
     _maybeSpawnPickup(dt);
 
-    if (mode.timeLimitSeconds > 0) {
-      timeLeft -= dt;
-      if (timeLeft <= 0) {
-        timeLeft = 0;
-        playing = false;
-        Future.delayed(Duration.zero, () => overlays.add('GameOver'));
+    if (mode.isPvp) {
+      _resolvePvpOrbCollisions(dt);
+    } else {
+      // Survival mode: boss regenerates HP each tick
+      if (mode.bossRegenPerSecond > 0 && boss != null &&
+          !bossDestroyed && bossHp > 0) {
+        bossHp = (bossHp + (mode.bossRegenPerSecond * dt).round())
+            .clamp(0, bossMaxHp);
+      }
+
+      if (mode.timeLimitSeconds > 0) {
+        timeLeft -= dt;
+        if (timeLeft <= 0) {
+          timeLeft = 0;
+          playing = false;
+          Future.delayed(Duration.zero, () => overlays.add('GameOver'));
+        }
       }
     }
 
