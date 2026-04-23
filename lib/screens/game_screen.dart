@@ -39,11 +39,19 @@ class GameScreen extends StatelessWidget {
       orbImageBytes: orbImageBytes,
       bossImageBytes: bossImageBytes,
     );
-    return GameWidget(
-      game: game,
-      overlayBuilderMap: {
-        'GameOver': (ctx, g) => GameOverScreen(game: g as BossBallGame),
-      },
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Center(
+        child: AspectRatio(
+          aspectRatio: 9 / 19.5,
+          child: GameWidget(
+            game: game,
+            overlayBuilderMap: {
+              'GameOver': (ctx, g) => GameOverScreen(game: g as BossBallGame),
+            },
+          ),
+        ),
+      ),
     );
   }
 }

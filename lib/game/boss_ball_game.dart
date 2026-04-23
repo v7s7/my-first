@@ -8,16 +8,21 @@ import 'package:flutter/material.dart';
 
 import '../orbs/orb_behavior.dart';
 import '../modes/game_mode.dart';
+import 'arena_background.dart';
 import 'arena_config.dart';
 import 'arena_wall.dart';
 import 'boss_component.dart';
+import 'boss_projectile.dart';
 import 'bullet_component.dart';
 import 'damage_number.dart';
 import 'pickup_item_component.dart';
 import 'pickup_type.dart';
 import 'player_orb.dart';
 import 'hud_component.dart';
+import 'shockwave_ring_component.dart';
 import 'vortex_pickup_zone.dart';
+
+enum _PvpGunType { pistol, shotgun, sniper, machineGun, rocket }
 
 class BossBallGame extends FlameGame {
   final OrbBehavior orbBehavior;
@@ -75,9 +80,11 @@ class BossBallGame extends FlameGame {
   int    _barrierHitsRemaining = 0;
   int    _revolverBurstsLeft    = 0;
   double _revolverBurstTimer    = 0.0;
+  double _revolverBurstInterval = 0.22;
   int    _revolverVictimIndex   = 0;
   int    _revolverCollectorIndex = 0;
   int    _speedCollectorIndex   = -1;
+  _PvpGunType _pvpGunType       = _PvpGunType.pistol;
 
   // Public getters for HUD
   double get shieldTimer          => _shieldTimer;
@@ -95,6 +102,29 @@ class BossBallGame extends FlameGame {
 
   int pvpOrbHp(int index) =>
       index < _pvpOrbHp.length ? _pvpOrbHp[index] : 0;
+
+  // ── Combo system ──────────────────────────────────────────────────────────
+  int    _comboCount       = 0;
+  double _comboDecayTimer  = 0.0;
+  static const double _comboDecayTime = 1.6;
+
+  int    get comboCount => _comboCount;
+  int    get bossPhase  => boss?.phase ?? 0;
+
+  double get comboMultiplier {
+    if (_comboCount >= 20) return 2.00;
+    if (_comboCount >= 10) return 1.50;
+    if (_comboCount >= 5)  return 1.25;
+    return 1.00;
+  }
+
+  // ── Screen flash ──────────────────────────────────────────────────────────
+  double _hitFlashTimer   = 0.0;
+  double _phaseFlashTimer = 0.0;
+  Color  _phaseFlashColor = Colors.white;
+
+  // ── Arena background reference (for hit pulse) ────────────────────────────
+  ArenaBackground? _arenaBackground;
 
   // Stacked damage multiplier from all active buffs (capped at 8×)
   double get _effectiveMultiplier {
@@ -121,7 +151,7 @@ class BossBallGame extends FlameGame {
   Future<void> onLoad() async {
     await super.onLoad();
 
-    arenaConfig = ArenaConfig.fromScreen(size, arenaPreset);
+    arenaConfig = ArenaConfig.fromScreen(size, arenaPreset, square: mode.isPvp);
 
     bossMaxHp = customBossHp ?? mode.bossMaxHp;
     bossHp = bossMaxHp;
@@ -162,13 +192,8 @@ class BossBallGame extends FlameGame {
   }
 
   void _buildArenaBackground() {
-    final cfg = arenaConfig;
-    add(RectangleComponent(
-      position: Vector2(cfg.left, cfg.top),
-      size: Vector2(cfg.width, cfg.height),
-      paint: Paint()..color = const Color(0xFF0C0C18),
-      priority: -1,
-    ));
+    _arenaBackground = ArenaBackground(arena: arenaConfig);
+    add(_arenaBackground!);
   }
 
   void _buildWalls() {
@@ -253,8 +278,11 @@ class BossBallGame extends FlameGame {
 
   void onOrbHitBoss(int baseDamage, {bool isLaserTick = false}) {
     if (boss == null) return; // no boss in PVP
-    final mult = isLaserTick ? 1.0 : _effectiveMultiplier;
+    final mult =
+        isLaserTick ? 1.0 : _effectiveMultiplier * comboMultiplier;
     final boostedBase = (baseDamage * mult).round();
+
+    if (!isLaserTick) _incrementCombo();
 
     if (!isLaserTick) {
       if (_barrierHitsRemaining > 0) _barrierHitsRemaining--;
@@ -277,6 +305,8 @@ class BossBallGame extends FlameGame {
           ? 50.0
           : ((finalDamage / bossMaxHp) * 300).clamp(4.0, 28.0);
       triggerShake(intensity: shakePower, duration: isCrit ? 0.3 : 0.18);
+      _hitFlashTimer = isCrit ? 0.14 : 0.07;
+      _arenaBackground?.pulse((finalDamage / bossMaxHp).clamp(0.0, 1.0) * 4);
       spawnFireExplosion(orb.position.clone());
       add(DamageNumber(
         position: boss!.position.clone() +
@@ -352,30 +382,165 @@ class BossBallGame extends FlameGame {
   }
 
   void _spawnRevolverBullet() {
+    if (mode.isPvp) {
+      _spawnPvpGunBullets();
+    } else {
+      _spawnBossBullet();
+    }
+  }
+
+  void _spawnBossBullet() {
+    final shooter = _revolverCollectorIndex < _orbs.length
+        ? _orbs[_revolverCollectorIndex]
+        : (_orbs.isNotEmpty ? _orbs.first : null);
+    if (shooter == null) return;
+    final targetPos = boss?.position.clone() ?? shooter.position.clone();
+    add(BulletComponent.boss(
+      position: shooter.position.clone(),
+      target: targetPos,
+    ));
+  }
+
+  void _spawnPvpGunBullets() {
     final shooter = _revolverCollectorIndex < _orbs.length
         ? _orbs[_revolverCollectorIndex]
         : (_orbs.isNotEmpty ? _orbs.first : null);
     if (shooter == null) return;
 
-    final Vector2 targetPos;
-    final int? pvpVictim;
+    final targetPos = _revolverVictimIndex < _orbs.length
+        ? _orbs[_revolverVictimIndex].position.clone()
+        : shooter.position.clone();
 
-    if (mode.isPvp) {
-      pvpVictim = _revolverVictimIndex;
-      targetPos = _revolverVictimIndex < _orbs.length
-          ? _orbs[_revolverVictimIndex].position.clone()
-          : shooter.position.clone();
-    } else {
-      pvpVictim = null;
-      targetPos = boss?.position.clone() ?? shooter.position.clone();
+    switch (_pvpGunType) {
+      case _PvpGunType.pistol:
+        add(BulletComponent.pistol(
+          position: shooter.position.clone(),
+          target: targetPos,
+          pvpVictimIndex: _revolverVictimIndex,
+        ));
+      case _PvpGunType.shotgun:
+        for (int i = 0; i < 5; i++) {
+          final spread = (i - 2) * 0.14;
+          add(BulletComponent.shotgunPellet(
+            position: shooter.position.clone(),
+            target: targetPos,
+            pvpVictimIndex: _revolverVictimIndex,
+            spreadAngleRad: spread,
+          ));
+        }
+      case _PvpGunType.sniper:
+        add(BulletComponent.sniper(
+          position: shooter.position.clone(),
+          target: targetPos,
+          pvpVictimIndex: _revolverVictimIndex,
+        ));
+      case _PvpGunType.machineGun:
+        final spread = (_rng.nextDouble() - 0.5) * 0.3;
+        add(BulletComponent.machineGun(
+          position: shooter.position.clone(),
+          target: targetPos,
+          pvpVictimIndex: _revolverVictimIndex,
+          spreadAngleRad: spread,
+        ));
+      case _PvpGunType.rocket:
+        add(BulletComponent.rocket(
+          position: shooter.position.clone(),
+          target: targetPos,
+          pvpVictimIndex: _revolverVictimIndex,
+        ));
+    }
+  }
+
+  void _selectPvpGun(int collectorIndex) {
+    _pvpGunType = _PvpGunType.values[_rng.nextInt(_PvpGunType.values.length)];
+    _revolverVictimIndex = 1 - collectorIndex;
+    _revolverCollectorIndex = collectorIndex;
+    _revolverBurstTimer = 0.0;
+
+    switch (_pvpGunType) {
+      case _PvpGunType.pistol:
+        _revolverBurstsLeft = 6;
+        _revolverBurstInterval = 0.22;
+      case _PvpGunType.shotgun:
+        _revolverBurstsLeft = 2;
+        _revolverBurstInterval = 0.40;
+      case _PvpGunType.sniper:
+        _revolverBurstsLeft = 1;
+        _revolverBurstInterval = 0.0;
+      case _PvpGunType.machineGun:
+        _revolverBurstsLeft = 15;
+        _revolverBurstInterval = 0.08;
+      case _PvpGunType.rocket:
+        _revolverBurstsLeft = 1;
+        _revolverBurstInterval = 0.0;
     }
 
-    add(BulletComponent(
-      position: shooter.position.clone(),
-      target: targetPos,
-      damage: mode.isPvp ? 20000 : 28000,
-      pvpVictimIndex: pvpVictim,
+    final gunLabel = switch (_pvpGunType) {
+      _PvpGunType.pistol     => 'PISTOL  x6',
+      _PvpGunType.shotgun    => 'SHOTGUN x2',
+      _PvpGunType.sniper     => 'SNIPER!!!',
+      _PvpGunType.machineGun => 'MACHINE GUN',
+      _PvpGunType.rocket     => 'ROCKET!!!',
+    };
+    final gunColor = switch (_pvpGunType) {
+      _PvpGunType.pistol     => const Color(0xFFFFCC00),
+      _PvpGunType.shotgun    => const Color(0xFFFF6600),
+      _PvpGunType.sniper     => const Color(0xFF00EEFF),
+      _PvpGunType.machineGun => const Color(0xFFFF3300),
+      _PvpGunType.rocket     => const Color(0xFFFF2200),
+    };
+
+    final shooterPos = collectorIndex < _orbs.length
+        ? _orbs[collectorIndex].position.clone()
+        : Vector2.zero();
+    add(DamageNumber(
+      position: shooterPos + Vector2(0, -60),
+      damage: 0,
+      label: gunLabel,
+      labelColor: gunColor,
+      isSmall: false,
+      driftX: 0,
     ));
+  }
+
+  void spawnRocketExplosion(Vector2 position) {
+    add(
+      ParticleSystemComponent(
+        position: position,
+        particle: Particle.generate(
+          count: 80,
+          lifespan: 0.9,
+          generator: (i) {
+            final spd = Vector2(
+              (_rng.nextDouble() - 0.5) * 1200,
+              (_rng.nextDouble() - 0.5) * 1200,
+            );
+            return AcceleratedParticle(
+              acceleration: Vector2(0, 200),
+              speed: spd,
+              child: ComputedParticle(
+                renderer: (canvas, particle) {
+                  final t = particle.progress;
+                  final color = Color.lerp(Colors.white,
+                      i % 3 == 0 ? Colors.orange : Colors.red, t)!
+                      .withOpacity(1.0 - t);
+                  final r = (14.0 - t * 10.0).clamp(1.0, 14.0);
+                  canvas.drawCircle(
+                    Offset.zero,
+                    r,
+                    Paint()
+                      ..color = color
+                      ..blendMode = BlendMode.screen
+                      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
+                  );
+                },
+              ),
+            );
+          },
+        ),
+      ),
+    );
+    triggerShake(intensity: 90, duration: 0.55);
   }
 
   void _tickPickupTimers(double dt) {
@@ -408,7 +573,7 @@ class BossBallGame extends FlameGame {
     if (_revolverBurstsLeft > 0) {
       _revolverBurstTimer -= dt;
       if (_revolverBurstTimer <= 0) {
-        _revolverBurstTimer = 0.22;
+        _revolverBurstTimer = _revolverBurstInterval;
         _revolverBurstsLeft--;
         _spawnRevolverBullet();
       }
@@ -454,7 +619,8 @@ class BossBallGame extends FlameGame {
         onOrbHitBoss(60000);
       case PickupType.revolver:
         _revolverBurstsLeft = 6;
-        _revolverBurstTimer = 0.0; // fire first bullet immediately
+        _revolverBurstTimer = 0.0;
+        _revolverBurstInterval = 0.22;
         _revolverCollectorIndex = collectorIndex;
       case PickupType.lightning:
         onOrbHitBoss(120000);
@@ -491,10 +657,7 @@ class BossBallGame extends FlameGame {
       case PickupType.apple:
         onPvpOrbHit(victimIndex: opponentIndex, damage: 40000);
       case PickupType.revolver:
-        _revolverBurstsLeft = 6;
-        _revolverBurstTimer = 0.0; // fire first bullet immediately
-        _revolverVictimIndex = opponentIndex;
-        _revolverCollectorIndex = collectorIndex;
+        _selectPvpGun(collectorIndex);
       case PickupType.lightning:
         onPvpOrbHit(victimIndex: opponentIndex, damage: 80000);
         if (opponentIndex < _orbs.length) {
@@ -596,6 +759,124 @@ class BossBallGame extends FlameGame {
     }
   }
 
+  // ── Combo system ──────────────────────────────────────────────────────────
+
+  void _incrementCombo() {
+    _comboCount++;
+    _comboDecayTimer = _comboDecayTime;
+  }
+
+  void _tickCombo(double dt) {
+    if (_comboCount > 0) {
+      _comboDecayTimer -= dt;
+      if (_comboDecayTimer <= 0) {
+        _comboCount = 0;
+        _comboDecayTimer = 0;
+      }
+    }
+  }
+
+  // ── Boss attack system ────────────────────────────────────────────────────
+
+  /// Called by BossComponent when its attack timer fires.
+  void spawnBossAttack(Vector2 bossPos, int phase) {
+    if (_orbs.isEmpty) return;
+    // Aim at the closest orb
+    PlayerOrb target = _orbs.first;
+    double bestDist = double.infinity;
+    for (final o in _orbs) {
+      final d = bossPos.distanceTo(o.position);
+      if (d < bestDist) { bestDist = d; target = o; }
+    }
+
+    if (phase == 3) {
+      // Phase 3: two projectiles in a slight spread
+      for (int i = 0; i < 2; i++) {
+        final spread = (i == 0 ? -0.22 : 0.22);
+        final dir = (target.position - bossPos).normalized();
+        final angle = atan2(dir.y, dir.x) + spread;
+        final spreadTarget = bossPos + Vector2(cos(angle), sin(angle)) * 300;
+        add(BossProjectile(
+          position: bossPos.clone(),
+          target: spreadTarget,
+          speedMultiplier: 1.15,
+        ));
+      }
+    } else {
+      add(BossProjectile(
+        position: bossPos.clone(),
+        target: target.position.clone(),
+      ));
+    }
+  }
+
+  /// Called by BossComponent when a phase threshold is crossed.
+  void onBossPhaseChange(int phase) {
+    final shakeIntensity = phase == 3 ? 70.0 : 45.0;
+    triggerShake(intensity: shakeIntensity, duration: 0.5);
+    _phaseFlashTimer = 0.6;
+    _phaseFlashColor =
+        phase == 3 ? const Color(0xFFFF2200) : const Color(0xFFFF4488);
+
+    if (boss != null) {
+      add(ShockwaveRingComponent(
+        position: boss!.position.clone(),
+        gameRef: this,
+        bonusDamage: 0,
+        ringColor: phase == 3
+            ? const Color(0xFFFF2200)
+            : const Color(0xFFFF4488),
+      ));
+      add(DamageNumber(
+        position: boss!.position.clone() + Vector2(0, -70),
+        damage: 0,
+        label: phase == 3 ? '⚠ PHASE 3 — RAGE!' : '⚠ PHASE 2',
+        labelColor: phase == 3 ? const Color(0xFFFF2200) : const Color(0xFFFF88CC),
+        isSmall: false,
+        driftX: 0,
+      ));
+    }
+  }
+
+  // ── Freeze explosion visual ───────────────────────────────────────────────
+
+  void spawnFreezeExplosion(Vector2 position) {
+    add(
+      ParticleSystemComponent(
+        position: position,
+        particle: Particle.generate(
+          count: 35,
+          lifespan: 0.7,
+          generator: (i) {
+            final angle = _rng.nextDouble() * 2 * pi;
+            final spd = Vector2(
+              cos(angle) * (80 + _rng.nextDouble() * 280),
+              sin(angle) * (80 + _rng.nextDouble() * 280),
+            );
+            return AcceleratedParticle(
+              acceleration: Vector2.zero(),
+              speed: spd,
+              child: ComputedParticle(
+                renderer: (canvas, particle) {
+                  final t = particle.progress;
+                  final color = Color.lerp(Colors.white, const Color(0xFF88CCFF), t)!
+                      .withOpacity(1.0 - t);
+                  canvas.drawCircle(
+                    Offset.zero,
+                    (5.0 * (1.0 - t)).clamp(0.5, 5.0),
+                    Paint()
+                      ..color = color
+                      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
+                  );
+                },
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
   void triggerShake({required double intensity, double duration = 0.18}) {
     if (intensity > _shakeIntensity) {
       _shakeIntensity = intensity;
@@ -619,6 +900,9 @@ class BossBallGame extends FlameGame {
     totalTime += dt;
     _tickPickupTimers(dt);
     _maybeSpawnPickup(dt);
+    _tickCombo(dt);
+    if (_hitFlashTimer > 0) _hitFlashTimer -= dt;
+    if (_phaseFlashTimer > 0) _phaseFlashTimer -= dt;
 
     if (mode.isPvp) {
       _resolvePvpOrbCollisions(dt);
@@ -654,6 +938,24 @@ class BossBallGame extends FlameGame {
       canvas.restore();
     } else {
       super.render(canvas);
+    }
+
+    // White flash on hit
+    if (_hitFlashTimer > 0) {
+      final alpha = (_hitFlashTimer / 0.14).clamp(0.0, 1.0) * 0.22;
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, size.x, size.y),
+        Paint()..color = Colors.white.withOpacity(alpha),
+      );
+    }
+
+    // Colored flash on phase change
+    if (_phaseFlashTimer > 0) {
+      final alpha = (_phaseFlashTimer / 0.6).clamp(0.0, 1.0) * 0.38;
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, size.x, size.y),
+        Paint()..color = _phaseFlashColor.withOpacity(alpha),
+      );
     }
   }
 }
