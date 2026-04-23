@@ -13,13 +13,14 @@ class PlayerOrb extends PositionComponent {
   final OrbBehavior behavior;
   final BossBallGame gameRef;
   final ArenaConfig arena;
-  final int orbIndex; // 0 = primary, 1+ = additional orbs (Dual Ball mode)
+  final int orbIndex; // 0 = primary, 1+ = additional orbs
+  final double orbRadius;
 
-  static const double radius = 18.0;
-  static const double baseSpeed = 280.0;
+  static const double defaultRadius    = 18.0;
+  static const double baseSpeed        = 280.0;
   static const double speedGrowthPerBounce = 0.03;
-  static const double maxSpeed = 900.0;
-  static const double hitCooldown = 0.25;
+  static const double maxSpeed         = 900.0;
+  static const double hitCooldown      = 0.25;
 
   double speed = baseSpeed;
   double speedMultiplier = 1.0;
@@ -28,6 +29,13 @@ class PlayerOrb extends PositionComponent {
   final Random _rng = Random();
   double _hitCooldownTimer = 0.0;
   double _bounceSquashTimer = 0.0;
+  double _frozenTimer = 0.0;
+
+  bool get isFrozen => _frozenTimer > 0;
+
+  void freeze(double duration) {
+    if (duration > _frozenTimer) _frozenTimer = duration;
+  }
 
   final Queue<Vector2> _trail = Queue<Vector2>();
   static const int _maxTrailLength = 24;
@@ -37,8 +45,9 @@ class PlayerOrb extends PositionComponent {
     required this.gameRef,
     required this.arena,
     this.orbIndex = 0,
+    this.orbRadius = defaultRadius,
   }) : super(
-          size: Vector2.all(radius * 2),
+          size: Vector2.all(orbRadius * 2),
           anchor: Anchor.center,
           priority: 10,
         );
@@ -46,29 +55,27 @@ class PlayerOrb extends PositionComponent {
   @override
   Future<void> onLoad() async {
     if (orbIndex == 0) {
-      // Primary orb: top-left region
       position = Vector2(
-        arena.minX(radius) +
+        arena.minX(orbRadius) +
             _rng.nextDouble() *
-                (arena.maxX(radius) - arena.minX(radius)) *
+                (arena.maxX(orbRadius) - arena.minX(orbRadius)) *
                 0.35,
-        arena.minY(radius) +
+        arena.minY(orbRadius) +
             _rng.nextDouble() *
-                (arena.maxY(radius) - arena.minY(radius)) *
+                (arena.maxY(orbRadius) - arena.minY(orbRadius)) *
                 0.25,
       );
       final angle = (pi * 0.2) + _rng.nextDouble() * (pi * 0.6);
       velocity = Vector2(cos(angle), sin(angle)) * speed;
     } else {
-      // Second orb: bottom-right region, opposite launch direction
       position = Vector2(
-        arena.maxX(radius) -
+        arena.maxX(orbRadius) -
             _rng.nextDouble() *
-                (arena.maxX(radius) - arena.minX(radius)) *
+                (arena.maxX(orbRadius) - arena.minX(orbRadius)) *
                 0.35,
-        arena.maxY(radius) -
+        arena.maxY(orbRadius) -
             _rng.nextDouble() *
-                (arena.maxY(radius) - arena.minY(radius)) *
+                (arena.maxY(orbRadius) - arena.minY(orbRadius)) *
                 0.25,
       );
       final angle = pi + (pi * 0.2) + _rng.nextDouble() * (pi * 0.6);
@@ -83,6 +90,16 @@ class PlayerOrb extends PositionComponent {
     super.update(dt);
     if (!gameRef.playing) return;
 
+    // Freeze mechanic
+    if (_frozenTimer > 0) {
+      _frozenTimer -= dt;
+      velocity.scale(max(0.0, 1.0 - dt * 6.0));
+      if (_frozenTimer <= 0 && velocity.length < 30) {
+        final a = _rng.nextDouble() * 2 * pi;
+        velocity = Vector2(cos(a), sin(a)) * speed;
+      }
+    }
+
     if (_hitCooldownTimer > 0) _hitCooldownTimer -= dt;
     if (_bounceSquashTimer > 0) _bounceSquashTimer -= dt;
 
@@ -91,55 +108,84 @@ class PlayerOrb extends PositionComponent {
       _trail.removeLast();
     }
 
-    behavior.onUpdate(dt, this);
+    if (_frozenTimer <= 0) {
+      behavior.onUpdate(dt, this);
+    }
 
-    // Hook orb homing
-    if (behavior.id == 'hook') {
-      final bossPos = gameRef.boss.position;
-      final distanceToBoss = position.distanceTo(bossPos);
-      if (distanceToBoss < 400) {
-        final directionToBoss = (bossPos - position).normalized();
-        velocity.lerp(directionToBoss * speed, dt * 2.5);
-        velocity = velocity.normalized() * speed;
+    // Hook orb homing toward boss (non-PVP only)
+    if (behavior.id == 'hook' && !gameRef.mode.isPvp) {
+      final boss = gameRef.boss;
+      if (boss != null) {
+        final bossPos = boss.position;
+        final distanceToBoss = position.distanceTo(bossPos);
+        if (distanceToBoss < 400) {
+          final directionToBoss = (bossPos - position).normalized();
+          velocity.lerp(directionToBoss * speed, dt * 2.5);
+          velocity = velocity.normalized() * speed;
+        }
       }
     }
 
-    // Magnet pickup homing — works for any orb type
-    if (gameRef.magnetTimer > 0) {
-      final bossPos = gameRef.boss.position;
-      final dist = position.distanceTo(bossPos);
-      if (dist > 0.01) {
-        final dir = (bossPos - position).normalized();
-        velocity.lerp(dir * speed, dt * 3.5);
-        velocity = velocity.normalized() * speed;
+    // Magnet pickup homing
+    if (gameRef.magnetTimer > 0 && _frozenTimer <= 0) {
+      if (gameRef.mode.isPvp) {
+        // Home toward the opponent orb
+        final opponentIndex = 1 - orbIndex;
+        final orbs = gameRef.orbs;
+        if (orbs.length > opponentIndex) {
+          final opponentPos = orbs[opponentIndex].position;
+          final dist = position.distanceTo(opponentPos);
+          if (dist > 0.01) {
+            final dir = (opponentPos - position).normalized();
+            velocity.lerp(dir * speed, dt * 3.5);
+            velocity = velocity.normalized() * speed;
+          }
+        }
+      } else {
+        final boss = gameRef.boss;
+        if (boss != null) {
+          final bossPos = boss.position;
+          final dist = position.distanceTo(bossPos);
+          if (dist > 0.01) {
+            final dir = (bossPos - position).normalized();
+            velocity.lerp(dir * speed, dt * 3.5);
+            velocity = velocity.normalized() * speed;
+          }
+        }
       }
     }
 
-    position += velocity * dt * speedMultiplier;
+    if (_frozenTimer <= 0) {
+      position += velocity * dt * speedMultiplier;
+    }
 
     _handleWallBounce();
-    _resolveCollision();
+
+    // Boss collision only in non-PVP modes (PVP handled centrally)
+    if (!gameRef.mode.isPvp) {
+      _resolveCollision();
+    }
   }
 
   void _handleWallBounce() {
     bool bounced = false;
 
-    if (position.x <= arena.minX(radius)) {
-      position.x = arena.minX(radius);
+    if (position.x <= arena.minX(orbRadius)) {
+      position.x = arena.minX(orbRadius);
       velocity.x = velocity.x.abs();
       bounced = true;
-    } else if (position.x >= arena.maxX(radius)) {
-      position.x = arena.maxX(radius);
+    } else if (position.x >= arena.maxX(orbRadius)) {
+      position.x = arena.maxX(orbRadius);
       velocity.x = -velocity.x.abs();
       bounced = true;
     }
 
-    if (position.y <= arena.minY(radius)) {
-      position.y = arena.minY(radius);
+    if (position.y <= arena.minY(orbRadius)) {
+      position.y = arena.minY(orbRadius);
       velocity.y = velocity.y.abs();
       bounced = true;
-    } else if (position.y >= arena.maxY(radius)) {
-      position.y = arena.maxY(radius);
+    } else if (position.y >= arena.maxY(orbRadius)) {
+      position.y = arena.maxY(orbRadius);
       velocity.y = -velocity.y.abs();
       bounced = true;
     }
@@ -152,7 +198,7 @@ class PlayerOrb extends PositionComponent {
       behavior.onWallBounce(this);
     }
 
-    if (arena.bounceOffObstacles(position, velocity, radius)) {
+    if (arena.bounceOffObstacles(position, velocity, orbRadius)) {
       speed = min(speed * (1.0 + speedGrowthPerBounce), maxSpeed);
       if (velocity.length > 0.01) velocity = velocity.normalized() * speed;
       _bounceSquashTimer = 0.08;
@@ -163,8 +209,10 @@ class PlayerOrb extends PositionComponent {
 
   void _resolveCollision() {
     final boss = gameRef.boss;
+    if (boss == null) return;
+
     final dist = position.distanceTo(boss.position);
-    final minDist = boss.radius + radius;
+    final minDist = boss.radius + orbRadius;
 
     if (dist >= minDist) return;
 
@@ -174,7 +222,7 @@ class PlayerOrb extends PositionComponent {
 
     final overlap = minDist - dist;
     position += n * overlap;
-    position = arena.clamp(position, radius);
+    position = arena.clamp(position, orbRadius);
 
     final relVel = velocity - boss.velocity;
     final velAlongNormal = relVel.dot(n);
@@ -195,7 +243,6 @@ class PlayerOrb extends PositionComponent {
       }
     }
 
-    // Rapid pickup halves hit cooldown for double DPS
     final effectiveCooldown =
         hitCooldown * (gameRef.rapidTimer > 0 ? 0.5 : 1.0);
     if (_hitCooldownTimer <= 0) {
@@ -206,15 +253,15 @@ class PlayerOrb extends PositionComponent {
 
   @override
   void render(Canvas canvas) {
-    const cx = radius;
-    const cy = radius;
+    final cx = orbRadius;
+    final cy = orbRadius;
 
     // Motion trail
     int i = 0;
     for (final trailPos in _trail) {
       final progress = i / _trail.length;
       final trailOpacity = (1.0 - progress) * 0.65;
-      final trailRadius = radius * (1.0 - progress * 0.6);
+      final trailRadius = orbRadius * (1.0 - progress * 0.6);
       final dx = trailPos.x - position.x;
       final dy = trailPos.y - position.y;
       canvas.drawCircle(
@@ -239,8 +286,8 @@ class PlayerOrb extends PositionComponent {
 
     final speedRatio = (speed / maxSpeed).clamp(0.25, 1.0);
     canvas.drawCircle(
-      const Offset(cx, cy),
-      radius + 10.0 + speedRatio * 12.0,
+      Offset(cx, cy),
+      orbRadius + 10.0 + speedRatio * 12.0,
       Paint()
         ..color = color.withOpacity(0.18 + speedRatio * 0.22)
         ..maskFilter =
@@ -250,9 +297,9 @@ class PlayerOrb extends PositionComponent {
     if (_bounceSquashTimer > 0) {
       final flashProgress =
           (1.0 - _bounceSquashTimer / 0.08).clamp(0.0, 1.0);
-      final flashR = radius + 6.0 + flashProgress * radius * 1.4;
+      final flashR = orbRadius + 6.0 + flashProgress * orbRadius * 1.4;
       canvas.drawCircle(
-        const Offset(cx, cy),
+        Offset(cx, cy),
         flashR,
         Paint()
           ..color = color.withOpacity((1.0 - flashProgress) * 0.85)
@@ -262,10 +309,21 @@ class PlayerOrb extends PositionComponent {
       );
     }
 
+    // Frozen overlay
+    if (isFrozen) {
+      canvas.drawCircle(
+        Offset(cx, cy),
+        orbRadius + 6,
+        Paint()
+          ..color = const Color(0x5588CCFF)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
+      );
+    }
+
     // Main sphere body — solid color OR custom face image
     final faceImg = gameRef.orbImage(orbIndex);
     if (faceImg != null) {
-      final dst = Rect.fromCircle(center: Offset(cx, cy), radius: radius);
+      final dst = Rect.fromCircle(center: Offset(cx, cy), radius: orbRadius);
       canvas.save();
       canvas.clipPath(Path()..addOval(dst));
       canvas.drawImageRect(
@@ -276,28 +334,28 @@ class PlayerOrb extends PositionComponent {
       );
       canvas.restore();
     } else {
-      canvas.drawCircle(const Offset(cx, cy), radius, Paint()..color = color);
+      canvas.drawCircle(Offset(cx, cy), orbRadius, Paint()..color = color);
     }
 
     canvas.drawCircle(
-      const Offset(cx - radius * 0.35, cy - radius * 0.35),
-      radius * 0.38,
+      Offset(cx - orbRadius * 0.35, cy - orbRadius * 0.35),
+      orbRadius * 0.38,
       Paint()
         ..color = Colors.white.withOpacity(0.30)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
     );
 
     canvas.drawCircle(
-      const Offset(cx, cy),
-      radius * 0.8,
+      Offset(cx, cy),
+      orbRadius * 0.8,
       Paint()
         ..color = color.withOpacity(0.3)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
     );
 
     canvas.drawCircle(
-      const Offset(cx, cy),
-      radius,
+      Offset(cx, cy),
+      orbRadius,
       Paint()
         ..color = Colors.white.withOpacity(0.35)
         ..style = PaintingStyle.stroke
@@ -307,8 +365,8 @@ class PlayerOrb extends PositionComponent {
     // Magnet pickup indicator ring
     if (gameRef.magnetTimer > 0) {
       canvas.drawCircle(
-        const Offset(cx, cy),
-        radius + 8,
+        Offset(cx, cy),
+        orbRadius + 8,
         Paint()
           ..color = const Color(0xAAFF44CC)
           ..style = PaintingStyle.stroke
@@ -320,8 +378,8 @@ class PlayerOrb extends PositionComponent {
     // Rapid pickup indicator ring
     if (gameRef.rapidTimer > 0) {
       canvas.drawCircle(
-        const Offset(cx, cy),
-        radius + 14,
+        Offset(cx, cy),
+        orbRadius + 14,
         Paint()
           ..color = const Color(0xAAFF6600)
           ..style = PaintingStyle.stroke
@@ -332,6 +390,6 @@ class PlayerOrb extends PositionComponent {
 
     canvas.restore();
 
-    behavior.renderOverlay(canvas, radius, cx, cy);
+    behavior.renderOverlay(canvas, orbRadius, cx, cy);
   }
 }

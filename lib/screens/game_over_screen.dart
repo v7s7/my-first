@@ -13,10 +13,13 @@ class GameOverScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final mode = game.mode;
     final title = _resolveTitle();
-    final titleColor = game.bossDestroyed
+    final bool isWin = game.mode.isPvp
+        ? game.pvpWinner != null
+        : game.bossDestroyed;
+    final titleColor = isWin
         ? const Color(0xFF00FFEE)
         : const Color(0xFFFF4433);
-    final titleGlow = game.bossDestroyed ? Colors.cyan : Colors.red;
+    final titleGlow = isWin ? Colors.cyan : Colors.red;
 
     return Material(
       color: const Color(0xCC050510),
@@ -93,12 +96,26 @@ class GameOverScreen extends StatelessWidget {
   }
 
   String _resolveTitle() {
+    if (game.mode.isPvp) {
+      if (game.pvpWinner == 0) return 'BALL 1 WINS!';
+      if (game.pvpWinner == 1) return 'BALL 2 WINS!';
+      return 'DRAW!';
+    }
     if (game.bossDestroyed) return 'DESTROYED!';
     if (game.mode.timeLimitSeconds > 0) return "TIME'S UP";
     return 'ROUND OVER';
   }
 
   List<Widget> _buildStats(GameMode mode) {
+    if (mode.isPvp) {
+      return [
+        _StatLine('BALL 1 HP', _fmt(game.pvpOrbHp(0))),
+        _StatLine('BALL 2 HP', _fmt(game.pvpOrbHp(1))),
+        _StatLine('TOTAL DAMAGE', _fmt(game.totalDamage)),
+        _StatLine('TIME', '${max(1.0, game.totalTime).toStringAsFixed(1)}s'),
+      ];
+    }
+
     final dmg = game.totalDamage;
     final maxHp = game.bossMaxHp;
     final elapsed = max(1.0, game.totalTime);

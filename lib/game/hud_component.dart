@@ -8,11 +8,9 @@ import '../modes/game_mode.dart';
 class HudComponent extends PositionComponent {
   final BossBallGame gameRef;
 
-  // Timer text — only created when the mode has a time limit.
   TextComponent? _timerText;
-  late TextComponent _hpText;
-  late TextComponent _orbLabel;
-  // DPS text — only created for damagePerSecond score modes.
+  TextComponent? _hpText;
+  TextComponent? _orbLabel;
   TextComponent? _dpsText;
 
   static final TextPaint _timerStyle = TextPaint(
@@ -46,7 +44,25 @@ class HudComponent extends PositionComponent {
     final w = gameRef.size.x;
     final mode = gameRef.mode;
 
-    // Timer — only when the mode has a countdown
+    if (mode.isPvp) {
+      // PVP: show mode label only, HP bars drawn in render()
+      _orbLabel = TextComponent(
+        text: 'PVP DUEL  ·  ${gameRef.orbBehavior.name} ORB',
+        textRenderer: TextPaint(
+          style: const TextStyle(
+            color: Color(0x88FFFFFF),
+            fontSize: 11,
+            letterSpacing: 2,
+          ),
+        ),
+        position: Vector2(w / 2, 18),
+        anchor: Anchor.topCenter,
+      );
+      add(_orbLabel!);
+      return;
+    }
+
+    // Non-PVP layout
     if (mode.timeLimitSeconds > 0) {
       _timerText = TextComponent(
         text: mode.timeLimitSeconds.ceil().toString(),
@@ -70,7 +86,7 @@ class HudComponent extends PositionComponent {
       position: Vector2(w / 2, mode.timeLimitSeconds > 0 ? 52 : 18),
       anchor: Anchor.topCenter,
     );
-    add(_hpText);
+    add(_hpText!);
 
     _orbLabel = TextComponent(
       text: '',
@@ -84,9 +100,8 @@ class HudComponent extends PositionComponent {
       position: Vector2(w / 2, mode.timeLimitSeconds > 0 ? 80 : 46),
       anchor: Anchor.topCenter,
     );
-    add(_orbLabel);
+    add(_orbLabel!);
 
-    // DPS display for endless-style modes
     if (mode.scoreMode == ScoreMode.damagePerSecond) {
       _dpsText = TextComponent(
         text: '0 DPS',
@@ -108,8 +123,10 @@ class HudComponent extends PositionComponent {
   @override
   void update(double dt) {
     super.update(dt);
+    final mode = gameRef.mode;
 
-    // Timer (only present in timed modes)
+    if (mode.isPvp) return; // PVP uses render() only
+
     if (_timerText != null) {
       final t = gameRef.timeLeft;
       _timerText!.text = t.ceil().toString();
@@ -122,14 +139,13 @@ class HudComponent extends PositionComponent {
       }
     }
 
-    _hpText.text = _formatHp(gameRef.bossHp);
-    final regenSuffix = gameRef.mode.bossRegenPerSecond > 0
-        ? '  +${_formatHp(gameRef.mode.bossRegenPerSecond)}/s'
+    _hpText?.text = _formatHp(gameRef.bossHp);
+    final regenSuffix = mode.bossRegenPerSecond > 0
+        ? '  +${_formatHp(mode.bossRegenPerSecond)}/s'
         : '';
-    _orbLabel.text =
-        '${gameRef.orbBehavior.name} ORB  ·  ${gameRef.mode.name}$regenSuffix';
+    _orbLabel?.text =
+        '${gameRef.orbBehavior.name} ORB  ·  ${mode.name}$regenSuffix';
 
-    // Live DPS
     if (_dpsText != null) {
       final elapsed = max(1.0, gameRef.totalTime);
       final dps = (gameRef.totalDamage / elapsed).round();
@@ -139,13 +155,161 @@ class HudComponent extends PositionComponent {
 
   @override
   void render(Canvas canvas) {
-    final hudHeight = _dpsText != null ? 112.0 : 96.0;
+    final mode = gameRef.mode;
+
+    if (mode.isPvp) {
+      _renderPvpHud(canvas);
+    } else {
+      final hudHeight = _dpsText != null ? 112.0 : 96.0;
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, gameRef.size.x, hudHeight),
+        Paint()..color = const Color(0xCC050510),
+      );
+      super.render(canvas);
+      _renderPickupEffects(canvas);
+    }
+  }
+
+  void _renderPvpHud(Canvas canvas) {
+    final w = gameRef.size.x;
+    const hudH = 80.0;
+
     canvas.drawRect(
-      Rect.fromLTWH(0, 0, gameRef.size.x, hudHeight),
+      Rect.fromLTWH(0, 0, w, hudH),
       Paint()..color = const Color(0xCC050510),
     );
+
     super.render(canvas);
+
+    const barH = 18.0;
+    const barY = 40.0;
+    const sidePad = 16.0;
+    const barW = 0.42; // fraction of screen width each bar takes
+    final barPx = w * barW;
+
+    final orb1Color = const Color(0xFF00FFEE);
+    final orb2Color = const Color(0xFFFF4488);
+
+    // Orb 1 bar (left side)
+    final hp1 = gameRef.pvpOrbHp(0);
+    final max1 = gameRef.pvpOrbMaxHp;
+    final ratio1 = max1 > 0 ? (hp1 / max1).clamp(0.0, 1.0) : 0.0;
+    _drawHpBar(canvas,
+      x: sidePad,
+      y: barY,
+      w: barPx,
+      h: barH,
+      ratio: ratio1,
+      color: orb1Color,
+      label: 'BALL 1',
+      hp: hp1,
+      alignRight: false,
+    );
+
+    // Orb 2 bar (right side, mirrored)
+    final hp2 = gameRef.pvpOrbHp(1);
+    final max2 = gameRef.pvpOrbMaxHp;
+    final ratio2 = max2 > 0 ? (hp2 / max2).clamp(0.0, 1.0) : 0.0;
+    _drawHpBar(canvas,
+      x: w - sidePad - barPx,
+      y: barY,
+      w: barPx,
+      h: barH,
+      ratio: ratio2,
+      color: orb2Color,
+      label: 'BALL 2',
+      hp: hp2,
+      alignRight: true,
+    );
+
+    // VS text in center
+    final tp = TextPainter(
+      text: const TextSpan(
+        text: 'VS',
+        style: TextStyle(
+          color: Color(0xFFFF3355),
+          fontSize: 14,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 2,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tp.paint(canvas, Offset((w - tp.width) / 2, barY + (barH - tp.height) / 2));
+
     _renderPickupEffects(canvas);
+  }
+
+  void _drawHpBar(Canvas canvas, {
+    required double x,
+    required double y,
+    required double w,
+    required double h,
+    required double ratio,
+    required Color color,
+    required String label,
+    required int hp,
+    required bool alignRight,
+  }) {
+    // Background
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(Rect.fromLTWH(x, y, w, h), const Radius.circular(4)),
+      Paint()..color = const Color(0x33FFFFFF),
+    );
+
+    // Fill — mirrored for right side
+    final fillW = w * ratio;
+    final fillX = alignRight ? x + w - fillW : x;
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(fillX, y, fillW, h),
+        const Radius.circular(4),
+      ),
+      Paint()..color = color.withOpacity(0.85),
+    );
+
+    // Border
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(Rect.fromLTWH(x, y, w, h), const Radius.circular(4)),
+      Paint()
+        ..color = color.withOpacity(0.5)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5,
+    );
+
+    // Label
+    final labelTp = TextPainter(
+      text: TextSpan(
+        text: label,
+        style: TextStyle(
+          color: color,
+          fontSize: 9,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 1.5,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+
+    final labelX = alignRight ? x + w - labelTp.width : x;
+    labelTp.paint(canvas, Offset(labelX, y - labelTp.height - 2));
+
+    // HP value
+    final hpStr = _formatHp(hp);
+    final hpTp = TextPainter(
+      text: TextSpan(
+        text: hpStr,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+
+    final hpX = alignRight ? x : x + w - hpTp.width;
+    hpTp.paint(canvas, Offset(hpX, y - hpTp.height - 2));
   }
 
   void _renderPickupEffects(Canvas canvas) {
@@ -217,7 +381,6 @@ class HudComponent extends PositionComponent {
         const Radius.circular(16),
       );
 
-      // Background pill
       canvas.drawRRect(rect, Paint()..color = const Color(0xCC0A0A20));
       canvas.drawRRect(
         rect,
@@ -227,14 +390,12 @@ class HudComponent extends PositionComponent {
           ..strokeWidth = 1.5,
       );
 
-      // Progress bar fill
       final barRect = Rect.fromLTWH(x, y + pillH - 4, pillW * ind.progress.clamp(0.0, 1.0), 4);
       canvas.drawRRect(
         RRect.fromRectAndRadius(barRect, const Radius.circular(2)),
         Paint()..color = ind.color.withOpacity(0.8),
       );
 
-      // Emoji + label text
       final tp = TextPainter(
         text: TextSpan(
           text: '${ind.emoji} ${ind.label}',
@@ -264,7 +425,7 @@ class _EffectIndicator {
   final String emoji;
   final String label;
   final Color  color;
-  final double progress; // 0.0 – 1.0 for progress bar
+  final double progress;
 
   const _EffectIndicator({
     required this.emoji,

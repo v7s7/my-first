@@ -42,7 +42,9 @@ class ChainOrb extends OrbBehavior {
     _renderTimer += dt;
 
     // Track live boss position
-    final bp = orb.gameRef.boss.position;
+    final chainBoss = orb.gameRef.boss;
+    if (chainBoss == null) { _chainActive = false; return; }
+    final bp = chainBoss.position;
     _bossOffset = Offset(bp.x - orb.position.x, bp.y - orb.position.y);
 
     _nextBoltTimer -= dt;

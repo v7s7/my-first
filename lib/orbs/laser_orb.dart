@@ -43,7 +43,7 @@ class LaserOrb extends OrbBehavior {
     _tickTimer   -= dt;
 
     _beam?.startPos = orb.position;
-    _beam?.endPos   = orb.gameRef.boss.position;
+    _beam?.endPos   = orb.gameRef.boss?.position ?? orb.position;
     _beam?.timeLeft = _firingTimer;
 
     if (_tickTimer <= 0) {

@@ -148,7 +148,9 @@ class _ShurikenBlade extends PositionComponent {
     }
 
     // Hit boss
-    if (!_hit && position.distanceTo(game.boss.position) < game.boss.radius + bladeR) {
+    final shurikenBoss = game.boss;
+    if (!_hit && shurikenBoss != null &&
+        position.distanceTo(shurikenBoss.position) < shurikenBoss.radius + bladeR) {
       _hit = true;
       game.onOrbHitBoss(damage);
       removeFromParent();

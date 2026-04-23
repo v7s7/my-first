@@ -40,7 +40,8 @@ class BossBallGame extends FlameGame {
   int totalDamage = 0;
   double totalTime = 0.0;
 
-  late BossComponent boss;
+  // Boss is nullable — null in PVP mode
+  BossComponent? boss;
 
   // Multi-orb support
   final List<PlayerOrb> _orbs = [];
@@ -73,6 +74,8 @@ class BossBallGame extends FlameGame {
   int    _barrierHitsRemaining = 0;
   int    _revolverBurstsLeft   = 0;
   double _revolverBurstTimer   = 0.0;
+  int    _revolverVictimIndex  = 0;
+  int    _speedCollectorIndex  = -1;
 
   // Public getters for HUD
   double get shieldTimer          => _shieldTimer;
@@ -81,6 +84,15 @@ class BossBallGame extends FlameGame {
   double get magnetTimer          => _magnetTimer;
   int    get starHitsRemaining    => _starHitsRemaining;
   int    get barrierHitsRemaining => _barrierHitsRemaining;
+
+  // ── PVP state ─────────────────────────────────────────────────────────────
+  List<int> _pvpOrbHp     = [];
+  int       pvpOrbMaxHp   = 1000000;
+  int?      pvpWinner;       // 0 or 1 = winning orb index; null = in progress
+  double    _pvpHitCooldown = 0.0;
+
+  int pvpOrbHp(int index) =>
+      index < _pvpOrbHp.length ? _pvpOrbHp[index] : 0;
 
   // Stacked damage multiplier from all active buffs (capped at 8×)
   double get _effectiveMultiplier {
@@ -115,7 +127,7 @@ class BossBallGame extends FlameGame {
     totalDamage = 0;
     totalTime = 0.0;
 
-    // Decode face images before building components so they're ready to render
+    // Decode face images before building components
     for (final bytes in orbImageBytes) {
       _orbImages.add(await _decodeUiImage(bytes));
     }
@@ -123,9 +135,16 @@ class BossBallGame extends FlameGame {
 
     _buildArenaBackground();
     _buildWalls();
-    _buildBoss();
+    if (!mode.isPvp) _buildBoss();
     _buildOrbs();
     add(HudComponent(gameRef: this));
+
+    // PVP: set up per-orb HP
+    if (mode.isPvp) {
+      pvpOrbMaxHp = customBossHp ?? mode.bossMaxHp;
+      _pvpOrbHp = List.filled(mode.orbCount, pvpOrbMaxHp);
+    }
+
     playing = true;
   }
 
@@ -173,16 +192,18 @@ class BossBallGame extends FlameGame {
 
   void _buildBoss() {
     boss = BossComponent(position: arenaConfig.center);
-    add(boss);
+    add(boss!);
   }
 
   void _buildOrbs() {
+    final pvpRadius = mode.isPvp ? 32.0 : PlayerOrb.defaultRadius;
     for (int i = 0; i < mode.orbCount; i++) {
       final o = PlayerOrb(
         behavior: orbBehavior,
         gameRef: this,
         arena: arenaConfig,
         orbIndex: i,
+        orbRadius: pvpRadius,
       );
       _orbs.add(o);
       add(o);
@@ -226,9 +247,10 @@ class BossBallGame extends FlameGame {
     );
   }
 
-  // ── Damage callback ────────────────────────────────────────────────────────
+  // ── Boss damage callback ───────────────────────────────────────────────────
 
   void onOrbHitBoss(int baseDamage, {bool isLaserTick = false}) {
+    if (boss == null) return; // no boss in PVP
     final mult = isLaserTick ? 1.0 : _effectiveMultiplier;
     final boostedBase = (baseDamage * mult).round();
 
@@ -255,7 +277,7 @@ class BossBallGame extends FlameGame {
       triggerShake(intensity: shakePower, duration: isCrit ? 0.3 : 0.18);
       spawnFireExplosion(orb.position.clone());
       add(DamageNumber(
-        position: boss.position.clone() +
+        position: boss!.position.clone() +
             Vector2((_rng.nextDouble() - 0.5) * 40, -30),
         damage: finalDamage,
         isSmall: false,
@@ -265,13 +287,13 @@ class BossBallGame extends FlameGame {
       triggerShake(intensity: 1.8, duration: 0.04);
       if (_rng.nextDouble() > 0.5) {
         spawnFireExplosion(
-          boss.position.clone() + Vector2(
+          boss!.position.clone() + Vector2(
             (_rng.nextDouble() - 0.5) * 40,
             (_rng.nextDouble() - 0.5) * 40,
           ),
         );
         add(DamageNumber(
-          position: boss.position.clone() + Vector2(
+          position: boss!.position.clone() + Vector2(
             (_rng.nextDouble() - 0.5) * 50,
             (_rng.nextDouble() - 0.5) * 50,
           ),
@@ -284,6 +306,38 @@ class BossBallGame extends FlameGame {
 
     if (mode.winOnBossKill && bossHp <= 0 && !bossDestroyed) {
       bossDestroyed = true;
+      playing = false;
+      Future.delayed(Duration.zero, () => overlays.add('GameOver'));
+    }
+  }
+
+  // ── PVP damage callback ────────────────────────────────────────────────────
+
+  void onPvpOrbHit({required int victimIndex, required int damage}) {
+    if (victimIndex >= _pvpOrbHp.length || pvpWinner != null) return;
+
+    _pvpOrbHp[victimIndex] =
+        (_pvpOrbHp[victimIndex] - damage).clamp(0, pvpOrbMaxHp);
+    totalDamage += damage;
+
+    triggerShake(
+      intensity: (damage / pvpOrbMaxHp * 200).clamp(4.0, 40.0),
+      duration: 0.15,
+    );
+
+    final orbPos = victimIndex < _orbs.length
+        ? _orbs[victimIndex].position.clone()
+        : orb.position.clone();
+    spawnFireExplosion(orbPos);
+    add(DamageNumber(
+      position: orbPos + Vector2((_rng.nextDouble() - 0.5) * 40, -30),
+      damage: damage,
+      isSmall: false,
+      driftX: (_rng.nextDouble() - 0.5) * 60,
+    ));
+
+    if (_pvpOrbHp[victimIndex] <= 0) {
+      pvpWinner = 1 - victimIndex;
       playing = false;
       Future.delayed(Duration.zero, () => overlays.add('GameOver'));
     }
@@ -304,7 +358,12 @@ class BossBallGame extends FlameGame {
       _speedTimer -= dt;
       if (_speedTimer <= 0) {
         _speedTimer = 0;
-        for (final o in _orbs) o.speedMultiplier = 1.0;
+        if (mode.isPvp && _speedCollectorIndex >= 0 &&
+            _speedCollectorIndex < _orbs.length) {
+          _orbs[_speedCollectorIndex].speedMultiplier = 1.0;
+        } else {
+          for (final o in _orbs) o.speedMultiplier = 1.0;
+        }
       }
     }
     if (_rapidTimer > 0) {
@@ -316,19 +375,23 @@ class BossBallGame extends FlameGame {
       if (_magnetTimer < 0) _magnetTimer = 0;
     }
 
-    // Revolver burst — 28K × 6 = 168K total
+    // Revolver burst
     if (_revolverBurstsLeft > 0) {
       _revolverBurstTimer -= dt;
       if (_revolverBurstTimer <= 0) {
         _revolverBurstTimer = 0.2;
         _revolverBurstsLeft--;
-        onOrbHitBoss(28000);
+        if (mode.isPvp) {
+          onPvpOrbHit(victimIndex: _revolverVictimIndex, damage: 20000);
+        } else {
+          onOrbHitBoss(28000);
+        }
       }
     }
   }
 
   void _maybeSpawnPickup(double dt) {
-    if (!mode.hasPickups) return; // CLASSIC mode: no item spawning
+    if (!mode.hasPickups) return;
     _pickupSpawnTimer -= dt;
     if (_pickupSpawnTimer > 0) return;
     if (_activePickups >= _maxPickups) return;
@@ -347,14 +410,20 @@ class BossBallGame extends FlameGame {
     final y = arenaConfig.minY(r) +
         _rng.nextDouble() * (arenaConfig.maxY(r) - arenaConfig.minY(r));
     final pos = Vector2(x, y);
-    final tooClose = _orbs.any((o) => pos.distanceTo(o.position) < 80);
-    if (retries > 0 && (pos.distanceTo(boss.position) < 80 || tooClose)) {
+    final tooCloseToOrb = _orbs.any((o) => pos.distanceTo(o.position) < 80);
+    final tooCloseToBoss =
+        boss != null && pos.distanceTo(boss!.position) < 80;
+    if (retries > 0 && (tooCloseToBoss || tooCloseToOrb)) {
       return _randomPickupPosition(retries: retries - 1);
     }
     return pos;
   }
 
-  void onPickupCollected(PickupType type) {
+  void onPickupCollected(PickupType type, {int collectorIndex = 0}) {
+    if (mode.isPvp) {
+      _onPickupCollectedPvp(type, collectorIndex);
+      return;
+    }
     switch (type) {
       case PickupType.apple:
         onOrbHitBoss(60000);
@@ -363,7 +432,7 @@ class BossBallGame extends FlameGame {
         _revolverBurstTimer = 0.2;
       case PickupType.lightning:
         onOrbHitBoss(120000);
-        boss.freezeBoss(1.0);
+        boss?.freezeBoss(1.0);
         triggerShake(intensity: 35, duration: 0.3);
       case PickupType.shield:
         _shieldTimer = 8.0;
@@ -371,7 +440,7 @@ class BossBallGame extends FlameGame {
         for (final o in _orbs) o.speedMultiplier = 2.0;
         _speedTimer = 6.0;
       case PickupType.ice:
-        boss.freezeBoss(3.0);
+        boss?.freezeBoss(3.0);
       case PickupType.bomb:
         onOrbHitBoss(280000);
         triggerShake(intensity: 60, duration: 0.45);
@@ -387,6 +456,103 @@ class BossBallGame extends FlameGame {
         _barrierHitsRemaining = 4;
       case PickupType.mystery:
         onPickupCollected(PickupTypeInfo.randomNonMystery(_rng));
+    }
+  }
+
+  void _onPickupCollectedPvp(PickupType type, int collectorIndex) {
+    final opponentIndex = 1 - collectorIndex;
+    switch (type) {
+      case PickupType.apple:
+        onPvpOrbHit(victimIndex: opponentIndex, damage: 40000);
+      case PickupType.revolver:
+        _revolverBurstsLeft = 6;
+        _revolverBurstTimer = 0.2;
+        _revolverVictimIndex = opponentIndex;
+      case PickupType.lightning:
+        onPvpOrbHit(victimIndex: opponentIndex, damage: 80000);
+        if (opponentIndex < _orbs.length) {
+          _orbs[opponentIndex].freeze(1.5);
+        }
+        triggerShake(intensity: 35, duration: 0.3);
+      case PickupType.shield:
+        _shieldTimer = 8.0;
+      case PickupType.speed:
+        if (collectorIndex < _orbs.length) {
+          _orbs[collectorIndex].speedMultiplier = 2.0;
+        }
+        _speedTimer = 6.0;
+        _speedCollectorIndex = collectorIndex;
+      case PickupType.ice:
+        if (opponentIndex < _orbs.length) {
+          _orbs[opponentIndex].freeze(3.0);
+        }
+      case PickupType.bomb:
+        onPvpOrbHit(victimIndex: opponentIndex, damage: 200000);
+        triggerShake(intensity: 60, duration: 0.45);
+      case PickupType.vortex:
+        add(VortexPickupZone(position: _randomPickupPosition(), gameRef: this));
+      case PickupType.star:
+        _starHitsRemaining = 3;
+      case PickupType.rapid:
+        _rapidTimer = 6.0;
+      case PickupType.magnet:
+        _magnetTimer = 8.0;
+      case PickupType.barrier:
+        _barrierHitsRemaining = 4;
+      case PickupType.mystery:
+        _onPickupCollectedPvp(
+            PickupTypeInfo.randomNonMystery(_rng), collectorIndex);
+    }
+  }
+
+  // ── PVP orb-vs-orb collision ───────────────────────────────────────────────
+
+  void _resolvePvpOrbCollisions(double dt) {
+    if (_orbs.length < 2) return;
+    final a = _orbs[0];
+    final b = _orbs[1];
+    final dist = a.position.distanceTo(b.position);
+    final minDist = a.orbRadius + b.orbRadius;
+
+    if (_pvpHitCooldown > 0) _pvpHitCooldown -= dt;
+
+    if (dist >= minDist) return;
+
+    final n = dist < 0.001
+        ? Vector2(1, 0)
+        : (a.position - b.position).normalized();
+    final overlap = minDist - dist;
+    a.position += n * (overlap * 0.5);
+    b.position -= n * (overlap * 0.5);
+    a.position = arenaConfig.clamp(a.position, a.orbRadius);
+    b.position = arenaConfig.clamp(b.position, b.orbRadius);
+
+    final relVel = a.velocity - b.velocity;
+    final velAlongNormal = relVel.dot(n);
+
+    if (velAlongNormal < 0) {
+      const restitution = 0.85;
+      final j = -(1.0 + restitution) * velAlongNormal / 2.0;
+      final impulse = n * j;
+      a.velocity += impulse;
+      b.velocity -= impulse;
+
+      // Maintain minimum speed after impulse
+      for (final o in [a, b]) {
+        if (o.velocity.length < o.speed * 0.3) {
+          o.velocity = o.velocity.length < 0.01
+              ? n * (o.speed * 0.5)
+              : o.velocity.normalized() * (o.speed * 0.4);
+        }
+      }
+
+      if (_pvpHitCooldown <= 0) {
+        _pvpHitCooldown = 0.3;
+        final impactSpeed = velAlongNormal.abs();
+        final damage = (impactSpeed * 22).clamp(3000.0, 30000.0).round();
+        onPvpOrbHit(victimIndex: 0, damage: damage);
+        onPvpOrbHit(victimIndex: 1, damage: damage);
+      }
     }
   }
 
@@ -414,18 +580,23 @@ class BossBallGame extends FlameGame {
     _tickPickupTimers(dt);
     _maybeSpawnPickup(dt);
 
-    // Survival mode: boss regenerates HP each tick
-    if (mode.bossRegenPerSecond > 0 && !bossDestroyed && bossHp > 0) {
-      bossHp = (bossHp + (mode.bossRegenPerSecond * dt).round())
-          .clamp(0, bossMaxHp);
-    }
+    if (mode.isPvp) {
+      _resolvePvpOrbCollisions(dt);
+    } else {
+      // Survival mode: boss regenerates HP each tick
+      if (mode.bossRegenPerSecond > 0 && boss != null &&
+          !bossDestroyed && bossHp > 0) {
+        bossHp = (bossHp + (mode.bossRegenPerSecond * dt).round())
+            .clamp(0, bossMaxHp);
+      }
 
-    if (mode.timeLimitSeconds > 0) {
-      timeLeft -= dt;
-      if (timeLeft <= 0) {
-        timeLeft = 0;
-        playing = false;
-        Future.delayed(Duration.zero, () => overlays.add('GameOver'));
+      if (mode.timeLimitSeconds > 0) {
+        timeLeft -= dt;
+        if (timeLeft <= 0) {
+          timeLeft = 0;
+          playing = false;
+          Future.delayed(Duration.zero, () => overlays.add('GameOver'));
+        }
       }
     }
 

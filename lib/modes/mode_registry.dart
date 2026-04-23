@@ -85,6 +85,22 @@ class ModeRegistry {
       loseOnTimeExpiry: false,
       scoreMode: ScoreMode.damagePerSecond,
     ),
+
+    // ── PVP Duel — no boss, orbs fight each other ─────────────────────
+    GameMode(
+      id: 'pvp_duel',
+      name: 'PVP DUEL',
+      subtitle: 'Two orbs · no boss · fight each other',
+      accentColor: Color(0xFFFF8800),
+      bossMaxHp: 1000000,
+      timeLimitSeconds: 0.0,
+      winOnBossKill: false,
+      loseOnTimeExpiry: false,
+      scoreMode: ScoreMode.damageDealt,
+      orbCount: 2,
+      hasPickups: true,
+      isPvp: true,
+    ),
   ];
 
   static GameMode findById(String id) {

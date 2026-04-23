@@ -58,7 +58,9 @@ class ThunderZoneComponent extends PositionComponent {
     }
 
     // DoT while boss in zone
-    if (position.distanceTo(gameRef.boss.position) < gameRef.boss.radius + zoneR &&
+    final tzBoss = gameRef.boss;
+    if (tzBoss != null &&
+        position.distanceTo(tzBoss.position) < tzBoss.radius + zoneR &&
         _tick <= 0) {
       _tick = tickInterval;
       gameRef.onOrbHitBoss(tickDamage, isLaserTick: true);

@@ -47,7 +47,9 @@ class MineComponent extends PositionComponent {
     }
 
     // Detonate when boss enters trigger radius
-    if (position.distanceTo(gameRef.boss.position) < gameRef.boss.radius + triggerR) {
+    final mineBoss = gameRef.boss;
+    if (mineBoss != null &&
+        position.distanceTo(mineBoss.position) < mineBoss.radius + triggerR) {
       _detonate();
     }
   }
