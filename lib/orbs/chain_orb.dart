@@ -58,12 +58,14 @@ class ChainOrb extends OrbBehavior {
 
   @override
   void onBossHit(PlayerOrb orb) {
+    final boss = orb.gameRef.boss;
+    if (boss == null) return;
     orb.gameRef.onOrbHitBoss(_boltDamage);
     _chainActive   = true;
     _boltsLeft     = _bolts - 1;
     _nextBoltTimer = _boltInterval;
     _renderTimer   = 0;
-    final bp = orb.gameRef.boss.position;
+    final bp = boss.position;
     _bossOffset = Offset(bp.x - orb.position.x, bp.y - orb.position.y);
   }
 
