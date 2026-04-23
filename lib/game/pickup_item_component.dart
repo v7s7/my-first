@@ -85,8 +85,11 @@ class PickupItemComponent extends PositionComponent {
         : 1.0;
     final alpha = fadeIn * fadeOut;
 
+    // Bobbing offset
+    final bob = sin(_pulseTimer * 1.6) * 4.0;
+
     final cx = pickupRadius;
-    final cy = pickupRadius;
+    final cy = pickupRadius + bob;
 
     // Ring color: type color normally, red when < 3s
     final isUrgent = _lifetime < 3.0;

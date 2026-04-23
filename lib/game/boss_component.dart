@@ -7,10 +7,13 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
   double radius = 60.0;
   double _time  = 0.0;
 
+  /// Current phase: 1 = normal, 2 = enraged (60%), 3 = rage (30%)
+  int phase = 1;
+
   late Vector2 velocity;
   final _rng = Random();
 
-  // ── Freeze mechanic (IceOrb) ──────────────────────────────────────────────
+  // ── Freeze mechanic ───────────────────────────────────────────────────────
   double _frozenTimer = 0.0;
   bool get isFrozen => _frozenTimer > 0;
 
@@ -20,19 +23,31 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
 
   // ── Physics constants ─────────────────────────────────────────────────────
   static const double mass       = 3.0;
-  static const double startSpeed = 145.0; // px/s initial velocity
-  static const double minSpeed   = 90.0;  // never stall below this
-  static const double maxSpeed   = 420.0; // cap after repeated hits
+  static const double startSpeed = 145.0;
+  static const double minSpeed   = 90.0;
+  static const double maxSpeed   = 420.0;
+
+  // ── Phase system ──────────────────────────────────────────────────────────
+  bool _phase2Triggered = false;
+  bool _phase3Triggered = false;
+  double _attackTimer   = 0.0;
+  double _phaseFlashTimer = 0.0;
+
+  double get _attackInterval => phase == 3 ? 2.2 : 3.8;
+
+  double get _speedMultiplier => switch (phase) {
+        3 => 1.65,
+        2 => 1.30,
+        _ => 1.00,
+      };
 
   BossComponent({required Vector2 position})
       : super(position: position, anchor: Anchor.center);
 
   @override
   void onLoad() {
-    // Launch in a random diagonal direction so it never travels straight
-    // along a wall (avoids boring back-and-forth movement).
     final angle = _rng.nextDouble() * 2 * pi;
-    velocity    = Vector2(cos(angle), sin(angle)) * startSpeed;
+    velocity = Vector2(cos(angle), sin(angle)) * startSpeed;
   }
 
   @override
@@ -40,24 +55,38 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
     super.update(dt);
     _time += dt;
 
-    final arena = gameRef.arenaConfig;
+    _checkPhaseTransitions();
 
-    // ── Freeze ──────────────────────────────────────────────────────────────
+    // Attack timer — phases 2 and 3 only
+    if (phase > 1) {
+      _attackTimer -= dt;
+      if (_attackTimer <= 0) {
+        _attackTimer = _attackInterval;
+        gameRef.spawnBossAttack(position.clone(), phase);
+      }
+    }
+
+    if (_phaseFlashTimer > 0) _phaseFlashTimer -= dt;
+
+    // Freeze deceleration
     if (_frozenTimer > 0) {
       _frozenTimer -= dt;
-      // Rapid exponential deceleration while frozen
       velocity.scale(max(0.0, 1.0 - dt * 6.0));
-      // When freeze expires and ball has stalled, restart it
       if (_frozenTimer <= 0 && velocity.length < 30) {
         final a = _rng.nextDouble() * 2 * pi;
         velocity = Vector2(cos(a), sin(a)) * startSpeed;
       }
     }
 
-    // ── Move ────────────────────────────────────────────────────────────────
-    position += velocity * dt;
+    // Movement (phase-speed-scaled)
+    if (_frozenTimer <= 0) {
+      position += velocity * _speedMultiplier * dt;
+    } else {
+      position += velocity * dt;
+    }
 
-    // ── Elastic wall bounces ─────────────────────────────────────────────────
+    // Wall bounces
+    final arena = gameRef.arenaConfig;
     if (position.x <= arena.minX(radius)) {
       position.x = arena.minX(radius);
       if (velocity.x < 0) velocity.x = -velocity.x;
@@ -65,7 +94,6 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
       position.x = arena.maxX(radius);
       if (velocity.x > 0) velocity.x = -velocity.x;
     }
-
     if (position.y <= arena.minY(radius)) {
       position.y = arena.minY(radius);
       if (velocity.y < 0) velocity.y = -velocity.y;
@@ -74,7 +102,7 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
       if (velocity.y > 0) velocity.y = -velocity.y;
     }
 
-    // ── Speed bounds (only when not frozen) ─────────────────────────────────
+    // Speed clamp
     if (_frozenTimer <= 0) {
       final spd = velocity.length;
       if (spd > maxSpeed) {
@@ -82,9 +110,29 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
       } else if (spd < minSpeed) {
         velocity = spd < 0.01
             ? Vector2(cos(_rng.nextDouble() * 2 * pi),
-                      sin(_rng.nextDouble() * 2 * pi)) * minSpeed
+                      sin(_rng.nextDouble() * 2 * pi)) *
+                minSpeed
             : velocity.normalized() * minSpeed;
       }
+    }
+  }
+
+  void _checkPhaseTransitions() {
+    if (gameRef.bossMaxHp <= 0) return;
+    final hpRatio = gameRef.bossHp / gameRef.bossMaxHp;
+
+    if (!_phase2Triggered && hpRatio < 0.6) {
+      _phase2Triggered = true;
+      phase = 2;
+      _attackTimer = 0.8;
+      _phaseFlashTimer = 0.7;
+      gameRef.onBossPhaseChange(2);
+    } else if (!_phase3Triggered && hpRatio < 0.3) {
+      _phase3Triggered = true;
+      phase = 3;
+      _attackTimer = 0.4;
+      _phaseFlashTimer = 1.0;
+      gameRef.onBossPhaseChange(3);
     }
   }
 
@@ -92,37 +140,81 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
 
   @override
   void render(Canvas canvas) {
-    final hpRatio = gameRef.bossHp / gameRef.bossMaxHp;
+    final hpRatio = gameRef.bossMaxHp > 0
+        ? (gameRef.bossHp / gameRef.bossMaxHp).clamp(0.0, 1.0)
+        : 0.0;
 
-    final breathe    = sin(_time) * 0.08;
+    // Phase-based color
+    final Color bossColor;
+    switch (phase) {
+      case 3:
+        bossColor = Color.lerp(const Color(0xFFFF0022), const Color(0xFFFF4400),
+            sin(_time * 8) * 0.5 + 0.5)!;
+      case 2:
+        bossColor = Color.lerp(const Color(0xFFFF4488), const Color(0xFFFF6644),
+            sin(_time * 3) * 0.5 + 0.5)!;
+      default:
+        if (hpRatio > 0.6) {
+          bossColor = const Color(0xFF6A5AFF);
+        } else {
+          bossColor = Color.lerp(const Color(0xFFFF4488), const Color(0xFF6A5AFF),
+              (hpRatio - 0.3) / 0.3)!;
+        }
+    }
+
+    final breatheFreq = phase == 3 ? 5.0 : (phase == 2 ? 3.5 : 2.0);
+    final breathe = sin(_time * breatheFreq) * 0.08;
     final glowRadius = radius + 10 + breathe * 8;
 
-    // HP colour: purple → pink → red
-    Color bossColor;
-    if (hpRatio > 0.6) {
-      bossColor = Color.lerp(const Color(0xFF6A5AFF), const Color(0xFF7155FF),
-          1.0 - (hpRatio - 0.6) / 0.4)!;
-    } else if (hpRatio > 0.3) {
-      bossColor = Color.lerp(const Color(0xFFFF4488), const Color(0xFF6A5AFF),
-          (hpRatio - 0.3) / 0.3)!;
-    } else {
-      bossColor = Color.lerp(
-          const Color(0xFFFF0033), const Color(0xFFFF4488), hpRatio / 0.3)!;
+    // Phase flash burst
+    if (_phaseFlashTimer > 0) {
+      final flashAlpha = (_phaseFlashTimer / 0.7).clamp(0.0, 1.0) * 0.65;
+      canvas.drawCircle(Offset.zero, radius + 50,
+          Paint()
+            ..color = Colors.white.withOpacity(flashAlpha)
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 30));
+    }
+
+    // Phase 3: outer rage pulse ring
+    if (phase == 3) {
+      final rageR = radius + 22 + sin(_time * 6) * 9;
+      canvas.drawCircle(Offset.zero, rageR,
+          Paint()
+            ..color = Colors.red.withOpacity(0.18 + sin(_time * 14) * 0.09)
+            ..maskFilter = const MaskFilter.blur(BlurStyle.solid, 15));
+    }
+
+    // Orbiting energy orbs (phase 2: 4 orbs, phase 3: 6 orbs)
+    if (phase >= 2) {
+      final count = phase == 3 ? 6 : 4;
+      final orbitR = radius + 24;
+      final speed  = phase == 3 ? 3.8 : 2.4;
+      final orbColor = phase == 3 ? const Color(0xFFFF2200) : const Color(0xFFFF2288);
+      for (int i = 0; i < count; i++) {
+        final a = _time * speed + i * (2 * pi / count);
+        final ox = cos(a) * orbitR;
+        final oy = sin(a) * orbitR;
+        canvas.drawCircle(Offset(ox, oy), 6.0,
+            Paint()
+              ..color = orbColor
+              ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5));
+        canvas.drawCircle(Offset(ox, oy), 2.8, Paint()..color = Colors.white);
+      }
     }
 
     // Outer glow
     canvas.drawCircle(Offset.zero, glowRadius,
         Paint()
-          ..color = bossColor.withOpacity(0.30)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.solid, 20));
+          ..color = bossColor.withOpacity(0.30 + (phase > 1 ? 0.12 : 0.0))
+          ..maskFilter = const MaskFilter.blur(BlurStyle.solid, 22));
 
     // Inner glow
     canvas.drawCircle(Offset.zero, radius + 3,
         Paint()
-          ..color = bossColor.withOpacity(0.50)
+          ..color = bossColor.withOpacity(0.55)
           ..maskFilter = const MaskFilter.blur(BlurStyle.solid, 8));
 
-    // Main body — solid color OR custom face image
+    // Main body — image or solid color
     final faceImg = gameRef.bossUiImage;
     if (faceImg != null) {
       final dst = Rect.fromCircle(center: Offset.zero, radius: radius);
@@ -130,7 +222,8 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
       canvas.clipPath(Path()..addOval(dst));
       canvas.drawImageRect(
         faceImg,
-        Rect.fromLTWH(0, 0, faceImg.width.toDouble(), faceImg.height.toDouble()),
+        Rect.fromLTWH(
+            0, 0, faceImg.width.toDouble(), faceImg.height.toDouble()),
         dst,
         Paint()..filterQuality = FilterQuality.medium,
       );
@@ -147,15 +240,15 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
           ..color = Colors.white.withOpacity(0.25)
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4));
 
-    // Rage aura at low HP
-    if (hpRatio < 0.2) {
-      canvas.drawCircle(Offset.zero, radius + 25,
-          Paint()
-            ..color = Colors.red.withOpacity(0.25)
-            ..maskFilter = const MaskFilter.blur(BlurStyle.solid, 15));
-    }
+    // Rim glow
+    canvas.drawCircle(Offset.zero, radius,
+        Paint()
+          ..color = bossColor.withOpacity(0.45)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3.0
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4));
 
-    // ── Ice overlay when frozen ─────────────────────────────────────────────
+    // Ice overlay
     if (isFrozen) {
       canvas.drawCircle(Offset.zero, radius + 6,
           Paint()
@@ -173,37 +266,33 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
             ..color = const Color(0xBBAAE8FF)
             ..strokeWidth = 3.0
             ..strokeCap = StrokeCap.round
-            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
-        );
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3));
         canvas.drawCircle(
           Offset(cos(angle) * outer, sin(angle) * outer),
           3.5,
           Paint()
             ..color = const Color(0xDDDDFFFF)
-            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
-        );
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2));
       }
     }
 
-    // HP text
-    final hpText = '${gameRef.bossHp} / ${gameRef.bossMaxHp}';
-    final tp = TextPainter(
-      text: TextSpan(
-        text: hpText,
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          shadows: [
-            Shadow(
-                color: Colors.black.withOpacity(0.8),
-                blurRadius: 4,
-                offset: const Offset(1, 1)),
-          ],
+    // Phase badge on boss body
+    if (phase > 1) {
+      final phaseColor =
+          phase == 3 ? const Color(0xFFFF2244) : const Color(0xFFFF88CC);
+      final tp = TextPainter(
+        text: TextSpan(
+          text: 'PHASE $phase',
+          style: TextStyle(
+            color: phaseColor,
+            fontSize: 11,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 1.5,
+          ),
         ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    tp.paint(canvas, Offset(-tp.width / 2, -tp.height / 2));
+        textDirection: TextDirection.ltr,
+      )..layout();
+      tp.paint(canvas, Offset(-tp.width / 2, radius * 0.48));
+    }
   }
 }
