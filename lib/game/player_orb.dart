@@ -17,6 +17,7 @@ class PlayerOrb extends PositionComponent {
   final double orbRadius;
 
   static const double defaultRadius    = 18.0;
+  static const double weaponLength     = 50.0; // PVP sword length past orb edge
   static const double baseSpeed        = 280.0;
   static const double speedGrowthPerBounce = 0.03;
   static const double maxSpeed         = 900.0;
@@ -35,6 +36,14 @@ class PlayerOrb extends PositionComponent {
 
   void freeze(double duration) {
     if (duration > _frozenTimer) _frozenTimer = duration;
+  }
+
+  /// World-space position of the weapon tip (used for PVP hit detection).
+  Vector2 get weaponTip {
+    final dir = velocity.length > 1.0
+        ? velocity.normalized()
+        : Vector2(1.0, 0.0);
+    return position + dir * (orbRadius + weaponLength);
   }
 
   final Queue<Vector2> _trail = Queue<Vector2>();
@@ -389,6 +398,49 @@ class PlayerOrb extends PositionComponent {
     }
 
     canvas.restore();
+
+    // PVP weapon sword — rendered outside squash transform
+    if (gameRef.mode.isPvp && velocity.length > 1.0) {
+      final dir = velocity.normalized();
+      final sx = cx + dir.x * orbRadius;
+      final sy = cy + dir.y * orbRadius;
+      final ex = cx + dir.x * (orbRadius + weaponLength);
+      final ey = cy + dir.y * (orbRadius + weaponLength);
+      final start = Offset(sx, sy);
+      final end   = Offset(ex, ey);
+
+      // Outer sword glow
+      canvas.drawLine(start, end,
+        Paint()
+          ..color = color.withOpacity(0.38)
+          ..strokeWidth = 14
+          ..strokeCap = StrokeCap.round
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8));
+
+      // Blade body
+      canvas.drawLine(start, end,
+        Paint()
+          ..color = color.withOpacity(0.92)
+          ..strokeWidth = 3.5
+          ..strokeCap = StrokeCap.round);
+
+      // Bright shine along 60% of blade toward tip
+      canvas.drawLine(
+        Offset(sx + dir.x * weaponLength * 0.12, sy + dir.y * weaponLength * 0.12),
+        Offset(sx + dir.x * weaponLength * 0.7,  sy + dir.y * weaponLength * 0.7),
+        Paint()
+          ..color = Colors.white.withOpacity(0.65)
+          ..strokeWidth = 1.8
+          ..strokeCap = StrokeCap.round);
+
+      // Tip glow
+      canvas.drawCircle(end, 8.0,
+        Paint()
+          ..color = color.withOpacity(0.6)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6));
+      canvas.drawCircle(end, 3.5,
+        Paint()..color = Colors.white);
+    }
 
     behavior.renderOverlay(canvas, orbRadius, cx, cy);
   }

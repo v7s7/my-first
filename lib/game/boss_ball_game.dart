@@ -11,6 +11,7 @@ import '../modes/game_mode.dart';
 import 'arena_config.dart';
 import 'arena_wall.dart';
 import 'boss_component.dart';
+import 'bullet_component.dart';
 import 'damage_number.dart';
 import 'pickup_item_component.dart';
 import 'pickup_type.dart';
@@ -72,10 +73,11 @@ class BossBallGame extends FlameGame {
   double _magnetTimer          = 0.0;
   int    _starHitsRemaining    = 0;
   int    _barrierHitsRemaining = 0;
-  int    _revolverBurstsLeft   = 0;
-  double _revolverBurstTimer   = 0.0;
-  int    _revolverVictimIndex  = 0;
-  int    _speedCollectorIndex  = -1;
+  int    _revolverBurstsLeft    = 0;
+  double _revolverBurstTimer    = 0.0;
+  int    _revolverVictimIndex   = 0;
+  int    _revolverCollectorIndex = 0;
+  int    _speedCollectorIndex   = -1;
 
   // Public getters for HUD
   double get shieldTimer          => _shieldTimer;
@@ -349,6 +351,33 @@ class BossBallGame extends FlameGame {
     if (_activePickups > 0) _activePickups--;
   }
 
+  void _spawnRevolverBullet() {
+    final shooter = _revolverCollectorIndex < _orbs.length
+        ? _orbs[_revolverCollectorIndex]
+        : (_orbs.isNotEmpty ? _orbs.first : null);
+    if (shooter == null) return;
+
+    final Vector2 targetPos;
+    final int? pvpVictim;
+
+    if (mode.isPvp) {
+      pvpVictim = _revolverVictimIndex;
+      targetPos = _revolverVictimIndex < _orbs.length
+          ? _orbs[_revolverVictimIndex].position.clone()
+          : shooter.position.clone();
+    } else {
+      pvpVictim = null;
+      targetPos = boss?.position.clone() ?? shooter.position.clone();
+    }
+
+    add(BulletComponent(
+      position: shooter.position.clone(),
+      target: targetPos,
+      damage: mode.isPvp ? 20000 : 28000,
+      pvpVictimIndex: pvpVictim,
+    ));
+  }
+
   void _tickPickupTimers(double dt) {
     if (_shieldTimer > 0) {
       _shieldTimer -= dt;
@@ -375,17 +404,13 @@ class BossBallGame extends FlameGame {
       if (_magnetTimer < 0) _magnetTimer = 0;
     }
 
-    // Revolver burst
+    // Revolver burst — spawn a visible bullet each tick
     if (_revolverBurstsLeft > 0) {
       _revolverBurstTimer -= dt;
       if (_revolverBurstTimer <= 0) {
-        _revolverBurstTimer = 0.2;
+        _revolverBurstTimer = 0.22;
         _revolverBurstsLeft--;
-        if (mode.isPvp) {
-          onPvpOrbHit(victimIndex: _revolverVictimIndex, damage: 20000);
-        } else {
-          onOrbHitBoss(28000);
-        }
+        _spawnRevolverBullet();
       }
     }
   }
@@ -429,7 +454,8 @@ class BossBallGame extends FlameGame {
         onOrbHitBoss(60000);
       case PickupType.revolver:
         _revolverBurstsLeft = 6;
-        _revolverBurstTimer = 0.2;
+        _revolverBurstTimer = 0.0; // fire first bullet immediately
+        _revolverCollectorIndex = collectorIndex;
       case PickupType.lightning:
         onOrbHitBoss(120000);
         boss?.freezeBoss(1.0);
@@ -466,8 +492,9 @@ class BossBallGame extends FlameGame {
         onPvpOrbHit(victimIndex: opponentIndex, damage: 40000);
       case PickupType.revolver:
         _revolverBurstsLeft = 6;
-        _revolverBurstTimer = 0.2;
+        _revolverBurstTimer = 0.0; // fire first bullet immediately
         _revolverVictimIndex = opponentIndex;
+        _revolverCollectorIndex = collectorIndex;
       case PickupType.lightning:
         onPvpOrbHit(victimIndex: opponentIndex, damage: 80000);
         if (opponentIndex < _orbs.length) {
@@ -511,47 +538,60 @@ class BossBallGame extends FlameGame {
     if (_orbs.length < 2) return;
     final a = _orbs[0];
     final b = _orbs[1];
-    final dist = a.position.distanceTo(b.position);
+
+    // ── 1. Physical bounce — keeps orbs from overlapping ──────────────────────
+    final dist    = a.position.distanceTo(b.position);
     final minDist = a.orbRadius + b.orbRadius;
 
-    if (_pvpHitCooldown > 0) _pvpHitCooldown -= dt;
+    if (dist < minDist) {
+      final n       = dist < 0.001 ? Vector2(1, 0) : (a.position - b.position).normalized();
+      final overlap = minDist - dist;
+      a.position += n * (overlap * 0.5);
+      b.position -= n * (overlap * 0.5);
+      a.position = arenaConfig.clamp(a.position, a.orbRadius);
+      b.position = arenaConfig.clamp(b.position, b.orbRadius);
 
-    if (dist >= minDist) return;
-
-    final n = dist < 0.001
-        ? Vector2(1, 0)
-        : (a.position - b.position).normalized();
-    final overlap = minDist - dist;
-    a.position += n * (overlap * 0.5);
-    b.position -= n * (overlap * 0.5);
-    a.position = arenaConfig.clamp(a.position, a.orbRadius);
-    b.position = arenaConfig.clamp(b.position, b.orbRadius);
-
-    final relVel = a.velocity - b.velocity;
-    final velAlongNormal = relVel.dot(n);
-
-    if (velAlongNormal < 0) {
-      const restitution = 0.85;
-      final j = -(1.0 + restitution) * velAlongNormal / 2.0;
-      final impulse = n * j;
-      a.velocity += impulse;
-      b.velocity -= impulse;
-
-      // Maintain minimum speed after impulse
-      for (final o in [a, b]) {
-        if (o.velocity.length < o.speed * 0.3) {
-          o.velocity = o.velocity.length < 0.01
-              ? n * (o.speed * 0.5)
-              : o.velocity.normalized() * (o.speed * 0.4);
+      final relVel        = a.velocity - b.velocity;
+      final velAlongNormal = relVel.dot(n);
+      if (velAlongNormal < 0) {
+        const restitution = 0.85;
+        final j       = -(1.0 + restitution) * velAlongNormal / 2.0;
+        final impulse = n * j;
+        a.velocity += impulse;
+        b.velocity -= impulse;
+        for (final o in [a, b]) {
+          if (o.velocity.length < o.speed * 0.3) {
+            o.velocity = o.velocity.length < 0.01
+                ? n * (o.speed * 0.5)
+                : o.velocity.normalized() * (o.speed * 0.4);
+          }
         }
       }
+    }
 
-      if (_pvpHitCooldown <= 0) {
-        _pvpHitCooldown = 0.3;
-        final impactSpeed = velAlongNormal.abs();
-        final damage = (impactSpeed * 22).clamp(3000.0, 30000.0).round();
-        onPvpOrbHit(victimIndex: 0, damage: damage);
-        onPvpOrbHit(victimIndex: 1, damage: damage);
+    // ── 2. Weapon-tip damage ───────────────────────────────────────────────────
+    // An orb only deals damage when its sword tip touches the opponent's body.
+    if (_pvpHitCooldown > 0) {
+      _pvpHitCooldown -= dt;
+      return;
+    }
+
+    const tipRadius = 22.0; // extra leniency around the opponent orb body
+    final aTip = a.weaponTip;
+    final bTip = b.weaponTip;
+
+    final aHitsB = aTip.distanceTo(b.position) < b.orbRadius + tipRadius;
+    final bHitsA = bTip.distanceTo(a.position) < a.orbRadius + tipRadius;
+
+    if (aHitsB || bHitsA) {
+      _pvpHitCooldown = 0.28;
+      if (aHitsB) {
+        final dmg = (a.velocity.length * 35).clamp(8000.0, 50000.0).round();
+        onPvpOrbHit(victimIndex: 1, damage: dmg);
+      }
+      if (bHitsA) {
+        final dmg = (b.velocity.length * 35).clamp(8000.0, 50000.0).round();
+        onPvpOrbHit(victimIndex: 0, damage: dmg);
       }
     }
   }
