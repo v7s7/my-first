@@ -32,18 +32,21 @@ class PlayerOrb extends PositionComponent {
   double _bounceSquashTimer = 0.0;
   double _frozenTimer = 0.0;
 
+  // Self-rotation angle — drives the orbiting highlight
+  double _rotationAngle = 0.0;
+  // Weapon spin angle — independent of velocity direction; spins continuously
+  double _weaponAngle = 0.0;
+
   bool get isFrozen => _frozenTimer > 0;
 
   void freeze(double duration) {
     if (duration > _frozenTimer) _frozenTimer = duration;
   }
 
-  /// World-space position of the weapon tip (used for PVP hit detection).
+  /// World-space position of the spinning weapon tip (used for PVP hit detection).
   Vector2 get weaponTip {
-    final dir = velocity.length > 1.0
-        ? velocity.normalized()
-        : Vector2(1.0, 0.0);
-    return position + dir * (orbRadius + weaponLength);
+    return position +
+        Vector2(cos(_weaponAngle), sin(_weaponAngle)) * (orbRadius + weaponLength);
   }
 
   final Queue<Vector2> _trail = Queue<Vector2>();
@@ -63,6 +66,9 @@ class PlayerOrb extends PositionComponent {
 
   @override
   Future<void> onLoad() async {
+    // Initial weapon angle: orbs point toward each other
+    _weaponAngle = orbIndex == 0 ? 0.0 : pi;
+
     if (orbIndex == 0) {
       position = Vector2(
         arena.minX(orbRadius) +
@@ -98,6 +104,15 @@ class PlayerOrb extends PositionComponent {
   void update(double dt) {
     super.update(dt);
     if (!gameRef.playing) return;
+
+    // Self-rotation (orbiting highlight)
+    _rotationAngle += dt * pi * 1.5;
+
+    // Weapon spin — orb 0 clockwise, orb 1 counter-clockwise
+    if (gameRef.mode.isPvp) {
+      final spinDir = orbIndex == 0 ? 1.0 : -1.0;
+      _weaponAngle += dt * pi * 2.2 * spinDir;
+    }
 
     // Freeze mechanic
     if (_frozenTimer > 0) {
@@ -346,19 +361,25 @@ class PlayerOrb extends PositionComponent {
       canvas.drawCircle(Offset(cx, cy), orbRadius, Paint()..color = color);
     }
 
+    // Orbiting specular highlight — rotates with _rotationAngle
+    final hlAngle = _rotationAngle * 0.65;
+    final hlX = cx + cos(hlAngle) * orbRadius * 0.42;
+    final hlY = cy + sin(hlAngle) * orbRadius * 0.42;
     canvas.drawCircle(
-      Offset(cx - orbRadius * 0.35, cy - orbRadius * 0.35),
+      Offset(hlX, hlY),
       orbRadius * 0.38,
       Paint()
         ..color = Colors.white.withOpacity(0.30)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
     );
 
+    // Secondary inner glow ring (counter-rotates for depth)
+    final glowAngle = -_rotationAngle * 0.4 + pi * 0.5;
     canvas.drawCircle(
       Offset(cx, cy),
       orbRadius * 0.8,
       Paint()
-        ..color = color.withOpacity(0.3)
+        ..color = color.withOpacity(0.25 + sin(glowAngle) * 0.08)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
     );
 
@@ -399,13 +420,13 @@ class PlayerOrb extends PositionComponent {
 
     canvas.restore();
 
-    // PVP weapon sword — rendered outside squash transform
-    if (gameRef.mode.isPvp && velocity.length > 1.0) {
-      final dir = velocity.normalized();
-      final sx = cx + dir.x * orbRadius;
-      final sy = cy + dir.y * orbRadius;
-      final ex = cx + dir.x * (orbRadius + weaponLength);
-      final ey = cy + dir.y * (orbRadius + weaponLength);
+    // PVP weapon sword — rendered outside squash transform, uses _weaponAngle
+    if (gameRef.mode.isPvp) {
+      final wDir = Vector2(cos(_weaponAngle), sin(_weaponAngle));
+      final sx = cx + wDir.x * orbRadius;
+      final sy = cy + wDir.y * orbRadius;
+      final ex = cx + wDir.x * (orbRadius + weaponLength);
+      final ey = cy + wDir.y * (orbRadius + weaponLength);
       final start = Offset(sx, sy);
       final end   = Offset(ex, ey);
 
@@ -426,8 +447,8 @@ class PlayerOrb extends PositionComponent {
 
       // Bright shine along 60% of blade toward tip
       canvas.drawLine(
-        Offset(sx + dir.x * weaponLength * 0.12, sy + dir.y * weaponLength * 0.12),
-        Offset(sx + dir.x * weaponLength * 0.7,  sy + dir.y * weaponLength * 0.7),
+        Offset(sx + wDir.x * weaponLength * 0.12, sy + wDir.y * weaponLength * 0.12),
+        Offset(sx + wDir.x * weaponLength * 0.7,  sy + wDir.y * weaponLength * 0.7),
         Paint()
           ..color = Colors.white.withOpacity(0.65)
           ..strokeWidth = 1.8

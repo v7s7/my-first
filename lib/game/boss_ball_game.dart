@@ -19,6 +19,8 @@ import 'player_orb.dart';
 import 'hud_component.dart';
 import 'vortex_pickup_zone.dart';
 
+enum _PvpGunType { pistol, shotgun, sniper, machineGun, rocket }
+
 class BossBallGame extends FlameGame {
   final OrbBehavior orbBehavior;
   final GameMode mode;
@@ -75,9 +77,11 @@ class BossBallGame extends FlameGame {
   int    _barrierHitsRemaining = 0;
   int    _revolverBurstsLeft    = 0;
   double _revolverBurstTimer    = 0.0;
+  double _revolverBurstInterval = 0.22;
   int    _revolverVictimIndex   = 0;
   int    _revolverCollectorIndex = 0;
   int    _speedCollectorIndex   = -1;
+  _PvpGunType _pvpGunType       = _PvpGunType.pistol;
 
   // Public getters for HUD
   double get shieldTimer          => _shieldTimer;
@@ -121,7 +125,7 @@ class BossBallGame extends FlameGame {
   Future<void> onLoad() async {
     await super.onLoad();
 
-    arenaConfig = ArenaConfig.fromScreen(size, arenaPreset);
+    arenaConfig = ArenaConfig.fromScreen(size, arenaPreset, square: mode.isPvp);
 
     bossMaxHp = customBossHp ?? mode.bossMaxHp;
     bossHp = bossMaxHp;
@@ -352,30 +356,165 @@ class BossBallGame extends FlameGame {
   }
 
   void _spawnRevolverBullet() {
+    if (mode.isPvp) {
+      _spawnPvpGunBullets();
+    } else {
+      _spawnBossBullet();
+    }
+  }
+
+  void _spawnBossBullet() {
+    final shooter = _revolverCollectorIndex < _orbs.length
+        ? _orbs[_revolverCollectorIndex]
+        : (_orbs.isNotEmpty ? _orbs.first : null);
+    if (shooter == null) return;
+    final targetPos = boss?.position.clone() ?? shooter.position.clone();
+    add(BulletComponent.boss(
+      position: shooter.position.clone(),
+      target: targetPos,
+    ));
+  }
+
+  void _spawnPvpGunBullets() {
     final shooter = _revolverCollectorIndex < _orbs.length
         ? _orbs[_revolverCollectorIndex]
         : (_orbs.isNotEmpty ? _orbs.first : null);
     if (shooter == null) return;
 
-    final Vector2 targetPos;
-    final int? pvpVictim;
+    final targetPos = _revolverVictimIndex < _orbs.length
+        ? _orbs[_revolverVictimIndex].position.clone()
+        : shooter.position.clone();
 
-    if (mode.isPvp) {
-      pvpVictim = _revolverVictimIndex;
-      targetPos = _revolverVictimIndex < _orbs.length
-          ? _orbs[_revolverVictimIndex].position.clone()
-          : shooter.position.clone();
-    } else {
-      pvpVictim = null;
-      targetPos = boss?.position.clone() ?? shooter.position.clone();
+    switch (_pvpGunType) {
+      case _PvpGunType.pistol:
+        add(BulletComponent.pistol(
+          position: shooter.position.clone(),
+          target: targetPos,
+          pvpVictimIndex: _revolverVictimIndex,
+        ));
+      case _PvpGunType.shotgun:
+        for (int i = 0; i < 5; i++) {
+          final spread = (i - 2) * 0.14;
+          add(BulletComponent.shotgunPellet(
+            position: shooter.position.clone(),
+            target: targetPos,
+            pvpVictimIndex: _revolverVictimIndex,
+            spreadAngleRad: spread,
+          ));
+        }
+      case _PvpGunType.sniper:
+        add(BulletComponent.sniper(
+          position: shooter.position.clone(),
+          target: targetPos,
+          pvpVictimIndex: _revolverVictimIndex,
+        ));
+      case _PvpGunType.machineGun:
+        final spread = (_rng.nextDouble() - 0.5) * 0.3;
+        add(BulletComponent.machineGun(
+          position: shooter.position.clone(),
+          target: targetPos,
+          pvpVictimIndex: _revolverVictimIndex,
+          spreadAngleRad: spread,
+        ));
+      case _PvpGunType.rocket:
+        add(BulletComponent.rocket(
+          position: shooter.position.clone(),
+          target: targetPos,
+          pvpVictimIndex: _revolverVictimIndex,
+        ));
+    }
+  }
+
+  void _selectPvpGun(int collectorIndex) {
+    _pvpGunType = _PvpGunType.values[_rng.nextInt(_PvpGunType.values.length)];
+    _revolverVictimIndex = 1 - collectorIndex;
+    _revolverCollectorIndex = collectorIndex;
+    _revolverBurstTimer = 0.0;
+
+    switch (_pvpGunType) {
+      case _PvpGunType.pistol:
+        _revolverBurstsLeft = 6;
+        _revolverBurstInterval = 0.22;
+      case _PvpGunType.shotgun:
+        _revolverBurstsLeft = 2;
+        _revolverBurstInterval = 0.40;
+      case _PvpGunType.sniper:
+        _revolverBurstsLeft = 1;
+        _revolverBurstInterval = 0.0;
+      case _PvpGunType.machineGun:
+        _revolverBurstsLeft = 15;
+        _revolverBurstInterval = 0.08;
+      case _PvpGunType.rocket:
+        _revolverBurstsLeft = 1;
+        _revolverBurstInterval = 0.0;
     }
 
-    add(BulletComponent(
-      position: shooter.position.clone(),
-      target: targetPos,
-      damage: mode.isPvp ? 20000 : 28000,
-      pvpVictimIndex: pvpVictim,
+    final gunLabel = switch (_pvpGunType) {
+      _PvpGunType.pistol     => 'PISTOL  x6',
+      _PvpGunType.shotgun    => 'SHOTGUN x2',
+      _PvpGunType.sniper     => 'SNIPER!!!',
+      _PvpGunType.machineGun => 'MACHINE GUN',
+      _PvpGunType.rocket     => 'ROCKET!!!',
+    };
+    final gunColor = switch (_pvpGunType) {
+      _PvpGunType.pistol     => const Color(0xFFFFCC00),
+      _PvpGunType.shotgun    => const Color(0xFFFF6600),
+      _PvpGunType.sniper     => const Color(0xFF00EEFF),
+      _PvpGunType.machineGun => const Color(0xFFFF3300),
+      _PvpGunType.rocket     => const Color(0xFFFF2200),
+    };
+
+    final shooterPos = collectorIndex < _orbs.length
+        ? _orbs[collectorIndex].position.clone()
+        : Vector2.zero();
+    add(DamageNumber(
+      position: shooterPos + Vector2(0, -60),
+      damage: 0,
+      label: gunLabel,
+      labelColor: gunColor,
+      isSmall: false,
+      driftX: 0,
     ));
+  }
+
+  void spawnRocketExplosion(Vector2 position) {
+    add(
+      ParticleSystemComponent(
+        position: position,
+        particle: Particle.generate(
+          count: 80,
+          lifespan: 0.9,
+          generator: (i) {
+            final spd = Vector2(
+              (_rng.nextDouble() - 0.5) * 1200,
+              (_rng.nextDouble() - 0.5) * 1200,
+            );
+            return AcceleratedParticle(
+              acceleration: Vector2(0, 200),
+              speed: spd,
+              child: ComputedParticle(
+                renderer: (canvas, particle) {
+                  final t = particle.progress;
+                  final color = Color.lerp(Colors.white,
+                      i % 3 == 0 ? Colors.orange : Colors.red, t)!
+                      .withOpacity(1.0 - t);
+                  final r = (14.0 - t * 10.0).clamp(1.0, 14.0);
+                  canvas.drawCircle(
+                    Offset.zero,
+                    r,
+                    Paint()
+                      ..color = color
+                      ..blendMode = BlendMode.screen
+                      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
+                  );
+                },
+              ),
+            );
+          },
+        ),
+      ),
+    );
+    triggerShake(intensity: 90, duration: 0.55);
   }
 
   void _tickPickupTimers(double dt) {
@@ -408,7 +547,7 @@ class BossBallGame extends FlameGame {
     if (_revolverBurstsLeft > 0) {
       _revolverBurstTimer -= dt;
       if (_revolverBurstTimer <= 0) {
-        _revolverBurstTimer = 0.22;
+        _revolverBurstTimer = _revolverBurstInterval;
         _revolverBurstsLeft--;
         _spawnRevolverBullet();
       }
@@ -454,7 +593,8 @@ class BossBallGame extends FlameGame {
         onOrbHitBoss(60000);
       case PickupType.revolver:
         _revolverBurstsLeft = 6;
-        _revolverBurstTimer = 0.0; // fire first bullet immediately
+        _revolverBurstTimer = 0.0;
+        _revolverBurstInterval = 0.22;
         _revolverCollectorIndex = collectorIndex;
       case PickupType.lightning:
         onOrbHitBoss(120000);
@@ -491,10 +631,7 @@ class BossBallGame extends FlameGame {
       case PickupType.apple:
         onPvpOrbHit(victimIndex: opponentIndex, damage: 40000);
       case PickupType.revolver:
-        _revolverBurstsLeft = 6;
-        _revolverBurstTimer = 0.0; // fire first bullet immediately
-        _revolverVictimIndex = opponentIndex;
-        _revolverCollectorIndex = collectorIndex;
+        _selectPvpGun(collectorIndex);
       case PickupType.lightning:
         onPvpOrbHit(victimIndex: opponentIndex, damage: 80000);
         if (opponentIndex < _orbs.length) {
