@@ -1,4 +1,3 @@
-import 'dart:collection';
 import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
@@ -32,8 +31,6 @@ class PlayerOrb extends PositionComponent {
   double _bounceSquashTimer = 0.0;
   double _frozenTimer = 0.0;
 
-  // Self-rotation angle — drives the orbiting highlight
-  double _rotationAngle = 0.0;
   // Weapon spin angle — independent of velocity direction; spins continuously
   double _weaponAngle = 0.0;
 
@@ -48,9 +45,6 @@ class PlayerOrb extends PositionComponent {
     return position +
         Vector2(cos(_weaponAngle), sin(_weaponAngle)) * (orbRadius + weaponLength);
   }
-
-  final Queue<Vector2> _trail = Queue<Vector2>();
-  static const int _maxTrailLength = 24;
 
   PlayerOrb({
     required this.behavior,
@@ -105,9 +99,6 @@ class PlayerOrb extends PositionComponent {
     super.update(dt);
     if (!gameRef.playing) return;
 
-    // Self-rotation (orbiting highlight)
-    _rotationAngle += dt * pi * 1.5;
-
     // Weapon spin — orb 0 clockwise, orb 1 counter-clockwise
     if (gameRef.mode.isPvp) {
       final spinDir = orbIndex == 0 ? 1.0 : -1.0;
@@ -126,11 +117,6 @@ class PlayerOrb extends PositionComponent {
 
     if (_hitCooldownTimer > 0) _hitCooldownTimer -= dt;
     if (_bounceSquashTimer > 0) _bounceSquashTimer -= dt;
-
-    _trail.addFirst(position.clone());
-    if (_trail.length > _maxTrailLength) {
-      _trail.removeLast();
-    }
 
     if (_frozenTimer <= 0) {
       behavior.onUpdate(dt, this);
@@ -280,24 +266,6 @@ class PlayerOrb extends PositionComponent {
     final cx = orbRadius;
     final cy = orbRadius;
 
-    // Motion trail
-    int i = 0;
-    for (final trailPos in _trail) {
-      final progress = i / _trail.length;
-      final trailOpacity = (1.0 - progress) * 0.65;
-      final trailRadius = orbRadius * (1.0 - progress * 0.6);
-      final dx = trailPos.x - position.x;
-      final dy = trailPos.y - position.y;
-      canvas.drawCircle(
-        Offset(cx + dx, cy + dy),
-        trailRadius,
-        Paint()
-          ..color = behavior.color.withOpacity(trailOpacity)
-          ..blendMode = BlendMode.screen,
-      );
-      i++;
-    }
-
     final squash = _bounceSquashTimer > 0 ? 1.15 : 1.0;
     final stretch = _bounceSquashTimer > 0 ? 0.88 : 1.0;
 
@@ -308,39 +276,12 @@ class PlayerOrb extends PositionComponent {
 
     final color = behavior.color;
 
-    final speedRatio = (speed / maxSpeed).clamp(0.25, 1.0);
-    canvas.drawCircle(
-      Offset(cx, cy),
-      orbRadius + 10.0 + speedRatio * 12.0,
-      Paint()
-        ..color = color.withOpacity(0.18 + speedRatio * 0.22)
-        ..maskFilter =
-            MaskFilter.blur(BlurStyle.normal, 16.0 + speedRatio * 12.0),
-    );
-
-    if (_bounceSquashTimer > 0) {
-      final flashProgress =
-          (1.0 - _bounceSquashTimer / 0.08).clamp(0.0, 1.0);
-      final flashR = orbRadius + 6.0 + flashProgress * orbRadius * 1.4;
-      canvas.drawCircle(
-        Offset(cx, cy),
-        flashR,
-        Paint()
-          ..color = color.withOpacity((1.0 - flashProgress) * 0.85)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 3.0
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
-      );
-    }
-
     // Frozen overlay
     if (isFrozen) {
       canvas.drawCircle(
         Offset(cx, cy),
-        orbRadius + 6,
-        Paint()
-          ..color = const Color(0x5588CCFF)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
+        orbRadius + 4,
+        Paint()..color = const Color(0x5588CCFF),
       );
     }
 
@@ -361,28 +302,6 @@ class PlayerOrb extends PositionComponent {
       canvas.drawCircle(Offset(cx, cy), orbRadius, Paint()..color = color);
     }
 
-    // Orbiting specular highlight — rotates with _rotationAngle
-    final hlAngle = _rotationAngle * 0.65;
-    final hlX = cx + cos(hlAngle) * orbRadius * 0.42;
-    final hlY = cy + sin(hlAngle) * orbRadius * 0.42;
-    canvas.drawCircle(
-      Offset(hlX, hlY),
-      orbRadius * 0.38,
-      Paint()
-        ..color = Colors.white.withOpacity(0.30)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
-    );
-
-    // Secondary inner glow ring (counter-rotates for depth)
-    final glowAngle = -_rotationAngle * 0.4 + pi * 0.5;
-    canvas.drawCircle(
-      Offset(cx, cy),
-      orbRadius * 0.8,
-      Paint()
-        ..color = color.withOpacity(0.25 + sin(glowAngle) * 0.08)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
-    );
-
     canvas.drawCircle(
       Offset(cx, cy),
       orbRadius,
@@ -400,8 +319,7 @@ class PlayerOrb extends PositionComponent {
         Paint()
           ..color = const Color(0xAAFF44CC)
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 2.5
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
+          ..strokeWidth = 2.5,
       );
     }
 
@@ -413,8 +331,7 @@ class PlayerOrb extends PositionComponent {
         Paint()
           ..color = const Color(0xAAFF6600)
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 2.0
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
+          ..strokeWidth = 2.0,
       );
     }
 
@@ -430,22 +347,12 @@ class PlayerOrb extends PositionComponent {
       final start = Offset(sx, sy);
       final end   = Offset(ex, ey);
 
-      // Outer sword glow
-      canvas.drawLine(start, end,
-        Paint()
-          ..color = color.withOpacity(0.38)
-          ..strokeWidth = 14
-          ..strokeCap = StrokeCap.round
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8));
-
-      // Blade body
       canvas.drawLine(start, end,
         Paint()
           ..color = color.withOpacity(0.92)
           ..strokeWidth = 3.5
           ..strokeCap = StrokeCap.round);
 
-      // Bright shine along 60% of blade toward tip
       canvas.drawLine(
         Offset(sx + wDir.x * weaponLength * 0.12, sy + wDir.y * weaponLength * 0.12),
         Offset(sx + wDir.x * weaponLength * 0.7,  sy + wDir.y * weaponLength * 0.7),
@@ -454,13 +361,7 @@ class PlayerOrb extends PositionComponent {
           ..strokeWidth = 1.8
           ..strokeCap = StrokeCap.round);
 
-      // Tip glow
-      canvas.drawCircle(end, 8.0,
-        Paint()
-          ..color = color.withOpacity(0.6)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6));
-      canvas.drawCircle(end, 3.5,
-        Paint()..color = Colors.white);
+      canvas.drawCircle(end, 3.5, Paint()..color = Colors.white);
     }
 
     behavior.renderOverlay(canvas, orbRadius, cx, cy);
