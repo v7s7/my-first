@@ -12,9 +12,14 @@ enum PickupType {
   vortex,
   star,
   mystery,
-  rapid,   // halves hit cooldown for 6s
-  magnet,  // homes orb toward boss for 8s
-  barrier, // 3× damage for 4 hits
+  rapid,    // halves hit cooldown for 6s
+  magnet,   // homes orb toward boss for 8s
+  barrier,  // 3× damage for 4 hits
+  nuke,     // 💥 massive instant damage
+  triple,   // 🎯 3× damage for next 5 hits
+  ghost,    // 👻 PVP: invincible 3s / boss: speed+shield 4s
+  snare,    // 🕸️ long freeze on boss/opponent
+  megaHeal, // 💊 large direct hit / heal boost
 }
 
 extension PickupTypeInfo on PickupType {
@@ -33,6 +38,11 @@ extension PickupTypeInfo on PickupType {
       case PickupType.rapid:    return '🔥';
       case PickupType.magnet:   return '🧲';
       case PickupType.barrier:  return '💎';
+      case PickupType.nuke:     return '💥';
+      case PickupType.triple:   return '🎯';
+      case PickupType.ghost:    return '👻';
+      case PickupType.snare:    return '🕸️';
+      case PickupType.megaHeal: return '💊';
     }
   }
 
@@ -51,6 +61,11 @@ extension PickupTypeInfo on PickupType {
       case PickupType.rapid:    return 'RAPID';
       case PickupType.magnet:   return 'MAGNET';
       case PickupType.barrier:  return 'BARRIER';
+      case PickupType.nuke:     return 'NUKE';
+      case PickupType.triple:   return 'TRIPLE x5';
+      case PickupType.ghost:    return 'GHOST';
+      case PickupType.snare:    return 'SNARE';
+      case PickupType.megaHeal: return 'MEGA HEAL';
     }
   }
 
@@ -69,6 +84,11 @@ extension PickupTypeInfo on PickupType {
       case PickupType.rapid:    return const Color(0xFFFF6600);
       case PickupType.magnet:   return const Color(0xFFFF44CC);
       case PickupType.barrier:  return const Color(0xFF44FFEE);
+      case PickupType.nuke:     return const Color(0xFFFF3300);
+      case PickupType.triple:   return const Color(0xFFFF44FF);
+      case PickupType.ghost:    return const Color(0xFF88FFFF);
+      case PickupType.snare:    return const Color(0xFF99BB44);
+      case PickupType.megaHeal: return const Color(0xFFFF6699);
     }
   }
 
@@ -88,6 +108,11 @@ extension PickupTypeInfo on PickupType {
       case PickupType.star:     return 1;
       case PickupType.barrier:  return 1;
       case PickupType.mystery:  return 1;
+      case PickupType.nuke:     return 1;
+      case PickupType.triple:   return 1;
+      case PickupType.ghost:    return 1;
+      case PickupType.snare:    return 2;
+      case PickupType.megaHeal: return 2;
     }
   }
 

@@ -337,6 +337,18 @@ class PlayerOrb extends PositionComponent {
 
     canvas.restore();
 
+    // Ghost invincibility ring (PVP only)
+    if (gameRef.isOrbGhosted(orbIndex)) {
+      canvas.drawCircle(
+        Offset(cx, cy),
+        orbRadius + 10,
+        Paint()
+          ..color = const Color(0x6688FFFF)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3.0,
+      );
+    }
+
     // PVP weapon sword — rendered outside squash transform, uses _weaponAngle
     if (gameRef.mode.isPvp) {
       final wDir = Vector2(cos(_weaponAngle), sin(_weaponAngle));
@@ -364,6 +376,8 @@ class PlayerOrb extends PositionComponent {
       canvas.drawCircle(end, 3.5, Paint()..color = Colors.white);
     }
 
-    behavior.renderOverlay(canvas, orbRadius, cx, cy);
+    if (!gameRef.mode.isPvp) {
+      behavior.renderOverlay(canvas, orbRadius, cx, cy);
+    }
   }
 }

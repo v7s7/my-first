@@ -146,6 +146,78 @@ class BulletComponent extends PositionComponent with HasGameRef<BossBallGame> {
         bigExplosion: true,
       );
 
+  /// PVP grenade — slow arcing shot, massive explosion, 3 rounds.
+  factory BulletComponent.grenade({
+    required Vector2 position,
+    required Vector2 target,
+    required int? pvpVictimIndex,
+  }) =>
+      BulletComponent._(
+        position: position,
+        target: target,
+        damage: 120000,
+        pvpVictimIndex: pvpVictimIndex,
+        color: const Color(0xFF88FF00),
+        speed: 520.0,
+        hitRadius: 36.0,
+        visualScale: 1.8,
+        bigExplosion: true,
+      );
+
+  /// PVP burst — 3-round tight spread, fires in sets of 3.
+  factory BulletComponent.burst({
+    required Vector2 position,
+    required Vector2 target,
+    required int? pvpVictimIndex,
+    double spreadAngleRad = 0.0,
+  }) =>
+      BulletComponent._(
+        position: position,
+        target: target,
+        damage: 18000,
+        pvpVictimIndex: pvpVictimIndex,
+        color: const Color(0xFFFFAA00),
+        speed: 1600.0,
+        hitRadius: 24.0,
+        spreadAngleRad: spreadAngleRad,
+      );
+
+  /// PVP minigun — rapid-fire light rounds with spread.
+  factory BulletComponent.minigun({
+    required Vector2 position,
+    required Vector2 target,
+    required int? pvpVictimIndex,
+    double spreadAngleRad = 0.0,
+  }) =>
+      BulletComponent._(
+        position: position,
+        target: target,
+        damage: 4000,
+        pvpVictimIndex: pvpVictimIndex,
+        color: const Color(0xFFFF5500),
+        speed: 1500.0,
+        hitRadius: 18.0,
+        visualScale: 0.65,
+        spreadAngleRad: spreadAngleRad,
+      );
+
+  /// PVP railgun — single instant penetrating shot, very high damage.
+  factory BulletComponent.railgun({
+    required Vector2 position,
+    required Vector2 target,
+    required int? pvpVictimIndex,
+  }) =>
+      BulletComponent._(
+        position: position,
+        target: target,
+        damage: 240000,
+        pvpVictimIndex: pvpVictimIndex,
+        color: const Color(0xFF00FFCC),
+        speed: 4500.0,
+        hitRadius: 16.0,
+        visualScale: 0.55,
+      );
+
   // ── Internals ─────────────────────────────────────────────────────────────
 
   static Vector2 _dirTo(Vector2 from, Vector2 to, double spreadAngleRad) {
