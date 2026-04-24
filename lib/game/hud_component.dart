@@ -318,8 +318,9 @@ class HudComponent extends PositionComponent {
     const barW   = 0.42;
     final barPx  = w * barW;
 
-    const orb1Color = Color(0xFF00FFEE);
-    const orb2Color = Color(0xFFFF4488);
+    final colors = gameRef.pvpOrbColors;
+    final orb1Color = colors.isNotEmpty ? colors[0] : const Color(0xFF00FFEE);
+    final orb2Color = colors.length > 1  ? colors[1] : const Color(0xFFFF4488);
 
     final hp1    = gameRef.pvpOrbHp(0);
     final max1   = gameRef.pvpOrbMaxHp;
@@ -327,7 +328,9 @@ class HudComponent extends PositionComponent {
     _drawHpBar(canvas,
       x: sidePad, y: barY, w: barPx, h: barH,
       ratio: ratio1, color: orb1Color,
-      label: 'BALL 1', hp: hp1, alignRight: false);
+      label: 'BALL 1', hp: hp1, alignRight: false,
+      shielded: gameRef.isOrbShielded(0),
+      ghosted:  gameRef.isOrbGhosted(0));
 
     final hp2    = gameRef.pvpOrbHp(1);
     final max2   = gameRef.pvpOrbMaxHp;
@@ -335,7 +338,9 @@ class HudComponent extends PositionComponent {
     _drawHpBar(canvas,
       x: w - sidePad - barPx, y: barY, w: barPx, h: barH,
       ratio: ratio2, color: orb2Color,
-      label: 'BALL 2', hp: hp2, alignRight: true);
+      label: 'BALL 2', hp: hp2, alignRight: true,
+      shielded: gameRef.isOrbShielded(1),
+      ghosted:  gameRef.isOrbGhosted(1));
 
     // VS label
     final vsTp = TextPainter(
@@ -361,6 +366,8 @@ class HudComponent extends PositionComponent {
     required double w, required double h,
     required double ratio, required Color color,
     required String label, required int hp, required bool alignRight,
+    bool shielded = false,
+    bool ghosted  = false,
   }) {
     canvas.drawRRect(
       RRect.fromRectAndRadius(
@@ -412,6 +419,27 @@ class HudComponent extends PositionComponent {
     )..layout();
     final hpX = alignRight ? x : x + w - hpTp.width;
     hpTp.paint(canvas, Offset(hpX, y - hpTp.height - 2));
+
+    // Status badges (shield / ghost)
+    if (shielded || ghosted) {
+      final badge = shielded ? '🛡️' : '👻';
+      final badgePaint = Paint()
+        ..color = (shielded ? const Color(0xFF44AAFF) : const Color(0xFF88FFFF))
+            .withOpacity(0.9);
+      final badgeR = h * 0.62;
+      final badgeCx = alignRight ? x + w + badgeR + 4 : x - badgeR - 4;
+      final badgeCy = y + h / 2;
+      canvas.drawCircle(Offset(badgeCx, badgeCy), badgeR, badgePaint);
+      final bTp = TextPainter(
+        text: TextSpan(
+          text: badge,
+          style: TextStyle(fontSize: badgeR * 1.4),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      bTp.paint(canvas,
+          Offset(badgeCx - bTp.width / 2, badgeCy - bTp.height / 2));
+    }
   }
 
   // ── Active pickup pills ───────────────────────────────────────────────────

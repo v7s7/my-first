@@ -9,6 +9,7 @@ import '../modes/mode_registry.dart';
 import '../game/arena_config.dart';
 import '../widgets/orb_image_picker.dart';
 import 'game_screen.dart';
+import 'pvp_settings_screen.dart';
 
 // ── Persistence keys ──────────────────────────────────────────────────────────
 const _kModeId    = 'mode_id';
@@ -70,10 +71,21 @@ class _StartScreenState extends State<StartScreen> {
   }
 
   void _startGame() {
-    final orbImages = _isDualBall || _isPvp
-        ? [_ball1Image, _ball2Image]
-        : [_ball1Image];
+    // PVP mode → go to dedicated settings screen first
+    if (_isPvp) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => PvpSettingsScreen(
+            orbBehavior: _selectedOrb,
+            mode: _selectedMode,
+          ),
+        ),
+      );
+      return;
+    }
 
+    final orbImages = _isDualBall ? [_ball1Image, _ball2Image] : [_ball1Image];
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -83,7 +95,7 @@ class _StartScreenState extends State<StartScreen> {
           arenaPreset: _selectedArena,
           customBossHp: _selectedHp,
           orbImageBytes: orbImages,
-          bossImageBytes: _isPvp ? null : _bossImage,
+          bossImageBytes: _bossImage,
         ),
       ),
     );

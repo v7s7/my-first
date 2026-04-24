@@ -22,7 +22,7 @@ import 'hud_component.dart';
 import 'shockwave_ring_component.dart';
 import 'vortex_pickup_zone.dart';
 
-enum _PvpGunType { pistol, shotgun, sniper, machineGun, rocket }
+enum _PvpGunType { pistol, shotgun, sniper, machineGun, rocket, grenade, burst, minigun, railgun }
 
 class BossBallGame extends FlameGame {
   final OrbBehavior orbBehavior;
@@ -33,6 +33,12 @@ class BossBallGame extends FlameGame {
   /// Raw image bytes kept so the retry button can reconstruct the game.
   final List<Uint8List?> orbImageBytes;
   final Uint8List? bossImageBytes;
+
+  /// Custom colours for each PVP orb (index-matched). Empty = use behavior colour.
+  final List<Color> pvpOrbColors;
+
+  /// Which pickup types are allowed to spawn. Null = all allowed.
+  final Set<PickupType>? pvpAllowedItems;
 
   late ArenaConfig arenaConfig;
 
@@ -78,6 +84,9 @@ class BossBallGame extends FlameGame {
   double _magnetTimer          = 0.0;
   int    _starHitsRemaining    = 0;
   int    _barrierHitsRemaining = 0;
+  int    _tripleHitsRemaining  = 0;
+  List<double> _ghostTimers      = [0.0, 0.0];
+  List<double> _pvpShieldTimers  = [0.0, 0.0];
   int    _revolverBurstsLeft    = 0;
   double _revolverBurstTimer    = 0.0;
   double _revolverBurstInterval = 0.22;
@@ -93,6 +102,13 @@ class BossBallGame extends FlameGame {
   double get magnetTimer          => _magnetTimer;
   int    get starHitsRemaining    => _starHitsRemaining;
   int    get barrierHitsRemaining => _barrierHitsRemaining;
+  int    get tripleHitsRemaining  => _tripleHitsRemaining;
+  bool isOrbGhosted(int index) =>
+      index < _ghostTimers.length && _ghostTimers[index] > 0;
+  bool isOrbShielded(int index) =>
+      index < _pvpShieldTimers.length && _pvpShieldTimers[index] > 0;
+  double pvpShieldTimer(int index) =>
+      index < _pvpShieldTimers.length ? _pvpShieldTimers[index] : 0.0;
 
   // ── PVP state ─────────────────────────────────────────────────────────────
   List<int> _pvpOrbHp     = [];
@@ -132,7 +148,8 @@ class BossBallGame extends FlameGame {
     if (_shieldTimer > 0) m *= 2.0;
     if (_starHitsRemaining > 0) m *= 2.5;
     if (_barrierHitsRemaining > 0) m *= 3.0;
-    return m.clamp(1.0, 8.0);
+    if (_tripleHitsRemaining > 0) m *= 3.0;
+    return m.clamp(1.0, 12.0);
   }
 
   BossBallGame({
@@ -142,6 +159,8 @@ class BossBallGame extends FlameGame {
     this.customBossHp,
     this.orbImageBytes = const [],
     this.bossImageBytes,
+    this.pvpOrbColors = const [],
+    this.pvpAllowedItems,
   });
 
   @override
@@ -171,10 +190,12 @@ class BossBallGame extends FlameGame {
     _buildOrbs();
     add(HudComponent(gameRef: this));
 
-    // PVP: set up per-orb HP
+    // PVP: set up per-orb HP and per-orb timer lists
     if (mode.isPvp) {
       pvpOrbMaxHp = customBossHp ?? mode.bossMaxHp;
-      _pvpOrbHp = List.filled(mode.orbCount, pvpOrbMaxHp);
+      _pvpOrbHp        = List.filled(mode.orbCount, pvpOrbMaxHp);
+      _ghostTimers     = List.filled(mode.orbCount, 0.0);
+      _pvpShieldTimers = List.filled(mode.orbCount, 0.0);
     }
 
     playing = true;
@@ -225,12 +246,14 @@ class BossBallGame extends FlameGame {
   void _buildOrbs() {
     final pvpRadius = mode.isPvp ? 32.0 : PlayerOrb.defaultRadius;
     for (int i = 0; i < mode.orbCount; i++) {
+      final customColor = i < pvpOrbColors.length ? pvpOrbColors[i] : null;
       final o = PlayerOrb(
         behavior: orbBehavior,
         gameRef: this,
         arena: arenaConfig,
         orbIndex: i,
         orbRadius: pvpRadius,
+        customColor: customColor,
       );
       _orbs.add(o);
       add(o);
@@ -287,6 +310,7 @@ class BossBallGame extends FlameGame {
     if (!isLaserTick) {
       if (_barrierHitsRemaining > 0) _barrierHitsRemaining--;
       if (_starHitsRemaining > 0) _starHitsRemaining--;
+      if (_tripleHitsRemaining > 0) _tripleHitsRemaining--;
     }
 
     bool isCrit = false;
@@ -347,6 +371,8 @@ class BossBallGame extends FlameGame {
 
   void onPvpOrbHit({required int victimIndex, required int damage}) {
     if (victimIndex >= _pvpOrbHp.length || pvpWinner != null) return;
+    if (isOrbGhosted(victimIndex)) return;
+    if (isOrbShielded(victimIndex)) return;
 
     _pvpOrbHp[victimIndex] =
         (_pvpOrbHp[victimIndex] - damage).clamp(0, pvpOrbMaxHp);
@@ -448,6 +474,36 @@ class BossBallGame extends FlameGame {
           target: targetPos,
           pvpVictimIndex: _revolverVictimIndex,
         ));
+      case _PvpGunType.grenade:
+        add(BulletComponent.grenade(
+          position: shooter.position.clone(),
+          target: targetPos,
+          pvpVictimIndex: _revolverVictimIndex,
+        ));
+      case _PvpGunType.burst:
+        for (int i = 0; i < 3; i++) {
+          final spread = (i - 1) * 0.09;
+          add(BulletComponent.burst(
+            position: shooter.position.clone(),
+            target: targetPos,
+            pvpVictimIndex: _revolverVictimIndex,
+            spreadAngleRad: spread,
+          ));
+        }
+      case _PvpGunType.minigun:
+        final spread = (_rng.nextDouble() - 0.5) * 0.45;
+        add(BulletComponent.minigun(
+          position: shooter.position.clone(),
+          target: targetPos,
+          pvpVictimIndex: _revolverVictimIndex,
+          spreadAngleRad: spread,
+        ));
+      case _PvpGunType.railgun:
+        add(BulletComponent.railgun(
+          position: shooter.position.clone(),
+          target: targetPos,
+          pvpVictimIndex: _revolverVictimIndex,
+        ));
     }
   }
 
@@ -473,6 +529,18 @@ class BossBallGame extends FlameGame {
       case _PvpGunType.rocket:
         _revolverBurstsLeft = 1;
         _revolverBurstInterval = 0.0;
+      case _PvpGunType.grenade:
+        _revolverBurstsLeft = 3;
+        _revolverBurstInterval = 0.35;
+      case _PvpGunType.burst:
+        _revolverBurstsLeft = 3;
+        _revolverBurstInterval = 0.18;
+      case _PvpGunType.minigun:
+        _revolverBurstsLeft = 25;
+        _revolverBurstInterval = 0.05;
+      case _PvpGunType.railgun:
+        _revolverBurstsLeft = 1;
+        _revolverBurstInterval = 0.0;
     }
 
     final gunLabel = switch (_pvpGunType) {
@@ -481,6 +549,10 @@ class BossBallGame extends FlameGame {
       _PvpGunType.sniper     => 'SNIPER!!!',
       _PvpGunType.machineGun => 'MACHINE GUN',
       _PvpGunType.rocket     => 'ROCKET!!!',
+      _PvpGunType.grenade    => 'GRENADE x3',
+      _PvpGunType.burst      => 'BURST RIFLE x3',
+      _PvpGunType.minigun    => 'MINIGUN x25',
+      _PvpGunType.railgun    => 'RAILGUN!!!',
     };
     final gunColor = switch (_pvpGunType) {
       _PvpGunType.pistol     => const Color(0xFFFFCC00),
@@ -488,6 +560,10 @@ class BossBallGame extends FlameGame {
       _PvpGunType.sniper     => const Color(0xFF00EEFF),
       _PvpGunType.machineGun => const Color(0xFFFF3300),
       _PvpGunType.rocket     => const Color(0xFFFF2200),
+      _PvpGunType.grenade    => const Color(0xFF88FF00),
+      _PvpGunType.burst      => const Color(0xFFFFAA00),
+      _PvpGunType.minigun    => const Color(0xFFFF5500),
+      _PvpGunType.railgun    => const Color(0xFF00FFCC),
     };
 
     final shooterPos = collectorIndex < _orbs.length
@@ -568,6 +644,18 @@ class BossBallGame extends FlameGame {
       _magnetTimer -= dt;
       if (_magnetTimer < 0) _magnetTimer = 0;
     }
+    for (int i = 0; i < _ghostTimers.length; i++) {
+      if (_ghostTimers[i] > 0) {
+        _ghostTimers[i] -= dt;
+        if (_ghostTimers[i] < 0) _ghostTimers[i] = 0;
+      }
+    }
+    for (int i = 0; i < _pvpShieldTimers.length; i++) {
+      if (_pvpShieldTimers[i] > 0) {
+        _pvpShieldTimers[i] -= dt;
+        if (_pvpShieldTimers[i] < 0) _pvpShieldTimers[i] = 0;
+      }
+    }
 
     // Revolver burst — spawn a visible bullet each tick
     if (_revolverBurstsLeft > 0) {
@@ -587,10 +675,20 @@ class BossBallGame extends FlameGame {
     if (_activePickups >= _maxPickups) return;
 
     final pos = _randomPickupPosition();
-    final type = PickupTypeInfo.weighted(_rng);
+    final type = _pickRandomAllowedItem();
     add(PickupItemComponent(position: pos, type: type, gameRef: this));
     _activePickups++;
     _pickupSpawnTimer = 8.0 + _rng.nextDouble() * 7.0;
+  }
+
+  PickupType _pickRandomAllowedItem() {
+    final allowed = pvpAllowedItems;
+    if (allowed == null || allowed.isEmpty) return PickupTypeInfo.weighted(_rng);
+    final pool = <PickupType>[];
+    for (final t in allowed) {
+      for (int i = 0; i < t.spawnWeight; i++) pool.add(t);
+    }
+    return pool[_rng.nextInt(pool.length)];
   }
 
   Vector2 _randomPickupPosition({int retries = 8}) {
@@ -646,6 +744,19 @@ class BossBallGame extends FlameGame {
         _magnetTimer = 8.0;
       case PickupType.barrier:
         _barrierHitsRemaining = 4;
+      case PickupType.nuke:
+        onOrbHitBoss(400000);
+        triggerShake(intensity: 80, duration: 0.55);
+      case PickupType.triple:
+        _tripleHitsRemaining = 5;
+      case PickupType.ghost:
+        for (final o in _orbs) o.speedMultiplier = 1.8;
+        _speedTimer = 4.0;
+        _shieldTimer = 4.0;
+      case PickupType.snare:
+        boss?.freezeBoss(5.0);
+      case PickupType.megaHeal:
+        onOrbHitBoss(200000);
       case PickupType.mystery:
         onPickupCollected(PickupTypeInfo.randomNonMystery(_rng));
     }
@@ -665,7 +776,8 @@ class BossBallGame extends FlameGame {
         }
         triggerShake(intensity: 35, duration: 0.3);
       case PickupType.shield:
-        _shieldTimer = 8.0;
+        while (_pvpShieldTimers.length <= collectorIndex) _pvpShieldTimers.add(0.0);
+        _pvpShieldTimers[collectorIndex] = 8.0;
       case PickupType.speed:
         if (collectorIndex < _orbs.length) {
           _orbs[collectorIndex].speedMultiplier = 2.0;
@@ -689,6 +801,20 @@ class BossBallGame extends FlameGame {
         _magnetTimer = 8.0;
       case PickupType.barrier:
         _barrierHitsRemaining = 4;
+      case PickupType.nuke:
+        onPvpOrbHit(victimIndex: opponentIndex, damage: 280000);
+        triggerShake(intensity: 80, duration: 0.55);
+      case PickupType.triple:
+        _tripleHitsRemaining = 5;
+      case PickupType.ghost:
+        while (_ghostTimers.length <= collectorIndex) _ghostTimers.add(0.0);
+        _ghostTimers[collectorIndex] = 3.0;
+      case PickupType.snare:
+        if (opponentIndex < _orbs.length) {
+          _orbs[opponentIndex].freeze(5.0);
+        }
+      case PickupType.megaHeal:
+        onPvpOrbHit(victimIndex: opponentIndex, damage: 150000);
       case PickupType.mystery:
         _onPickupCollectedPvp(
             PickupTypeInfo.randomNonMystery(_rng), collectorIndex);
