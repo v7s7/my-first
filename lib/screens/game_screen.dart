@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
 import '../game/boss_ball_game.dart';
 import '../game/arena_config.dart';
+import '../game/pickup_type.dart';
 import '../orbs/orb_behavior.dart';
 import '../modes/game_mode.dart';
 import 'game_over_screen.dart';
@@ -19,6 +20,12 @@ class GameScreen extends StatelessWidget {
   /// Image bytes for the boss ball face.
   final Uint8List? bossImageBytes;
 
+  /// Custom orb colours for PVP mode.
+  final List<Color> pvpOrbColors;
+
+  /// Which items are allowed to spawn (null = all).
+  final Set<PickupType>? pvpAllowedItems;
+
   const GameScreen({
     super.key,
     required this.orbBehavior,
@@ -27,6 +34,8 @@ class GameScreen extends StatelessWidget {
     this.customBossHp,
     this.orbImageBytes = const [],
     this.bossImageBytes,
+    this.pvpOrbColors = const [],
+    this.pvpAllowedItems,
   });
 
   @override
@@ -38,6 +47,8 @@ class GameScreen extends StatelessWidget {
       customBossHp: customBossHp,
       orbImageBytes: orbImageBytes,
       bossImageBytes: bossImageBytes,
+      pvpOrbColors: pvpOrbColors,
+      pvpAllowedItems: pvpAllowedItems,
     );
     return Scaffold(
       backgroundColor: Colors.black,

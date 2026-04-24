@@ -34,6 +34,9 @@ class PlayerOrb extends PositionComponent {
   // Weapon spin angle — independent of velocity direction; spins continuously
   double _weaponAngle = 0.0;
 
+  /// Custom ball colour — overrides behavior.color when set (used in PVP).
+  final Color? customColor;
+
   bool get isFrozen => _frozenTimer > 0;
 
   void freeze(double duration) {
@@ -52,6 +55,7 @@ class PlayerOrb extends PositionComponent {
     required this.arena,
     this.orbIndex = 0,
     this.orbRadius = defaultRadius,
+    this.customColor,
   }) : super(
           size: Vector2.all(orbRadius * 2),
           anchor: Anchor.center,
@@ -274,7 +278,7 @@ class PlayerOrb extends PositionComponent {
     canvas.scale(squash, stretch);
     canvas.translate(-cx, -cy);
 
-    final color = behavior.color;
+    final color = customColor ?? behavior.color;
 
     // Frozen overlay
     if (isFrozen) {
@@ -336,6 +340,18 @@ class PlayerOrb extends PositionComponent {
     }
 
     canvas.restore();
+
+    // Shield ring (PVP: blocks all incoming damage)
+    if (gameRef.isOrbShielded(orbIndex)) {
+      canvas.drawCircle(
+        Offset(cx, cy),
+        orbRadius + 11,
+        Paint()
+          ..color = const Color(0xCC44AAFF)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3.5,
+      );
+    }
 
     // Ghost invincibility ring (PVP only)
     if (gameRef.isOrbGhosted(orbIndex)) {

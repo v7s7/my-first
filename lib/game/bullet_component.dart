@@ -14,6 +14,7 @@ class BulletComponent extends PositionComponent with HasGameRef<BossBallGame> {
   final double _visualScale;
   final double? _maxRange;
   final bool _bigExplosion;
+  final bool _homing;
 
   static const double _maxLife = 3.0;
 
@@ -33,11 +34,13 @@ class BulletComponent extends PositionComponent with HasGameRef<BossBallGame> {
     double? maxRange,
     bool bigExplosion = false,
     double spreadAngleRad = 0.0,
+    bool homing = false,
   })  : _bulletSpeed = speed,
         _hitRadius = hitRadius,
         _visualScale = visualScale,
         _maxRange = maxRange,
         _bigExplosion = bigExplosion,
+        _homing = homing,
         _velocity = _dirTo(position, target, spreadAngleRad) * speed,
         super(position: position, priority: 9, anchor: Anchor.center);
 
@@ -72,6 +75,7 @@ class BulletComponent extends PositionComponent with HasGameRef<BossBallGame> {
         color: const Color(0xFFFFCC00),
         speed: 1400.0,
         hitRadius: 26.0,
+        homing: true,
       );
 
   /// PVP shotgun pellet — short range, fires in a spread pattern.
@@ -91,6 +95,7 @@ class BulletComponent extends PositionComponent with HasGameRef<BossBallGame> {
         hitRadius: 22.0,
         maxRange: 380.0,
         spreadAngleRad: spreadAngleRad,
+        homing: true,
       );
 
   /// PVP sniper — one-shot, extreme speed and damage.
@@ -108,6 +113,7 @@ class BulletComponent extends PositionComponent with HasGameRef<BossBallGame> {
         speed: 3200.0,
         hitRadius: 18.0,
         visualScale: 0.75,
+        homing: true,
       );
 
   /// PVP machine gun — rapid fire, each bullet deals moderate damage.
@@ -126,6 +132,7 @@ class BulletComponent extends PositionComponent with HasGameRef<BossBallGame> {
         speed: 1300.0,
         hitRadius: 20.0,
         spreadAngleRad: spreadAngleRad,
+        homing: true,
       );
 
   /// PVP rocket — slow, massive damage, huge explosion on impact.
@@ -144,6 +151,7 @@ class BulletComponent extends PositionComponent with HasGameRef<BossBallGame> {
         hitRadius: 40.0,
         visualScale: 2.2,
         bigExplosion: true,
+        homing: true,
       );
 
   /// PVP grenade — slow arcing shot, massive explosion, 3 rounds.
@@ -162,6 +170,7 @@ class BulletComponent extends PositionComponent with HasGameRef<BossBallGame> {
         hitRadius: 36.0,
         visualScale: 1.8,
         bigExplosion: true,
+        homing: true,
       );
 
   /// PVP burst — 3-round tight spread, fires in sets of 3.
@@ -180,6 +189,7 @@ class BulletComponent extends PositionComponent with HasGameRef<BossBallGame> {
         speed: 1600.0,
         hitRadius: 24.0,
         spreadAngleRad: spreadAngleRad,
+        homing: true,
       );
 
   /// PVP minigun — rapid-fire light rounds with spread.
@@ -199,6 +209,7 @@ class BulletComponent extends PositionComponent with HasGameRef<BossBallGame> {
         hitRadius: 18.0,
         visualScale: 0.65,
         spreadAngleRad: spreadAngleRad,
+        homing: true,
       );
 
   /// PVP railgun — single instant penetrating shot, very high damage.
@@ -216,6 +227,7 @@ class BulletComponent extends PositionComponent with HasGameRef<BossBallGame> {
         speed: 4500.0,
         hitRadius: 16.0,
         visualScale: 0.55,
+        homing: true,
       );
 
   // ── Internals ─────────────────────────────────────────────────────────────
@@ -242,6 +254,21 @@ class BulletComponent extends PositionComponent with HasGameRef<BossBallGame> {
     if (_lifetime <= 0) {
       removeFromParent();
       return;
+    }
+
+    // Gentle homing: steer toward live target position each frame
+    if (_homing) {
+      final tgt = _currentTargetPos;
+      if (tgt != null) {
+        final toTarget = tgt - position;
+        if (toTarget.length > 5.0) {
+          final desired = toTarget.normalized() * _bulletSpeed;
+          _velocity += (desired - _velocity) * (dt * 5.0);
+          if (_velocity.length > 0.01) {
+            _velocity = _velocity.normalized() * _bulletSpeed;
+          }
+        }
+      }
     }
 
     final step = _velocity * dt;

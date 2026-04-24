@@ -34,6 +34,12 @@ class BossBallGame extends FlameGame {
   final List<Uint8List?> orbImageBytes;
   final Uint8List? bossImageBytes;
 
+  /// Custom colours for each PVP orb (index-matched). Empty = use behavior colour.
+  final List<Color> pvpOrbColors;
+
+  /// Which pickup types are allowed to spawn. Null = all allowed.
+  final Set<PickupType>? pvpAllowedItems;
+
   late ArenaConfig arenaConfig;
 
   late int bossMaxHp;
@@ -79,7 +85,8 @@ class BossBallGame extends FlameGame {
   int    _starHitsRemaining    = 0;
   int    _barrierHitsRemaining = 0;
   int    _tripleHitsRemaining  = 0;
-  List<double> _ghostTimers    = [0.0, 0.0];
+  List<double> _ghostTimers      = [0.0, 0.0];
+  List<double> _pvpShieldTimers  = [0.0, 0.0];
   int    _revolverBurstsLeft    = 0;
   double _revolverBurstTimer    = 0.0;
   double _revolverBurstInterval = 0.22;
@@ -98,6 +105,10 @@ class BossBallGame extends FlameGame {
   int    get tripleHitsRemaining  => _tripleHitsRemaining;
   bool isOrbGhosted(int index) =>
       index < _ghostTimers.length && _ghostTimers[index] > 0;
+  bool isOrbShielded(int index) =>
+      index < _pvpShieldTimers.length && _pvpShieldTimers[index] > 0;
+  double pvpShieldTimer(int index) =>
+      index < _pvpShieldTimers.length ? _pvpShieldTimers[index] : 0.0;
 
   // ── PVP state ─────────────────────────────────────────────────────────────
   List<int> _pvpOrbHp     = [];
@@ -148,6 +159,8 @@ class BossBallGame extends FlameGame {
     this.customBossHp,
     this.orbImageBytes = const [],
     this.bossImageBytes,
+    this.pvpOrbColors = const [],
+    this.pvpAllowedItems,
   });
 
   @override
@@ -177,11 +190,12 @@ class BossBallGame extends FlameGame {
     _buildOrbs();
     add(HudComponent(gameRef: this));
 
-    // PVP: set up per-orb HP and ghost timers
+    // PVP: set up per-orb HP and per-orb timer lists
     if (mode.isPvp) {
       pvpOrbMaxHp = customBossHp ?? mode.bossMaxHp;
-      _pvpOrbHp = List.filled(mode.orbCount, pvpOrbMaxHp);
-      _ghostTimers = List.filled(mode.orbCount, 0.0);
+      _pvpOrbHp        = List.filled(mode.orbCount, pvpOrbMaxHp);
+      _ghostTimers     = List.filled(mode.orbCount, 0.0);
+      _pvpShieldTimers = List.filled(mode.orbCount, 0.0);
     }
 
     playing = true;
@@ -232,12 +246,14 @@ class BossBallGame extends FlameGame {
   void _buildOrbs() {
     final pvpRadius = mode.isPvp ? 32.0 : PlayerOrb.defaultRadius;
     for (int i = 0; i < mode.orbCount; i++) {
+      final customColor = i < pvpOrbColors.length ? pvpOrbColors[i] : null;
       final o = PlayerOrb(
         behavior: orbBehavior,
         gameRef: this,
         arena: arenaConfig,
         orbIndex: i,
         orbRadius: pvpRadius,
+        customColor: customColor,
       );
       _orbs.add(o);
       add(o);
@@ -356,6 +372,7 @@ class BossBallGame extends FlameGame {
   void onPvpOrbHit({required int victimIndex, required int damage}) {
     if (victimIndex >= _pvpOrbHp.length || pvpWinner != null) return;
     if (isOrbGhosted(victimIndex)) return;
+    if (isOrbShielded(victimIndex)) return;
 
     _pvpOrbHp[victimIndex] =
         (_pvpOrbHp[victimIndex] - damage).clamp(0, pvpOrbMaxHp);
@@ -633,6 +650,12 @@ class BossBallGame extends FlameGame {
         if (_ghostTimers[i] < 0) _ghostTimers[i] = 0;
       }
     }
+    for (int i = 0; i < _pvpShieldTimers.length; i++) {
+      if (_pvpShieldTimers[i] > 0) {
+        _pvpShieldTimers[i] -= dt;
+        if (_pvpShieldTimers[i] < 0) _pvpShieldTimers[i] = 0;
+      }
+    }
 
     // Revolver burst — spawn a visible bullet each tick
     if (_revolverBurstsLeft > 0) {
@@ -652,10 +675,20 @@ class BossBallGame extends FlameGame {
     if (_activePickups >= _maxPickups) return;
 
     final pos = _randomPickupPosition();
-    final type = PickupTypeInfo.weighted(_rng);
+    final type = _pickRandomAllowedItem();
     add(PickupItemComponent(position: pos, type: type, gameRef: this));
     _activePickups++;
     _pickupSpawnTimer = 8.0 + _rng.nextDouble() * 7.0;
+  }
+
+  PickupType _pickRandomAllowedItem() {
+    final allowed = pvpAllowedItems;
+    if (allowed == null || allowed.isEmpty) return PickupTypeInfo.weighted(_rng);
+    final pool = <PickupType>[];
+    for (final t in allowed) {
+      for (int i = 0; i < t.spawnWeight; i++) pool.add(t);
+    }
+    return pool[_rng.nextInt(pool.length)];
   }
 
   Vector2 _randomPickupPosition({int retries = 8}) {
@@ -743,7 +776,8 @@ class BossBallGame extends FlameGame {
         }
         triggerShake(intensity: 35, duration: 0.3);
       case PickupType.shield:
-        _shieldTimer = 8.0;
+        while (_pvpShieldTimers.length <= collectorIndex) _pvpShieldTimers.add(0.0);
+        _pvpShieldTimers[collectorIndex] = 8.0;
       case PickupType.speed:
         if (collectorIndex < _orbs.length) {
           _orbs[collectorIndex].speedMultiplier = 2.0;
