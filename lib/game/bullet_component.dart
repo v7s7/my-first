@@ -18,7 +18,7 @@ class BulletComponent extends PositionComponent with HasGameRef<BossBallGame> {
 
   static const double _maxLife = 3.0;
 
-  final Vector2 _velocity;
+  Vector2 _velocity;
   double _lifetime = _maxLife;
   double _distTraveled = 0.0;
 
