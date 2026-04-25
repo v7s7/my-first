@@ -394,6 +394,12 @@ class BossBallGame extends FlameGame with TapCallbacks {
 
   // ── PVP damage callback ────────────────────────────────────────────────────
 
+  Color? _orbEffectiveColor(int index) {
+    if (index >= _orbs.length) return null;
+    final o = _orbs[index];
+    return o.customColor ?? o.behavior.color;
+  }
+
   void onPvpOrbHit({required int victimIndex, required int damage}) {
     if (victimIndex >= _pvpOrbHp.length || pvpWinner != null) return;
     if (isOrbGhosted(victimIndex)) return;
@@ -416,6 +422,7 @@ class BossBallGame extends FlameGame with TapCallbacks {
       position: orbPos + Vector2((_rng.nextDouble() - 0.5) * 40, -30),
       damage: damage,
       isSmall: false,
+      labelColor: _orbEffectiveColor(victimIndex),
       driftX: (_rng.nextDouble() - 0.5) * 60,
     ));
 
@@ -839,7 +846,20 @@ class BossBallGame extends FlameGame with TapCallbacks {
           _orbs[opponentIndex].freeze(5.0);
         }
       case PickupType.megaHeal:
-        onPvpOrbHit(victimIndex: opponentIndex, damage: 150000);
+        const healAmt = 150000;
+        _pvpOrbHp[collectorIndex] =
+            (_pvpOrbHp[collectorIndex] + healAmt).clamp(0, pvpOrbMaxHp);
+        final healPos = collectorIndex < _orbs.length
+            ? _orbs[collectorIndex].position.clone()
+            : arenaConfig.center.clone();
+        add(DamageNumber(
+          position: healPos + Vector2((_rng.nextDouble() - 0.5) * 30, -30),
+          damage: healAmt,
+          label: '+${DamageNumber.fmt(healAmt)}',
+          labelColor: const Color(0xFF44FF88),
+          isSmall: false,
+          driftX: (_rng.nextDouble() - 0.5) * 40,
+        ));
       case PickupType.mystery:
         _onPickupCollectedPvp(
             PickupTypeInfo.randomNonMystery(_rng), collectorIndex);

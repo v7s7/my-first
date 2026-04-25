@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
@@ -9,8 +8,8 @@ class DamageNumber extends PositionComponent {
   final String? label;       // optional override text (for pickup names)
   final Color? labelColor;   // optional override color
 
-  static const double _lifeNormal = 1.4;
-  static const double _lifeSmall = 0.75;
+  static const double _lifeNormal = 1.2;
+  static const double _lifeSmall = 0.70;
 
   late final double _totalLife;
   double _life = 0;
@@ -46,18 +45,15 @@ class DamageNumber extends PositionComponent {
   void render(Canvas canvas) {
     final progress = 1.0 - (_life / _totalLife);
 
-    // Alpha: solid until 70%, then smooth fade to zero
-    final alpha = (progress < 0.70
+    // Alpha: solid until 65%, then fade
+    final alpha = (progress < 0.65
             ? 1.0
-            : 1.0 - (progress - 0.70) / 0.30)
+            : 1.0 - (progress - 0.65) / 0.35)
         .clamp(0.0, 1.0);
 
-    // Pop scale: rises to peak at ~15% then settles; small numbers just scale flat
-    final scale = isSmall ? 0.72 : (1.0 + sin(progress * pi * 0.85) * 0.55);
-
     final color = labelColor ?? _colorFor(damage);
-    final fontSize = (isSmall ? 13.0 : 26.0) * scale;
-    final text = label ?? '-${_fmt(damage)}';
+    final fontSize = isSmall ? 13.0 : 26.0;
+    final text = label ?? '-${fmt(damage)}';
 
     final tp = TextPainter(
       text: TextSpan(
@@ -69,18 +65,13 @@ class DamageNumber extends PositionComponent {
           height: 1.0,
           shadows: [
             Shadow(
-              color: Colors.black.withOpacity(alpha * 0.9),
-              offset: const Offset(2, 2),
-              blurRadius: 4,
+              color: Colors.black.withOpacity(alpha * 0.85),
+              offset: const Offset(1, 1),
+              blurRadius: 3,
             ),
             Shadow(
-              color: color.withOpacity(alpha * 0.6),
-              blurRadius: 14,
-            ),
-            Shadow(
-              color: color.withOpacity(alpha * 0.3),
-              blurRadius: 24,
-              offset: const Offset(0, 8),
+              color: color.withOpacity(alpha * 0.55),
+              blurRadius: 10,
             ),
           ],
         ),
@@ -88,12 +79,7 @@ class DamageNumber extends PositionComponent {
       textDirection: TextDirection.ltr,
     )..layout();
 
-    // Scale effect: larger popup
-    canvas.save();
-    canvas.translate(-tp.width / 2, -tp.height / 2);
-    canvas.scale(1.0 + (1.0 - alpha) * 0.15, 1.0 + (1.0 - alpha) * 0.15);
-    tp.paint(canvas, Offset.zero);
-    canvas.restore();
+    tp.paint(canvas, Offset(-tp.width / 2, -tp.height / 2));
   }
 
   static Color _colorFor(int d) {
@@ -105,7 +91,7 @@ class DamageNumber extends PositionComponent {
     return const Color(0xFFFFFFFF);
   }
 
-  static String _fmt(int n) {
+  static String fmt(int n) {
     if (n >= 1000000) return '${(n / 1000000).toStringAsFixed(1)}M';
     if (n >= 1000) return '${(n / 1000).toStringAsFixed(0)}K';
     return '$n';
