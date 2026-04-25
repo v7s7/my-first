@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -45,6 +46,29 @@ class _StartScreenState extends State<StartScreen> {
   void initState() {
     super.initState();
     _loadPrefs();
+    _maybeShowTutorial();
+  }
+
+  Future<void> _maybeShowTutorial() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool('tutorial_done') == true) return;
+    if (!mounted) return;
+    // Wait one frame so the screen is fully rendered before showing the dialog
+    await Future.delayed(const Duration(milliseconds: 400));
+    if (!mounted) return;
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black87,
+      builder: (_) => const _TutorialDialog(),
+    );
+    await prefs.setBool('tutorial_done', true);
+  }
+
+  void _randomOrb() {
+    final pick = OrbRegistry.all[Random().nextInt(OrbRegistry.all.length)];
+    setState(() => _selectedOrb = pick);
+    _savePrefs();
   }
 
   Future<void> _loadPrefs() async {
@@ -507,6 +531,14 @@ class _StartScreenState extends State<StartScreen> {
             value: _selectedOrb.name,
             valueColor: _selectedOrb.color,
             onTap: _openOrbSheet,
+            trailing: GestureDetector(
+              onTap: _randomOrb,
+              child: const Padding(
+                padding: EdgeInsets.only(left: 10, right: 4),
+                child: Icon(Icons.shuffle_rounded,
+                    color: Color(0x55FFFFFF), size: 18),
+              ),
+            ),
           ),
           _Divider(),
           _SettingRow(
@@ -629,6 +661,9 @@ class _SettingRow extends StatelessWidget {
   final bool isFirst;
   final bool isLast;
 
+  /// Optional widget placed between the value text and the chevron.
+  final Widget? trailing;
+
   const _SettingRow({
     required this.icon,
     required this.label,
@@ -637,6 +672,7 @@ class _SettingRow extends StatelessWidget {
     required this.onTap,
     this.isFirst = false,
     this.isLast = false,
+    this.trailing,
   });
 
   @override
@@ -670,6 +706,7 @@ class _SettingRow extends StatelessWidget {
                 letterSpacing: 1,
               ),
             ),
+            if (trailing != null) trailing!,
             const SizedBox(width: 8),
             const Icon(Icons.chevron_right, color: Color(0x44FFFFFF), size: 18),
           ],
@@ -1157,4 +1194,167 @@ class _ArenaPreviewPainter extends CustomPainter {
   @override
   bool shouldRepaint(_ArenaPreviewPainter old) =>
       old.preset != preset || old.color != color;
+}
+
+// ── First-run tutorial dialog ──────────────────────────────────────────────
+
+class _TutorialDialog extends StatefulWidget {
+  const _TutorialDialog();
+
+  @override
+  State<_TutorialDialog> createState() => _TutorialDialogState();
+}
+
+class _TutorialDialogState extends State<_TutorialDialog> {
+  final _ctrl = PageController();
+  int _page = 0;
+
+  static const _pages = [
+    _TutPage(
+      icon: Icons.sports_soccer,
+      color: Color(0xFF00FFEE),
+      title: 'BOUNCE TO ATTACK',
+      body:
+          'Your orb bounces around the arena automatically. Every collision with the boss deals damage — bigger combos hit harder!',
+    ),
+    _TutPage(
+      icon: Icons.auto_awesome,
+      color: Color(0xFFFFDD00),
+      title: '16 UNIQUE ORBS',
+      body:
+          'Each orb has a special power. Ice freezes the boss for 2× damage, Combo multiplies on wall bounces, Laser fires beams...',
+    ),
+    _TutPage(
+      icon: Icons.face,
+      color: Color(0xFFFF44CC),
+      title: 'MAKE IT PERSONAL',
+      body:
+          'Add face photos from your gallery! Messi vs CR7, you vs your boss — put anyone in the arena and share your victory.',
+    ),
+  ];
+
+  void _next() {
+    if (_page < _pages.length - 1) {
+      _ctrl.nextPage(
+        duration: const Duration(milliseconds: 280),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      Navigator.of(context).pop();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final pageColor = _pages[_page].color;
+    return Dialog(
+      backgroundColor: const Color(0xFF0A0A18),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              height: 240,
+              child: PageView.builder(
+                controller: _ctrl,
+                onPageChanged: (i) => setState(() => _page = i),
+                itemCount: _pages.length,
+                itemBuilder: (_, i) => _pages[i].build(),
+              ),
+            ),
+            const SizedBox(height: 20),
+            // Dot indicators
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                _pages.length,
+                (i) => AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  width: i == _page ? 22 : 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(3),
+                    color: i == _page
+                        ? pageColor
+                        : const Color(0x33FFFFFF),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 22),
+            GestureDetector(
+              onTap: _next,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: pageColor,
+                ),
+                child: Text(
+                  _page < _pages.length - 1 ? 'NEXT  →' : "LET'S PLAY!",
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Color(0xFF06060F),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 3,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TutPage {
+  final IconData icon;
+  final Color color;
+  final String title;
+  final String body;
+
+  const _TutPage({
+    required this.icon,
+    required this.color,
+    required this.title,
+    required this.body,
+  });
+
+  Widget build() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(icon, color: color, size: 68),
+        const SizedBox(height: 20),
+        Text(
+          title,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: color,
+            fontSize: 17,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 2,
+          ),
+        ),
+        const SizedBox(height: 14),
+        Text(
+          body,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Color(0xBBFFFFFF),
+            fontSize: 13,
+            height: 1.55,
+          ),
+        ),
+      ],
+    );
+  }
 }

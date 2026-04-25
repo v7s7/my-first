@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../game/boss_ball_game.dart';
 import '../modes/game_mode.dart';
@@ -24,6 +25,44 @@ class _GameOverScreenState extends State<GameOverScreen> {
   void initState() {
     super.initState();
     _checkAndSaveBest();
+  }
+
+  Future<void> _share() async {
+    final mode = game.mode;
+    final dmg = game.totalDamage;
+    final maxHp = game.bossMaxHp;
+    final elapsed = max(1.0, game.totalTime);
+    final isWin = mode.isPvp ? game.pvpWinner != null : game.bossDestroyed;
+
+    final StringBuffer buf = StringBuffer();
+    buf.writeln('🎮 BOSS BALL BLITZ — ${mode.name} MODE');
+    buf.writeln('Orb: ${game.orbBehavior.name}');
+    buf.writeln('');
+
+    if (mode.isPvp) {
+      final winner = game.pvpWinner;
+      buf.writeln(winner != null ? 'BALL ${winner + 1} WINS!' : 'DRAW!');
+      buf.writeln('Total damage: ${_fmt(dmg)}');
+    } else if (isWin) {
+      buf.writeln('✅ BOSS DESTROYED!');
+      switch (mode.scoreMode) {
+        case ScoreMode.timeRemaining:
+          buf.writeln('Time left: ${game.timeLeft.toStringAsFixed(1)}s');
+        case ScoreMode.damagePerSecond:
+          buf.writeln('DPS: ${_fmt((dmg / elapsed).round())}');
+        case ScoreMode.damageDealt:
+          final pct = (dmg / maxHp * 100).clamp(0.0, 100.0);
+          buf.writeln('Damage: ${_fmt(dmg)} (${pct.toStringAsFixed(1)}%)');
+      }
+    } else {
+      final pct = (dmg / maxHp * 100).clamp(0.0, 100.0);
+      buf.writeln('❌ Boss survived with ${pct.toStringAsFixed(1)}% HP dealt');
+    }
+
+    buf.writeln('');
+    buf.writeln('#BossBallBlitz');
+
+    await Share.share(buf.toString(), subject: 'Boss Ball Blitz');
   }
 
   Future<void> _checkAndSaveBest() async {
@@ -146,7 +185,38 @@ class _GameOverScreenState extends State<GameOverScreen> {
               ),
             ],
 
-            const SizedBox(height: 52),
+            const SizedBox(height: 28),
+
+            // Share button
+            GestureDetector(
+              onTap: _share,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 11),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0x44FFFFFF), width: 1),
+                  color: const Color(0x0CFFFFFF),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.share_rounded, color: Color(0x99FFFFFF), size: 16),
+                    SizedBox(width: 8),
+                    Text(
+                      'SHARE RESULT',
+                      style: TextStyle(
+                        color: Color(0x99FFFFFF),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 28),
 
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
