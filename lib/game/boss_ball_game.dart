@@ -2,9 +2,12 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flame/components.dart';
+import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flame/particles.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'sound_manager.dart';
 
 import '../orbs/orb_behavior.dart';
 import '../modes/game_mode.dart';
@@ -24,7 +27,7 @@ import 'vortex_pickup_zone.dart';
 
 enum _PvpGunType { pistol, shotgun, sniper, machineGun, rocket, grenade, burst, minigun, railgun }
 
-class BossBallGame extends FlameGame {
+class BossBallGame extends FlameGame with TapCallbacks {
   final OrbBehavior orbBehavior;
   final GameMode mode;
   final ArenaPreset arenaPreset;
@@ -134,6 +137,11 @@ class BossBallGame extends FlameGame {
     return 1.00;
   }
 
+  // ── Endless wave system ───────────────────────────────────────────────────
+  int    _waveNumber = 1;
+  double _waveTimer  = 30.0;
+  int    get waveNumber => _waveNumber;
+
   // ── Screen flash ──────────────────────────────────────────────────────────
   double _hitFlashTimer   = 0.0;
   double _phaseFlashTimer = 0.0;
@@ -198,6 +206,12 @@ class BossBallGame extends FlameGame {
       _pvpShieldTimers = List.filled(mode.orbCount, 0.0);
     }
 
+    SoundManager.instance.init(); // fire-and-forget; silent if files missing
+    Future.delayed(Duration.zero, () => overlays.add('Countdown'));
+  }
+
+  void startPlaying() {
+    overlays.remove('Countdown');
     playing = true;
   }
 
@@ -325,6 +339,15 @@ class BossBallGame extends FlameGame {
     totalDamage += finalDamage;
 
     if (!isLaserTick) {
+      if (isCrit) {
+        HapticFeedback.heavyImpact();
+      } else {
+        HapticFeedback.mediumImpact();
+      }
+      SoundManager.instance.playHit(isCrit: isCrit);
+    }
+
+    if (!isLaserTick) {
       final shakePower = isCrit
           ? 50.0
           : ((finalDamage / bossMaxHp) * 300).clamp(4.0, 28.0);
@@ -363,6 +386,8 @@ class BossBallGame extends FlameGame {
     if (mode.winOnBossKill && bossHp <= 0 && !bossDestroyed) {
       bossDestroyed = true;
       playing = false;
+      HapticFeedback.heavyImpact();
+      SoundManager.instance.playWin();
       Future.delayed(Duration.zero, () => overlays.add('GameOver'));
     }
   }
@@ -902,6 +927,38 @@ class BossBallGame extends FlameGame {
     }
   }
 
+  // ── Endless wave escalation ────────────────────────────────────────────────
+
+  void _tickWave(double dt) {
+    if (mode.id != 'endless') return;
+    _waveTimer -= dt;
+    if (_waveTimer > 0) return;
+    _waveTimer = 30.0;
+    _waveNumber++;
+    boss?.waveSpeedBoost = 1.0 + (_waveNumber - 1) * 0.12;
+    triggerShake(intensity: 40, duration: 0.45);
+    _phaseFlashTimer = 0.5;
+    _phaseFlashColor = const Color(0xFFFF44CC);
+    HapticFeedback.heavyImpact();
+    SoundManager.instance.playWave();
+    if (boss != null) {
+      add(DamageNumber(
+        position: arenaConfig.center.clone() + Vector2(0, -80),
+        damage: 0,
+        label: '★  WAVE $_waveNumber',
+        labelColor: const Color(0xFFFF44CC),
+        isSmall: false,
+        driftX: 0,
+      ));
+      add(ShockwaveRingComponent(
+        position: boss!.position.clone(),
+        gameRef: this,
+        bonusDamage: 0,
+        ringColor: const Color(0xFFFF44CC),
+      ));
+    }
+  }
+
   // ── Boss attack system ────────────────────────────────────────────────────
 
   /// Called by BossComponent when its attack timer fires.
@@ -940,6 +997,8 @@ class BossBallGame extends FlameGame {
   void onBossPhaseChange(int phase) {
     final shakeIntensity = phase == 3 ? 70.0 : 45.0;
     triggerShake(intensity: shakeIntensity, duration: 0.5);
+    HapticFeedback.heavyImpact();
+    SoundManager.instance.playPhaseChange();
     _phaseFlashTimer = 0.6;
     _phaseFlashColor =
         phase == 3 ? const Color(0xFFFF2200) : const Color(0xFFFF4488);
@@ -1033,6 +1092,7 @@ class BossBallGame extends FlameGame {
     if (mode.isPvp) {
       _resolvePvpOrbCollisions(dt);
     } else {
+      _tickWave(dt);
       // Survival mode: boss regenerates HP each tick
       if (mode.bossRegenPerSecond > 0 && boss != null &&
           !bossDestroyed && bossHp > 0) {
@@ -1045,12 +1105,39 @@ class BossBallGame extends FlameGame {
         if (timeLeft <= 0) {
           timeLeft = 0;
           playing = false;
+          HapticFeedback.heavyImpact();
+          SoundManager.instance.playLose();
           Future.delayed(Duration.zero, () => overlays.add('GameOver'));
         }
       }
     }
 
     super.update(dt);
+  }
+
+  // ── Tap-to-nudge ──────────────────────────────────────────────────────────
+
+  @override
+  void onTapDown(TapDownEvent event) {
+    if (!playing || mode.isPvp) return;
+    final tapPos = event.localPosition;
+    PlayerOrb? nearest;
+    double bestDist = double.infinity;
+    for (final o in _orbs) {
+      final d = o.position.distanceTo(tapPos);
+      if (d < bestDist) {
+        bestDist = d;
+        nearest = o;
+      }
+    }
+    if (nearest == null) return;
+    final dir = tapPos - nearest.position;
+    if (dir.length < 0.01) return;
+    nearest.velocity += dir.normalized() * 130.0;
+    if (nearest.velocity.length > nearest.speed * 1.6) {
+      nearest.velocity = nearest.velocity.normalized() * nearest.speed * 1.6;
+    }
+    HapticFeedback.selectionClick();
   }
 
   @override

@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -7,9 +8,9 @@ import '../orbs/orb_registry.dart';
 import '../modes/game_mode.dart';
 import '../modes/mode_registry.dart';
 import '../game/arena_config.dart';
+import '../game/pickup_type.dart';
 import '../widgets/orb_image_picker.dart';
 import 'game_screen.dart';
-import 'pvp_settings_screen.dart';
 
 // ── Persistence keys ──────────────────────────────────────────────────────────
 const _kModeId    = 'mode_id';
@@ -34,17 +35,51 @@ class _StartScreenState extends State<StartScreen> {
   Uint8List? _ball2Image;
   Uint8List? _bossImage;
 
+  // ── PVP-specific state ─────────────────────────────────────────────────────
+  static const List<Color> _pvpPalette = [
+    Color(0xFF00FFEE), Color(0xFFFF4488), Color(0xFFFF8800),
+    Color(0xFF44FF88), Color(0xFF8844FF), Color(0xFFFFCC00),
+    Color(0xFFFF3333), Color(0xFF4488FF), Color(0xFFFF44FF),
+    Color(0xFFFFFFFF),
+  ];
+  Color _pvpColor1 = const Color(0xFF00FFEE);
+  Color _pvpColor2 = const Color(0xFFFF4488);
+  Set<PickupType> _pvpAllowedItems = Set.from(PickupType.values);
+
   static const List<int> _hpPresets = [
     100000, 500000, 1000000, 5000000, 10000000,
   ];
 
   bool get _isPvp      => _selectedMode.isPvp;
-  bool get _isDualBall => _selectedMode.orbCount >= 2;
+  bool get _isDualBall => _selectedMode.orbCount >= 2 && !_isPvp;
 
   @override
   void initState() {
     super.initState();
     _loadPrefs();
+    _maybeShowTutorial();
+  }
+
+  Future<void> _maybeShowTutorial() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool('tutorial_done') == true) return;
+    if (!mounted) return;
+    // Wait one frame so the screen is fully rendered before showing the dialog
+    await Future.delayed(const Duration(milliseconds: 400));
+    if (!mounted) return;
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black87,
+      builder: (_) => const _TutorialDialog(),
+    );
+    await prefs.setBool('tutorial_done', true);
+  }
+
+  void _randomOrb() {
+    final pick = OrbRegistry.all[Random().nextInt(OrbRegistry.all.length)];
+    setState(() => _selectedOrb = pick);
+    _savePrefs();
   }
 
   Future<void> _loadPrefs() async {
@@ -71,21 +106,10 @@ class _StartScreenState extends State<StartScreen> {
   }
 
   void _startGame() {
-    // PVP mode → go to dedicated settings screen first
-    if (_isPvp) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => PvpSettingsScreen(
-            orbBehavior: _selectedOrb,
-            mode: _selectedMode,
-          ),
-        ),
-      );
-      return;
-    }
+    final orbImages = (_isPvp || _isDualBall)
+        ? [_ball1Image, _ball2Image]
+        : [_ball1Image];
 
-    final orbImages = _isDualBall ? [_ball1Image, _ball2Image] : [_ball1Image];
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -95,7 +119,9 @@ class _StartScreenState extends State<StartScreen> {
           arenaPreset: _selectedArena,
           customBossHp: _selectedHp,
           orbImageBytes: orbImages,
-          bossImageBytes: _bossImage,
+          bossImageBytes: _isPvp ? null : _bossImage,
+          pvpOrbColors:   _isPvp ? [_pvpColor1, _pvpColor2] : [],
+          pvpAllowedItems: _isPvp ? _pvpAllowedItems : null,
         ),
       ),
     );
@@ -194,14 +220,29 @@ class _StartScreenState extends State<StartScreen> {
                     _GlowCircle(color: color, size: 28),
                     const SizedBox(width: 14),
                     Expanded(
-                      child: Text(
-                        b.name,
-                        style: TextStyle(
-                          color: selected ? color : const Color(0xCCFFFFFF),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            b.name,
+                            style: TextStyle(
+                              color: selected ? color : const Color(0xCCFFFFFF),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                          Text(
+                            b.description,
+                            style: const TextStyle(
+                              color: Color(0x55FFFFFF),
+                              fontSize: 10,
+                              height: 1.3,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
                     ),
                     if (selected)
@@ -295,6 +336,10 @@ class _StartScreenState extends State<StartScreen> {
                         _buildFighterSelect(),
                         const SizedBox(height: 28),
                         _buildSettingsList(),
+                        if (_isPvp) ...[
+                          const SizedBox(height: 16),
+                          _buildPvpItemsPanel(),
+                        ],
                       ],
                     ),
                   ),
@@ -369,29 +414,56 @@ class _StartScreenState extends State<StartScreen> {
           const SizedBox(height: 18),
           _isPvp
               ? Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _FighterSlot(
-                      image: _ball1Image,
-                      label: 'BALL 1',
-                      color: const Color(0xFF00FFEE),
-                      onTap: () => _pickImage(0),
-                      onRemove: _ball1Image != null
-                          ? () => setState(() => _ball1Image = null)
-                          : null,
+                    // ── Ball 1 ──────────────────────────────────────────────
+                    Expanded(
+                      child: Column(
+                        children: [
+                          _FighterSlot(
+                            image: _ball1Image,
+                            label: 'BALL 1',
+                            color: _pvpColor1,
+                            onTap: () => _pickImage(0),
+                            onRemove: _ball1Image != null
+                                ? () => setState(() => _ball1Image = null)
+                                : null,
+                          ),
+                          const SizedBox(height: 10),
+                          _ColorPicker(
+                            selected: _pvpColor1,
+                            palette: _pvpPalette,
+                            onSelect: (c) => setState(() => _pvpColor1 = c),
+                          ),
+                        ],
+                      ),
                     ),
+                    // ── VS ───────────────────────────────────────────────────
                     const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 28),
+                      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 24),
                       child: _VsText(),
                     ),
-                    _FighterSlot(
-                      image: _ball2Image,
-                      label: 'BALL 2',
-                      color: const Color(0xFFFF8800),
-                      onTap: () => _pickImage(1),
-                      onRemove: _ball2Image != null
-                          ? () => setState(() => _ball2Image = null)
-                          : null,
+                    // ── Ball 2 ──────────────────────────────────────────────
+                    Expanded(
+                      child: Column(
+                        children: [
+                          _FighterSlot(
+                            image: _ball2Image,
+                            label: 'BALL 2',
+                            color: _pvpColor2,
+                            onTap: () => _pickImage(1),
+                            onRemove: _ball2Image != null
+                                ? () => setState(() => _ball2Image = null)
+                                : null,
+                          ),
+                          const SizedBox(height: 10),
+                          _ColorPicker(
+                            selected: _pvpColor2,
+                            palette: _pvpPalette,
+                            onSelect: (c) => setState(() => _pvpColor2 = c),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 )
@@ -492,6 +564,14 @@ class _StartScreenState extends State<StartScreen> {
             value: _selectedOrb.name,
             valueColor: _selectedOrb.color,
             onTap: _openOrbSheet,
+            trailing: GestureDetector(
+              onTap: _randomOrb,
+              child: const Padding(
+                padding: EdgeInsets.only(left: 10, right: 4),
+                child: Icon(Icons.shuffle_rounded,
+                    color: Color(0x55FFFFFF), size: 18),
+              ),
+            ),
           ),
           _Divider(),
           _SettingRow(
@@ -519,34 +599,145 @@ class _StartScreenState extends State<StartScreen> {
 
   Widget _buildPlayButton() {
     final c = _selectedMode.accentColor;
+    final bool blocked = _isPvp && _pvpAllowedItems.isEmpty;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       child: GestureDetector(
-        onTap: _startGame,
-        child: Container(
+        onTap: blocked ? null : _startGame,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
           padding: const EdgeInsets.symmetric(vertical: 20),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
-            color: c,
-            boxShadow: [
-              BoxShadow(
-                color: Color.fromARGB(80, c.red, c.green, c.blue),
-                blurRadius: 28,
-                spreadRadius: 2,
-              ),
-            ],
+            color: blocked ? const Color(0xFF2A2A3A) : c,
+            boxShadow: blocked
+                ? null
+                : [
+                    BoxShadow(
+                      color: Color.fromARGB(80, c.red, c.green, c.blue),
+                      blurRadius: 28,
+                      spreadRadius: 2,
+                    ),
+                  ],
           ),
-          child: const Text(
-            '▶  PLAY GAME',
+          child: Text(
+            blocked ? 'ENABLE AT LEAST 1 ITEM' : '▶  PLAY GAME',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Color(0xFF06060F),
+              color: blocked
+                  ? const Color(0x44FFFFFF)
+                  : const Color(0xFF06060F),
               fontSize: 20,
               fontWeight: FontWeight.w900,
-              letterSpacing: 6,
+              letterSpacing: blocked ? 3 : 6,
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  // ── PVP items panel ────────────────────────────────────────────────────────
+
+  Widget _buildPvpItemsPanel() {
+    final allOn = _pvpAllowedItems.length == PickupType.values.length;
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: const Color(0x08FFFFFF),
+        border: Border.all(color: const Color(0x18FFFFFF)),
+      ),
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              const Expanded(
+                child: Text(
+                  'ITEMS IN PLAY',
+                  style: TextStyle(
+                    color: Color(0xAAFFFFFF),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 2,
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: () => setState(() {
+                  if (allOn) {
+                    _pvpAllowedItems.clear();
+                  } else {
+                    _pvpAllowedItems = Set.from(PickupType.values);
+                  }
+                }),
+                child: Text(
+                  allOn ? 'DISABLE ALL' : 'ENABLE ALL',
+                  style: const TextStyle(
+                    color: Color(0x66FFFFFF),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: PickupType.values.map((t) {
+              final on = _pvpAllowedItems.contains(t);
+              final tc = t.ringColor;
+              return GestureDetector(
+                onTap: () => setState(() {
+                  if (on) {
+                    _pvpAllowedItems.remove(t);
+                  } else {
+                    _pvpAllowedItems.add(t);
+                  }
+                }),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 120),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    color: on
+                        ? Color.fromARGB(40, tc.red, tc.green, tc.blue)
+                        : const Color(0x08FFFFFF),
+                    border: Border.all(
+                      color:
+                          on ? tc.withOpacity(0.8) : const Color(0x22FFFFFF),
+                      width: on ? 1.5 : 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(t.emoji,
+                          style: TextStyle(
+                              fontSize: 13,
+                              color: on ? null : const Color(0x44FFFFFF))),
+                      const SizedBox(width: 5),
+                      Text(
+                        t.displayName,
+                        style: TextStyle(
+                          color: on ? tc : const Color(0x44FFFFFF),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
       ),
     );
   }
@@ -614,6 +805,9 @@ class _SettingRow extends StatelessWidget {
   final bool isFirst;
   final bool isLast;
 
+  /// Optional widget placed between the value text and the chevron.
+  final Widget? trailing;
+
   const _SettingRow({
     required this.icon,
     required this.label,
@@ -622,6 +816,7 @@ class _SettingRow extends StatelessWidget {
     required this.onTap,
     this.isFirst = false,
     this.isLast = false,
+    this.trailing,
   });
 
   @override
@@ -655,6 +850,7 @@ class _SettingRow extends StatelessWidget {
                 letterSpacing: 1,
               ),
             ),
+            if (trailing != null) trailing!,
             const SizedBox(width: 8),
             const Icon(Icons.chevron_right, color: Color(0x44FFFFFF), size: 18),
           ],
@@ -984,6 +1180,14 @@ class _HpChip extends StatelessWidget {
 
   static const Color _accent = Color(0xFFFF6633);
 
+  static const Map<int, String> _difficulty = {
+    100000:   'EASY',
+    500000:   'MEDIUM',
+    1000000:  'NORMAL',
+    5000000:  'HARD',
+    10000000: 'INSANE',
+  };
+
   static String _fmt(int n) {
     if (n >= 1000000) return '${(n / 1000000).toStringAsFixed(0)}M';
     if (n >= 1000) return '${(n / 1000).toStringAsFixed(0)}K';
@@ -1004,14 +1208,31 @@ class _HpChip extends StatelessWidget {
             width: selected ? 2 : 1,
           ),
         ),
-        child: Text(
-          _fmt(hp),
-          style: TextStyle(
-            color: selected ? _accent : const Color(0x66FFFFFF),
-            fontSize: 14,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 1,
-          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              _fmt(hp),
+              style: TextStyle(
+                color: selected ? _accent : const Color(0x66FFFFFF),
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1,
+              ),
+            ),
+            if (_difficulty.containsKey(hp))
+              Text(
+                _difficulty[hp]!,
+                style: TextStyle(
+                  color: selected
+                      ? _accent.withOpacity(0.65)
+                      : const Color(0x33FFFFFF),
+                  fontSize: 8,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.5,
+                ),
+              ),
+          ],
         ),
       ),
     );
@@ -1117,4 +1338,212 @@ class _ArenaPreviewPainter extends CustomPainter {
   @override
   bool shouldRepaint(_ArenaPreviewPainter old) =>
       old.preset != preset || old.color != color;
+}
+
+// ── First-run tutorial dialog ──────────────────────────────────────────────
+
+class _TutorialDialog extends StatefulWidget {
+  const _TutorialDialog();
+
+  @override
+  State<_TutorialDialog> createState() => _TutorialDialogState();
+}
+
+class _TutorialDialogState extends State<_TutorialDialog> {
+  final _ctrl = PageController();
+  int _page = 0;
+
+  static const _pages = [
+    _TutPage(
+      icon: Icons.sports_soccer,
+      color: Color(0xFF00FFEE),
+      title: 'BOUNCE TO ATTACK',
+      body:
+          'Your orb bounces around the arena automatically. Every collision with the boss deals damage — bigger combos hit harder!',
+    ),
+    _TutPage(
+      icon: Icons.auto_awesome,
+      color: Color(0xFFFFDD00),
+      title: '16 UNIQUE ORBS',
+      body:
+          'Each orb has a special power. Ice freezes the boss for 2× damage, Combo multiplies on wall bounces, Laser fires beams...',
+    ),
+    _TutPage(
+      icon: Icons.face,
+      color: Color(0xFFFF44CC),
+      title: 'MAKE IT PERSONAL',
+      body:
+          'Add face photos from your gallery! Messi vs CR7, you vs your boss — put anyone in the arena and share your victory.',
+    ),
+  ];
+
+  void _next() {
+    if (_page < _pages.length - 1) {
+      _ctrl.nextPage(
+        duration: const Duration(milliseconds: 280),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      Navigator.of(context).pop();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final pageColor = _pages[_page].color;
+    return Dialog(
+      backgroundColor: const Color(0xFF0A0A18),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              height: 240,
+              child: PageView.builder(
+                controller: _ctrl,
+                onPageChanged: (i) => setState(() => _page = i),
+                itemCount: _pages.length,
+                itemBuilder: (_, i) => _pages[i].build(),
+              ),
+            ),
+            const SizedBox(height: 20),
+            // Dot indicators
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                _pages.length,
+                (i) => AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  width: i == _page ? 22 : 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(3),
+                    color: i == _page
+                        ? pageColor
+                        : const Color(0x33FFFFFF),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 22),
+            GestureDetector(
+              onTap: _next,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: pageColor,
+                ),
+                child: Text(
+                  _page < _pages.length - 1 ? 'NEXT  →' : "LET'S PLAY!",
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Color(0xFF06060F),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 3,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TutPage {
+  final IconData icon;
+  final Color color;
+  final String title;
+  final String body;
+
+  const _TutPage({
+    required this.icon,
+    required this.color,
+    required this.title,
+    required this.body,
+  });
+
+  Widget build() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(icon, color: color, size: 68),
+        const SizedBox(height: 20),
+        Text(
+          title,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: color,
+            fontSize: 17,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 2,
+          ),
+        ),
+        const SizedBox(height: 14),
+        Text(
+          body,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Color(0xBBFFFFFF),
+            fontSize: 13,
+            height: 1.55,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── PVP colour picker ──────────────────────────────────────────────────────
+
+class _ColorPicker extends StatelessWidget {
+  final Color selected;
+  final List<Color> palette;
+  final ValueChanged<Color> onSelect;
+
+  const _ColorPicker({
+    required this.selected,
+    required this.palette,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      alignment: WrapAlignment.center,
+      children: palette.map((c) {
+        final isSelected = selected == c;
+        return GestureDetector(
+          onTap: () => onSelect(c),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 120),
+            width: 22,
+            height: 22,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: c,
+              border: Border.all(
+                color: isSelected ? Colors.white : Colors.transparent,
+                width: 2.5,
+              ),
+              boxShadow: isSelected
+                  ? [BoxShadow(color: c.withOpacity(0.7), blurRadius: 8)]
+                  : null,
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
 }

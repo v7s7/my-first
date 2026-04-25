@@ -27,6 +27,9 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
   static const double minSpeed   = 90.0;
   static const double maxSpeed   = 420.0;
 
+  /// Extra speed multiplier applied by the Endless wave system (1.0 = no boost).
+  double waveSpeedBoost = 1.0;
+
   // ── Phase system ──────────────────────────────────────────────────────────
   bool _phase2Triggered = false;
   bool _phase3Triggered = false;
@@ -78,9 +81,9 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
       }
     }
 
-    // Movement (phase-speed-scaled)
+    // Movement (phase-speed-scaled, plus any Endless wave boost)
     if (_frozenTimer <= 0) {
-      position += velocity * _speedMultiplier * dt;
+      position += velocity * _speedMultiplier * waveSpeedBoost * dt;
     } else {
       position += velocity * dt;
     }
