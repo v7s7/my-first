@@ -1,13 +1,79 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../game/boss_ball_game.dart';
 import '../modes/game_mode.dart';
 import 'start_screen.dart';
 import 'game_screen.dart';
 
-class GameOverScreen extends StatelessWidget {
+class GameOverScreen extends StatefulWidget {
   final BossBallGame game;
   const GameOverScreen({super.key, required this.game});
+
+  @override
+  State<GameOverScreen> createState() => _GameOverScreenState();
+}
+
+class _GameOverScreenState extends State<GameOverScreen> {
+  bool _isNewBest = false;
+  bool _loaded = false;
+
+  BossBallGame get game => widget.game;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAndSaveBest();
+  }
+
+  Future<void> _checkAndSaveBest() async {
+    if (game.mode.isPvp) {
+      if (mounted) setState(() => _loaded = true);
+      return;
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    final mode = game.mode;
+    final dmg = game.totalDamage;
+    final maxHp = game.bossMaxHp;
+    final elapsed = max(1.0, game.totalTime);
+    bool isNewBest = false;
+
+    switch (mode.scoreMode) {
+      case ScoreMode.damageDealt:
+        final pct = (dmg / maxHp * 100).clamp(0.0, 100.0);
+        final key = 'best_pct_${mode.id}';
+        final prev = prefs.getDouble(key) ?? 0.0;
+        if (pct > prev) {
+          await prefs.setDouble(key, pct);
+          isNewBest = true;
+        }
+      case ScoreMode.timeRemaining:
+        if (game.bossDestroyed) {
+          final timeLeft = game.timeLeft;
+          final key = 'best_time_${mode.id}';
+          final prev = prefs.getDouble(key) ?? -1.0;
+          if (prev < 0 || timeLeft > prev) {
+            await prefs.setDouble(key, timeLeft);
+            isNewBest = true;
+          }
+        }
+      case ScoreMode.damagePerSecond:
+        final dps = dmg / elapsed;
+        final key = 'best_dps_${mode.id}';
+        final prev = prefs.getDouble(key) ?? 0.0;
+        if (dps > prev) {
+          await prefs.setDouble(key, dps);
+          isNewBest = true;
+        }
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _isNewBest = isNewBest;
+      _loaded = true;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +120,31 @@ class GameOverScreen extends StatelessWidget {
 
             // Stats block — adapts to score mode
             ..._buildStats(mode),
+
+            // New best badge
+            if (_loaded && _isNewBest) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 7),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: const Color(0x22FFD700),
+                  border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+                  boxShadow: const [
+                    BoxShadow(color: Color(0x55FFD700), blurRadius: 18),
+                  ],
+                ),
+                child: const Text(
+                  '★  NEW BEST!',
+                  style: TextStyle(
+                    color: Color(0xFFFFD700),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 3,
+                  ),
+                ),
+              ),
+            ],
 
             const SizedBox(height: 52),
 

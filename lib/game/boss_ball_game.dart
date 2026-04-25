@@ -198,6 +198,11 @@ class BossBallGame extends FlameGame {
       _pvpShieldTimers = List.filled(mode.orbCount, 0.0);
     }
 
+    Future.delayed(Duration.zero, () => overlays.add('Countdown'));
+  }
+
+  void startPlaying() {
+    overlays.remove('Countdown');
     playing = true;
   }
 

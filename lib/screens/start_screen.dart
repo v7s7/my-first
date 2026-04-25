@@ -194,14 +194,29 @@ class _StartScreenState extends State<StartScreen> {
                     _GlowCircle(color: color, size: 28),
                     const SizedBox(width: 14),
                     Expanded(
-                      child: Text(
-                        b.name,
-                        style: TextStyle(
-                          color: selected ? color : const Color(0xCCFFFFFF),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            b.name,
+                            style: TextStyle(
+                              color: selected ? color : const Color(0xCCFFFFFF),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                          Text(
+                            b.description,
+                            style: const TextStyle(
+                              color: Color(0x55FFFFFF),
+                              fontSize: 10,
+                              height: 1.3,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
                     ),
                     if (selected)
@@ -984,6 +999,14 @@ class _HpChip extends StatelessWidget {
 
   static const Color _accent = Color(0xFFFF6633);
 
+  static const Map<int, String> _difficulty = {
+    100000:   'EASY',
+    500000:   'MEDIUM',
+    1000000:  'NORMAL',
+    5000000:  'HARD',
+    10000000: 'INSANE',
+  };
+
   static String _fmt(int n) {
     if (n >= 1000000) return '${(n / 1000000).toStringAsFixed(0)}M';
     if (n >= 1000) return '${(n / 1000).toStringAsFixed(0)}K';
@@ -1004,14 +1027,31 @@ class _HpChip extends StatelessWidget {
             width: selected ? 2 : 1,
           ),
         ),
-        child: Text(
-          _fmt(hp),
-          style: TextStyle(
-            color: selected ? _accent : const Color(0x66FFFFFF),
-            fontSize: 14,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 1,
-          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              _fmt(hp),
+              style: TextStyle(
+                color: selected ? _accent : const Color(0x66FFFFFF),
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1,
+              ),
+            ),
+            if (_difficulty.containsKey(hp))
+              Text(
+                _difficulty[hp]!,
+                style: TextStyle(
+                  color: selected
+                      ? _accent.withOpacity(0.65)
+                      : const Color(0x33FFFFFF),
+                  fontSize: 8,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.5,
+                ),
+              ),
+          ],
         ),
       ),
     );
