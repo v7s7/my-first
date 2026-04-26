@@ -143,6 +143,49 @@ class ModeRegistry {
       scoreMode: ScoreMode.damagePerSecond,
       bossRegenPerSecond: 12000,
     ),
+
+    // ── Gauntlet — 3 orbs, massive HP, items, light regen ─────────────
+    GameMode(
+      id: 'gauntlet',
+      name: 'GAUNTLET',
+      subtitle: '3 orbs · 5M HP · 180s · items · boss heals 3K/s',
+      accentColor: Color(0xFFFF6600),
+      bossMaxHp: 5000000,
+      timeLimitSeconds: 180.0,
+      winOnBossKill: true,
+      loseOnTimeExpiry: true,
+      scoreMode: ScoreMode.timeRemaining,
+      orbCount: 3,
+      bossRegenPerSecond: 3000,
+    ),
+
+    // ── Dual Blitz — 2 orbs, 2M HP, 25 seconds ────────────────────────
+    GameMode(
+      id: 'dual_blitz',
+      name: 'DUAL BLITZ',
+      subtitle: '2 orbs · 2M HP · 25 seconds · items',
+      accentColor: Color(0xFFFFFF00),
+      bossMaxHp: 2000000,
+      timeLimitSeconds: 25.0,
+      winOnBossKill: true,
+      loseOnTimeExpiry: true,
+      scoreMode: ScoreMode.timeRemaining,
+      orbCount: 2,
+    ),
+
+    // ── Titan — impossible solo mode, 15M HP, brutal regen ────────────
+    GameMode(
+      id: 'titan',
+      name: 'TITAN',
+      subtitle: '15M HP · heals 20K/s · items · can you win?',
+      accentColor: Color(0xFF880000),
+      bossMaxHp: 15000000,
+      timeLimitSeconds: 0.0,
+      winOnBossKill: true,
+      loseOnTimeExpiry: false,
+      scoreMode: ScoreMode.damagePerSecond,
+      bossRegenPerSecond: 20000,
+    ),
   ];
 
   static GameMode findById(String id) {

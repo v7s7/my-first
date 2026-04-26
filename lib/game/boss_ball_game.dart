@@ -89,9 +89,10 @@ class BossBallGame extends FlameGame with TapCallbacks {
   double _speedTimer           = 0.0;
   double _rapidTimer           = 0.0;
   double _magnetTimer          = 0.0;
-  int    _starHitsRemaining    = 0;
-  int    _barrierHitsRemaining = 0;
-  int    _tripleHitsRemaining  = 0;
+  int    _starHitsRemaining     = 0;
+  int    _barrierHitsRemaining  = 0;
+  int    _tripleHitsRemaining   = 0;
+  int    _overdriveHitsRemaining = 0;
   List<double> _ghostTimers      = [0.0, 0.0];
   List<double> _pvpShieldTimers  = [0.0, 0.0];
   int    _revolverBurstsLeft    = 0;
@@ -110,8 +111,9 @@ class BossBallGame extends FlameGame with TapCallbacks {
   double get rapidTimer           => _rapidTimer;
   double get magnetTimer          => _magnetTimer;
   int    get starHitsRemaining    => _starHitsRemaining;
-  int    get barrierHitsRemaining => _barrierHitsRemaining;
-  int    get tripleHitsRemaining  => _tripleHitsRemaining;
+  int    get barrierHitsRemaining   => _barrierHitsRemaining;
+  int    get tripleHitsRemaining    => _tripleHitsRemaining;
+  int    get overdriveHitsRemaining => _overdriveHitsRemaining;
   bool isOrbGhosted(int index) =>
       index < _ghostTimers.length && _ghostTimers[index] > 0;
   bool isOrbShielded(int index) =>
@@ -175,6 +177,7 @@ class BossBallGame extends FlameGame with TapCallbacks {
     if (_starHitsRemaining > 0) m *= 2.5;
     if (_barrierHitsRemaining > 0) m *= 3.0;
     if (_tripleHitsRemaining > 0) m *= 3.0;
+    if (_overdriveHitsRemaining > 0) m *= 5.0;
     return m.clamp(1.0, 12.0);
   }
 
@@ -365,6 +368,7 @@ class BossBallGame extends FlameGame with TapCallbacks {
       if (_barrierHitsRemaining > 0) _barrierHitsRemaining--;
       if (_starHitsRemaining > 0) _starHitsRemaining--;
       if (_tripleHitsRemaining > 0) _tripleHitsRemaining--;
+      if (_overdriveHitsRemaining > 0) _overdriveHitsRemaining--;
     }
 
     bool isCrit = false;
@@ -844,6 +848,15 @@ class BossBallGame extends FlameGame with TapCallbacks {
         boss?.freezeBoss(5.0);
       case PickupType.megaHeal:
         onOrbHitBoss(200000);
+      case PickupType.overdrive:
+        _overdriveHitsRemaining = 3;
+      case PickupType.meteor:
+        onOrbHitBoss(600000);
+        triggerShake(intensity: 120, duration: 0.7);
+      case PickupType.freezeBomb:
+        onOrbHitBoss(300000);
+        boss?.freezeBoss(6.0);
+        triggerShake(intensity: 70, duration: 0.5);
       case PickupType.mystery:
         onPickupCollected(PickupTypeInfo.randomNonMystery(_rng));
     }
@@ -915,6 +928,17 @@ class BossBallGame extends FlameGame with TapCallbacks {
           isSmall: false,
           driftX: (_rng.nextDouble() - 0.5) * 40,
         ));
+      case PickupType.overdrive:
+        _overdriveHitsRemaining = 3;
+      case PickupType.meteor:
+        onPvpOrbHit(victimIndex: opponentIndex, damage: 450000);
+        triggerShake(intensity: 120, duration: 0.7);
+      case PickupType.freezeBomb:
+        onPvpOrbHit(victimIndex: opponentIndex, damage: 200000);
+        if (opponentIndex < _orbs.length) {
+          _orbs[opponentIndex].freeze(6.0);
+        }
+        triggerShake(intensity: 70, duration: 0.5);
       case PickupType.mystery:
         _onPickupCollectedPvp(
             PickupTypeInfo.randomNonMystery(_rng), collectorIndex);

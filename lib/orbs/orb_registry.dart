@@ -20,6 +20,11 @@ import 'plasma_orb.dart';
 import 'rainbow_orb.dart';
 import 'turbo_orb.dart';
 import 'berserker_orb.dart';
+import 'bouncer_orb.dart';
+import 'reflect_orb.dart';
+import 'phantom_orb.dart';
+import 'crystal_orb.dart';
+import 'chain_bomb_orb.dart';
 
 /// The single place where orb types are declared.
 ///
@@ -53,6 +58,11 @@ class OrbRegistry {
     RainbowOrb(),
     TurboOrb(),
     BerserkerOrb(),
+    BouncerOrb(),
+    ReflectOrb(),
+    PhantomOrb(),
+    CrystalOrb(),
+    ChainBombOrb(),
   ];
 
   static OrbBehavior findById(String id) =>

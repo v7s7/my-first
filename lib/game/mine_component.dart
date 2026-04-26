@@ -54,6 +54,9 @@ class MineComponent extends PositionComponent {
     }
   }
 
+  /// Force-detonate this mine immediately (called by ChainBombOrb on boss hit).
+  void detonate() => _detonate();
+
   void _detonate() {
     if (_triggered) return;
     _triggered = true;
