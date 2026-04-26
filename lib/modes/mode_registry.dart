@@ -101,6 +101,48 @@ class ModeRegistry {
       hasPickups: true,
       isPvp: true,
     ),
+
+    // ── Rush — speed-run, kill the boss ASAP ──────────────────────────
+    GameMode(
+      id: 'rush',
+      name: 'RUSH',
+      subtitle: 'Speed-run · 250K HP · pure skill · no items',
+      accentColor: Color(0xFF00FFAA),
+      bossMaxHp: 250000,
+      timeLimitSeconds: 0.0,
+      winOnBossKill: true,
+      loseOnTimeExpiry: false,
+      scoreMode: ScoreMode.damagePerSecond,
+      hasPickups: false,
+    ),
+
+    // ── Trio — triple orbs vs massive boss ────────────────────────────
+    GameMode(
+      id: 'trio',
+      name: 'TRIO',
+      subtitle: '3 orbs · 3M HP boss · 90s · items',
+      accentColor: Color(0xFFAA44FF),
+      bossMaxHp: 3000000,
+      timeLimitSeconds: 90.0,
+      winOnBossKill: true,
+      loseOnTimeExpiry: true,
+      scoreMode: ScoreMode.timeRemaining,
+      orbCount: 3,
+    ),
+
+    // ── Overtime — boss regenerates fast, out-DPS the regen ──────────
+    GameMode(
+      id: 'overtime',
+      name: 'OVERTIME',
+      subtitle: 'Boss heals 12K/s · must out-DPS the regen',
+      accentColor: Color(0xFFFF3333),
+      bossMaxHp: 2000000,
+      timeLimitSeconds: 0.0,
+      winOnBossKill: true,
+      loseOnTimeExpiry: false,
+      scoreMode: ScoreMode.damagePerSecond,
+      bossRegenPerSecond: 12000,
+    ),
   ];
 
   static GameMode findById(String id) {
