@@ -25,7 +25,7 @@ import 'hud_component.dart';
 import 'shockwave_ring_component.dart';
 import 'vortex_pickup_zone.dart';
 
-enum _PvpGunType { pistol, shotgun, sniper, machineGun, rocket, grenade, burst, minigun, railgun }
+enum PvpGunType { pistol, shotgun, sniper, machineGun, rocket, grenade, burst, minigun, railgun }
 
 class BossBallGame extends FlameGame with TapCallbacks {
   final OrbBehavior orbBehavior;
@@ -92,11 +92,11 @@ class BossBallGame extends FlameGame with TapCallbacks {
   List<double> _pvpShieldTimers  = [0.0, 0.0];
   int    _revolverBurstsLeft    = 0;
   double _revolverBurstTimer    = 0.0;
-  double _revolverBurstInterval = 0.22;
+  double _revolverBurstInterval = 0.38;
   int    _revolverVictimIndex   = 0;
   int    _revolverCollectorIndex = 0;
   int    _speedCollectorIndex   = -1;
-  _PvpGunType _pvpGunType       = _PvpGunType.pistol;
+  PvpGunType _pvpGunType       = PvpGunType.pistol;
 
   // Public getters for HUD
   double get shieldTimer          => _shieldTimer;
@@ -112,6 +112,12 @@ class BossBallGame extends FlameGame with TapCallbacks {
       index < _pvpShieldTimers.length && _pvpShieldTimers[index] > 0;
   double pvpShieldTimer(int index) =>
       index < _pvpShieldTimers.length ? _pvpShieldTimers[index] : 0.0;
+
+  // Gun state — read by PlayerOrb to draw the held weapon
+  PvpGunType? get activeGunType =>
+      _revolverBurstsLeft > 0 ? _pvpGunType : null;
+  int get revolverShooterIndex => _revolverCollectorIndex;
+  int get revolverBurstsLeft   => _revolverBurstsLeft;
 
   // ── PVP state ─────────────────────────────────────────────────────────────
   List<int> _pvpOrbHp     = [];
@@ -470,13 +476,13 @@ class BossBallGame extends FlameGame with TapCallbacks {
         : shooter.position.clone();
 
     switch (_pvpGunType) {
-      case _PvpGunType.pistol:
+      case PvpGunType.pistol:
         add(BulletComponent.pistol(
           position: shooter.position.clone(),
           target: targetPos,
           pvpVictimIndex: _revolverVictimIndex,
         ));
-      case _PvpGunType.shotgun:
+      case PvpGunType.shotgun:
         for (int i = 0; i < 5; i++) {
           final spread = (i - 2) * 0.14;
           add(BulletComponent.shotgunPellet(
@@ -486,13 +492,13 @@ class BossBallGame extends FlameGame with TapCallbacks {
             spreadAngleRad: spread,
           ));
         }
-      case _PvpGunType.sniper:
+      case PvpGunType.sniper:
         add(BulletComponent.sniper(
           position: shooter.position.clone(),
           target: targetPos,
           pvpVictimIndex: _revolverVictimIndex,
         ));
-      case _PvpGunType.machineGun:
+      case PvpGunType.machineGun:
         final spread = (_rng.nextDouble() - 0.5) * 0.3;
         add(BulletComponent.machineGun(
           position: shooter.position.clone(),
@@ -500,19 +506,19 @@ class BossBallGame extends FlameGame with TapCallbacks {
           pvpVictimIndex: _revolverVictimIndex,
           spreadAngleRad: spread,
         ));
-      case _PvpGunType.rocket:
+      case PvpGunType.rocket:
         add(BulletComponent.rocket(
           position: shooter.position.clone(),
           target: targetPos,
           pvpVictimIndex: _revolverVictimIndex,
         ));
-      case _PvpGunType.grenade:
+      case PvpGunType.grenade:
         add(BulletComponent.grenade(
           position: shooter.position.clone(),
           target: targetPos,
           pvpVictimIndex: _revolverVictimIndex,
         ));
-      case _PvpGunType.burst:
+      case PvpGunType.burst:
         for (int i = 0; i < 3; i++) {
           final spread = (i - 1) * 0.09;
           add(BulletComponent.burst(
@@ -522,7 +528,7 @@ class BossBallGame extends FlameGame with TapCallbacks {
             spreadAngleRad: spread,
           ));
         }
-      case _PvpGunType.minigun:
+      case PvpGunType.minigun:
         final spread = (_rng.nextDouble() - 0.5) * 0.45;
         add(BulletComponent.minigun(
           position: shooter.position.clone(),
@@ -530,7 +536,7 @@ class BossBallGame extends FlameGame with TapCallbacks {
           pvpVictimIndex: _revolverVictimIndex,
           spreadAngleRad: spread,
         ));
-      case _PvpGunType.railgun:
+      case PvpGunType.railgun:
         add(BulletComponent.railgun(
           position: shooter.position.clone(),
           target: targetPos,
@@ -540,62 +546,62 @@ class BossBallGame extends FlameGame with TapCallbacks {
   }
 
   void _selectPvpGun(int collectorIndex) {
-    _pvpGunType = _PvpGunType.values[_rng.nextInt(_PvpGunType.values.length)];
+    _pvpGunType = PvpGunType.values[_rng.nextInt(PvpGunType.values.length)];
     _revolverVictimIndex = 1 - collectorIndex;
     _revolverCollectorIndex = collectorIndex;
     _revolverBurstTimer = 0.0;
 
     switch (_pvpGunType) {
-      case _PvpGunType.pistol:
+      case PvpGunType.pistol:
         _revolverBurstsLeft = 6;
-        _revolverBurstInterval = 0.22;
-      case _PvpGunType.shotgun:
+        _revolverBurstInterval = 0.38;
+      case PvpGunType.shotgun:
         _revolverBurstsLeft = 2;
         _revolverBurstInterval = 0.40;
-      case _PvpGunType.sniper:
+      case PvpGunType.sniper:
         _revolverBurstsLeft = 1;
         _revolverBurstInterval = 0.0;
-      case _PvpGunType.machineGun:
+      case PvpGunType.machineGun:
         _revolverBurstsLeft = 15;
         _revolverBurstInterval = 0.08;
-      case _PvpGunType.rocket:
+      case PvpGunType.rocket:
         _revolverBurstsLeft = 1;
         _revolverBurstInterval = 0.0;
-      case _PvpGunType.grenade:
+      case PvpGunType.grenade:
         _revolverBurstsLeft = 3;
         _revolverBurstInterval = 0.35;
-      case _PvpGunType.burst:
+      case PvpGunType.burst:
         _revolverBurstsLeft = 3;
         _revolverBurstInterval = 0.18;
-      case _PvpGunType.minigun:
+      case PvpGunType.minigun:
         _revolverBurstsLeft = 25;
         _revolverBurstInterval = 0.05;
-      case _PvpGunType.railgun:
+      case PvpGunType.railgun:
         _revolverBurstsLeft = 1;
         _revolverBurstInterval = 0.0;
     }
 
     final gunLabel = switch (_pvpGunType) {
-      _PvpGunType.pistol     => 'PISTOL  x6',
-      _PvpGunType.shotgun    => 'SHOTGUN x2',
-      _PvpGunType.sniper     => 'SNIPER!!!',
-      _PvpGunType.machineGun => 'MACHINE GUN',
-      _PvpGunType.rocket     => 'ROCKET!!!',
-      _PvpGunType.grenade    => 'GRENADE x3',
-      _PvpGunType.burst      => 'BURST RIFLE x3',
-      _PvpGunType.minigun    => 'MINIGUN x25',
-      _PvpGunType.railgun    => 'RAILGUN!!!',
+      PvpGunType.pistol     => 'PISTOL  x6',
+      PvpGunType.shotgun    => 'SHOTGUN x2',
+      PvpGunType.sniper     => 'SNIPER!!!',
+      PvpGunType.machineGun => 'MACHINE GUN',
+      PvpGunType.rocket     => 'ROCKET!!!',
+      PvpGunType.grenade    => 'GRENADE x3',
+      PvpGunType.burst      => 'BURST RIFLE x3',
+      PvpGunType.minigun    => 'MINIGUN x25',
+      PvpGunType.railgun    => 'RAILGUN!!!',
     };
     final gunColor = switch (_pvpGunType) {
-      _PvpGunType.pistol     => const Color(0xFFFFCC00),
-      _PvpGunType.shotgun    => const Color(0xFFFF6600),
-      _PvpGunType.sniper     => const Color(0xFF00EEFF),
-      _PvpGunType.machineGun => const Color(0xFFFF3300),
-      _PvpGunType.rocket     => const Color(0xFFFF2200),
-      _PvpGunType.grenade    => const Color(0xFF88FF00),
-      _PvpGunType.burst      => const Color(0xFFFFAA00),
-      _PvpGunType.minigun    => const Color(0xFFFF5500),
-      _PvpGunType.railgun    => const Color(0xFF00FFCC),
+      PvpGunType.pistol     => const Color(0xFFFFCC00),
+      PvpGunType.shotgun    => const Color(0xFFFF6600),
+      PvpGunType.sniper     => const Color(0xFF00EEFF),
+      PvpGunType.machineGun => const Color(0xFFFF3300),
+      PvpGunType.rocket     => const Color(0xFFFF2200),
+      PvpGunType.grenade    => const Color(0xFF88FF00),
+      PvpGunType.burst      => const Color(0xFFFFAA00),
+      PvpGunType.minigun    => const Color(0xFFFF5500),
+      PvpGunType.railgun    => const Color(0xFF00FFCC),
     };
 
     final shooterPos = collectorIndex < _orbs.length
@@ -750,7 +756,7 @@ class BossBallGame extends FlameGame with TapCallbacks {
       case PickupType.revolver:
         _revolverBurstsLeft = 6;
         _revolverBurstTimer = 0.0;
-        _revolverBurstInterval = 0.22;
+        _revolverBurstInterval = 0.38;
         _revolverCollectorIndex = collectorIndex;
       case PickupType.lightning:
         onOrbHitBoss(120000);
