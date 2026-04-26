@@ -20,6 +20,9 @@ enum PickupType {
   ghost,    // 👻 PVP: invincible 3s / boss: speed+shield 4s
   snare,    // 🕸️ long freeze on boss/opponent
   megaHeal, // 💊 large direct hit / heal boost
+  overdrive, // 🚀 next 3 hits deal 5× damage
+  meteor,    // ☄️ 600K instant nuke — rarest drop
+  freezeBomb, // ❄️💣 freeze 6s + 300K instant damage
 }
 
 extension PickupTypeInfo on PickupType {
@@ -42,7 +45,10 @@ extension PickupTypeInfo on PickupType {
       case PickupType.triple:   return '🎯';
       case PickupType.ghost:    return '👻';
       case PickupType.snare:    return '🕸️';
-      case PickupType.megaHeal: return '💊';
+      case PickupType.megaHeal:  return '💊';
+      case PickupType.overdrive: return '🚀';
+      case PickupType.meteor:    return '☄️';
+      case PickupType.freezeBomb:return '🧊💣';
     }
   }
 
@@ -65,7 +71,10 @@ extension PickupTypeInfo on PickupType {
       case PickupType.triple:   return 'TRIPLE x5';
       case PickupType.ghost:    return 'GHOST';
       case PickupType.snare:    return 'SNARE';
-      case PickupType.megaHeal: return 'MEGA HEAL';
+      case PickupType.megaHeal:  return 'MEGA HEAL';
+      case PickupType.overdrive: return 'OVERDRIVE';
+      case PickupType.meteor:    return 'METEOR';
+      case PickupType.freezeBomb:return 'FREEZE BOMB';
     }
   }
 
@@ -88,7 +97,10 @@ extension PickupTypeInfo on PickupType {
       case PickupType.triple:   return const Color(0xFFFF44FF);
       case PickupType.ghost:    return const Color(0xFF88FFFF);
       case PickupType.snare:    return const Color(0xFF99BB44);
-      case PickupType.megaHeal: return const Color(0xFFFF6699);
+      case PickupType.megaHeal:  return const Color(0xFFFF6699);
+      case PickupType.overdrive: return const Color(0xFFFF8800);
+      case PickupType.meteor:    return const Color(0xFFFF4400);
+      case PickupType.freezeBomb:return const Color(0xFF44CCFF);
     }
   }
 
@@ -112,7 +124,10 @@ extension PickupTypeInfo on PickupType {
       case PickupType.triple:   return 1;
       case PickupType.ghost:    return 1;
       case PickupType.snare:    return 2;
-      case PickupType.megaHeal: return 2;
+      case PickupType.megaHeal:  return 2;
+      case PickupType.overdrive: return 1;
+      case PickupType.meteor:    return 1;
+      case PickupType.freezeBomb:return 1;
     }
   }
 

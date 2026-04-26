@@ -11,7 +11,10 @@ enum ArenaPreset {
   pillarsSmall(0.87, 'SQ·SM', 'Small squares'),
   pillarsBig(1.0,   'SQ·LG', 'Big squares'),
   corridors(0.87,   'LANES',  'S-curve maze'),
-  maze(1.0,         'MAZE',   'L-wall maze');
+  maze(1.0,         'MAZE',   'L-wall maze'),
+  bumpers(0.87,     'BUMPERS','Corner bumpers'),
+  cross(1.0,        'CROSS',  '+ shaped walls'),
+  ring(1.0,         'RING',   'Inner square ring');
 
   final double fraction; // fraction of screen covered by outer wall rect
   final String label;
@@ -189,6 +192,47 @@ class ArenaConfig {
           Rect.fromLTWH(iL + iW * 0.56,   iT + iH * 0.44,           wh, iH * 0.26),
           // Bottom-right L — horizontal arm
           Rect.fromLTWH(iL + iW * 0.56,   iT + iH * 0.70 - wh,      iW * 0.44, wh),
+        ];
+
+      // ── Corner bumpers — 5 square bumpers (4 corners + centre) ────────
+      case ArenaPreset.bumpers:
+        const bh = 22.0; // half-size
+        return [
+          Rect.fromCenter(center: Offset(iL + iW * 0.20, iT + iH * 0.20), width: bh * 2, height: bh * 2),
+          Rect.fromCenter(center: Offset(iL + iW * 0.80, iT + iH * 0.20), width: bh * 2, height: bh * 2),
+          Rect.fromCenter(center: Offset(iL + iW * 0.20, iT + iH * 0.80), width: bh * 2, height: bh * 2),
+          Rect.fromCenter(center: Offset(iL + iW * 0.80, iT + iH * 0.80), width: bh * 2, height: bh * 2),
+          Rect.fromCenter(center: Offset(iL + iW * 0.50, iT + iH * 0.50), width: bh * 2, height: bh * 2),
+        ];
+
+      // ── + shaped walls — 4 arms radiating from centre with gaps ────────
+      case ArenaPreset.cross:
+        const wh = 18.0; // arm thickness (half)
+        const gap = 0.18; // fraction of inner dimension left as opening
+        return [
+          // Left arm
+          Rect.fromLTWH(iL,                     iT + iH * 0.5 - wh, iW * (0.5 - gap), wh * 2),
+          // Right arm
+          Rect.fromLTWH(iL + iW * (0.5 + gap),  iT + iH * 0.5 - wh, iW * (0.5 - gap), wh * 2),
+          // Top arm
+          Rect.fromLTWH(iL + iW * 0.5 - wh,     iT,                  wh * 2, iH * (0.5 - gap)),
+          // Bottom arm
+          Rect.fromLTWH(iL + iW * 0.5 - wh,     iT + iH * (0.5 + gap), wh * 2, iH * (0.5 - gap)),
+        ];
+
+      // ── Inner square ring — frame in the centre of the arena ───────────
+      case ArenaPreset.ring:
+        const wh = 14.0; // ring wall thickness
+        const ri = 0.28; // ring inner fraction (28% from edges)
+        final rL = iL + iW * ri;
+        final rT = iT + iH * ri;
+        final rR = iL + iW * (1 - ri);
+        final rB = iT + iH * (1 - ri);
+        return [
+          Rect.fromLTWH(rL,          rT,          rR - rL,      wh),     // top
+          Rect.fromLTWH(rL,          rB - wh,     rR - rL,      wh),     // bottom
+          Rect.fromLTWH(rL,          rT + wh,     wh, rB - rT - wh * 2), // left
+          Rect.fromLTWH(rR - wh,     rT + wh,     wh, rB - rT - wh * 2), // right
         ];
 
       default:

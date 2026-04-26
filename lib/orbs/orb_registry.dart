@@ -15,6 +15,21 @@ import 'black_hole_orb.dart';
 import 'mine_orb.dart';
 import 'ice_orb.dart';
 import 'fire_trap_orb.dart';
+import 'comet_orb.dart';
+import 'plasma_orb.dart';
+import 'rainbow_orb.dart';
+import 'turbo_orb.dart';
+import 'berserker_orb.dart';
+import 'bouncer_orb.dart';
+import 'reflect_orb.dart';
+import 'phantom_orb.dart';
+import 'crystal_orb.dart';
+import 'chain_bomb_orb.dart';
+import 'fibonacci_orb.dart';
+import 'prime_orb.dart';
+import 'pi_orb.dart';
+import 'golden_orb.dart';
+import 'factorial_orb.dart';
 
 /// The single place where orb types are declared.
 ///
@@ -43,6 +58,21 @@ class OrbRegistry {
     MineOrb(),
     IceOrb(),
     FireTrapOrb(),
+    CometOrb(),
+    PlasmaOrb(),
+    RainbowOrb(),
+    TurboOrb(),
+    BerserkerOrb(),
+    BouncerOrb(),
+    ReflectOrb(),
+    PhantomOrb(),
+    CrystalOrb(),
+    ChainBombOrb(),
+    FibonacciOrb(),
+    PrimeOrb(),
+    PiOrb(),
+    GoldenOrb(),
+    FactorialOrb(),
   ];
 
   static OrbBehavior findById(String id) =>
