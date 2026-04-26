@@ -6,7 +6,7 @@ import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flame/particles.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart'; // rootBundle + HapticFeedback
 import 'sound_manager.dart';
 
 import '../orbs/orb_behavior.dart';
@@ -71,6 +71,10 @@ class BossBallGame extends FlameGame with TapCallbacks {
       index < _orbImages.length ? _orbImages[index] : null;
   ui.Image? get bossUiImage => _bossUiImage;
 
+  // Gun icon images — loaded from assets/guns/ if present, null = canvas fallback
+  final Map<PvpGunType, ui.Image?> _gunImages = {};
+  ui.Image? gunImage(PvpGunType type) => _gunImages[type];
+
   double _shakeIntensity = 0.0;
   double _shakeTimer = 0.0;
   final Random _rng = Random();
@@ -93,6 +97,8 @@ class BossBallGame extends FlameGame with TapCallbacks {
   int    _revolverBurstsLeft    = 0;
   double _revolverBurstTimer    = 0.0;
   double _revolverBurstInterval = 0.38;
+  double _revolverHoldTimer     = 0.0; // countdown before first shot fires
+  double _revolverHoldDuration  = 0.0; // total hold duration (for fraction calc)
   int    _revolverVictimIndex   = 0;
   int    _revolverCollectorIndex = 0;
   int    _speedCollectorIndex   = -1;
@@ -115,7 +121,13 @@ class BossBallGame extends FlameGame with TapCallbacks {
 
   // Gun state — read by PlayerOrb to draw the held weapon
   PvpGunType? get activeGunType =>
-      _revolverBurstsLeft > 0 ? _pvpGunType : null;
+      (_revolverHoldTimer > 0 || _revolverBurstsLeft > 0) ? _pvpGunType : null;
+  bool   get revolverIsHolding    => _revolverHoldTimer > 0;
+  /// 0.0 → just picked up, 1.0 → about to fire
+  double get revolverHoldFraction =>
+      _revolverHoldDuration > 0
+          ? (1.0 - _revolverHoldTimer / _revolverHoldDuration).clamp(0.0, 1.0)
+          : 1.0;
   int get revolverShooterIndex => _revolverCollectorIndex;
   int get revolverBurstsLeft   => _revolverBurstsLeft;
 
@@ -197,6 +209,28 @@ class BossBallGame extends FlameGame with TapCallbacks {
       _orbImages.add(await _decodeUiImage(bytes));
     }
     _bossUiImage = await _decodeUiImage(bossImageBytes);
+
+    // Load gun icon images from assets/guns/ (silently skip if file absent)
+    const _gunAssets = {
+      PvpGunType.pistol:     'assets/guns/gun_pistol.png',
+      PvpGunType.shotgun:    'assets/guns/gun_shotgun.png',
+      PvpGunType.sniper:     'assets/guns/gun_sniper.png',
+      PvpGunType.machineGun: 'assets/guns/gun_machinegun.png',
+      PvpGunType.rocket:     'assets/guns/gun_rocket.png',
+      PvpGunType.grenade:    'assets/guns/gun_grenade.png',
+      PvpGunType.burst:      'assets/guns/gun_burst.png',
+      PvpGunType.minigun:    'assets/guns/gun_minigun.png',
+      PvpGunType.railgun:    'assets/guns/gun_railgun.png',
+    };
+    for (final entry in _gunAssets.entries) {
+      try {
+        final data = await rootBundle.load(entry.value);
+        _gunImages[entry.key] =
+            await _decodeUiImage(data.buffer.asUint8List());
+      } catch (_) {
+        _gunImages[entry.key] = null; // file not yet added — use canvas fallback
+      }
+    }
 
     _buildArenaBackground();
     _buildWalls();
@@ -555,31 +589,41 @@ class BossBallGame extends FlameGame with TapCallbacks {
       case PvpGunType.pistol:
         _revolverBurstsLeft = 6;
         _revolverBurstInterval = 0.38;
+        _revolverHoldDuration = 1.2;
       case PvpGunType.shotgun:
         _revolverBurstsLeft = 2;
         _revolverBurstInterval = 0.40;
+        _revolverHoldDuration = 2.0;
       case PvpGunType.sniper:
         _revolverBurstsLeft = 1;
         _revolverBurstInterval = 0.0;
+        _revolverHoldDuration = 5.0;
       case PvpGunType.machineGun:
         _revolverBurstsLeft = 15;
         _revolverBurstInterval = 0.08;
+        _revolverHoldDuration = 1.5;
       case PvpGunType.rocket:
         _revolverBurstsLeft = 1;
         _revolverBurstInterval = 0.0;
+        _revolverHoldDuration = 3.5;
       case PvpGunType.grenade:
         _revolverBurstsLeft = 3;
         _revolverBurstInterval = 0.35;
+        _revolverHoldDuration = 2.5;
       case PvpGunType.burst:
         _revolverBurstsLeft = 3;
         _revolverBurstInterval = 0.18;
+        _revolverHoldDuration = 2.0;
       case PvpGunType.minigun:
         _revolverBurstsLeft = 25;
         _revolverBurstInterval = 0.05;
+        _revolverHoldDuration = 2.0;
       case PvpGunType.railgun:
         _revolverBurstsLeft = 1;
         _revolverBurstInterval = 0.0;
+        _revolverHoldDuration = 5.0;
     }
+    _revolverHoldTimer = _revolverHoldDuration;
 
     final gunLabel = switch (_pvpGunType) {
       PvpGunType.pistol     => 'PISTOL  x6',
@@ -695,8 +739,11 @@ class BossBallGame extends FlameGame with TapCallbacks {
       }
     }
 
-    // Revolver burst — spawn a visible bullet each tick
-    if (_revolverBurstsLeft > 0) {
+    // Revolver: hold phase then burst fire
+    if (_revolverHoldTimer > 0) {
+      _revolverHoldTimer -= dt;
+      if (_revolverHoldTimer < 0) _revolverHoldTimer = 0;
+    } else if (_revolverBurstsLeft > 0) {
       _revolverBurstTimer -= dt;
       if (_revolverBurstTimer <= 0) {
         _revolverBurstTimer = _revolverBurstInterval;
@@ -757,6 +804,8 @@ class BossBallGame extends FlameGame with TapCallbacks {
         _revolverBurstsLeft = 6;
         _revolverBurstTimer = 0.0;
         _revolverBurstInterval = 0.38;
+        _revolverHoldDuration = 1.2;
+        _revolverHoldTimer = _revolverHoldDuration;
         _revolverCollectorIndex = collectorIndex;
       case PickupType.lightning:
         onOrbHitBoss(120000);
