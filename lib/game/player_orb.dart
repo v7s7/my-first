@@ -365,8 +365,28 @@ class PlayerOrb extends PositionComponent {
       );
     }
 
-    // PVP weapon sword — rendered outside squash transform, uses _weaponAngle
-    if (gameRef.mode.isPvp) {
+    // Weapon: gun when a pickup is active (pointing at target), sword otherwise
+    final aimAngle = _getAimAngle();
+    if (aimAngle != null) {
+      final gunType = gameRef.mode.isPvp
+          ? (gameRef.activeGunType ?? PvpGunType.pistol)
+          : PvpGunType.pistol;
+
+      if (gameRef.revolverIsHolding && gameRef.revolverShooterIndex == orbIndex) {
+        // Hold phase: charge arc + aim arrow + gun icon on ball
+        _drawHoldUI(canvas, cx, cy, aimAngle, gunType, color,
+            gameRef.revolverHoldFraction);
+        _drawGunIconOnBall(canvas, cx, cy, gunType, color);
+      } else {
+        // Firing phase: gun at orb edge pointing at target
+        canvas.save();
+        canvas.translate(cx, cy);
+        canvas.rotate(aimAngle);
+        _drawGunShape(canvas, orbRadius, gunType, color);
+        canvas.restore();
+      }
+    } else if (gameRef.mode.isPvp) {
+      // No gun active — spinning melee sword
       final wDir = Vector2(cos(_weaponAngle), sin(_weaponAngle));
       final sx = cx + wDir.x * orbRadius;
       final sy = cy + wDir.y * orbRadius;
@@ -395,5 +415,295 @@ class PlayerOrb extends PositionComponent {
     if (!gameRef.mode.isPvp) {
       behavior.renderOverlay(canvas, orbRadius, cx, cy);
     }
+  }
+
+  // Returns the angle (radians) from this orb toward its current shooting target,
+  // or null when no gun pickup is active on this orb.
+  double? _getAimAngle() {
+    if (gameRef.activeGunType == null) return null;
+    if (gameRef.revolverShooterIndex != orbIndex) return null;
+    if (gameRef.mode.isPvp) {
+      final opponentIndex = 1 - orbIndex;
+      final orbs = gameRef.orbs;
+      if (orbs.length > opponentIndex) {
+        final diff = orbs[opponentIndex].position - position;
+        if (diff.length > 0.1) return atan2(diff.y, diff.x);
+      }
+    } else {
+      final boss = gameRef.boss;
+      if (boss != null) {
+        final diff = boss.position - position;
+        if (diff.length > 0.1) return atan2(diff.y, diff.x);
+      }
+    }
+    return null;
+  }
+
+  // Hold-phase UI: weapon icon on the ball + aiming arrow + charge progress ring.
+  // holdFraction goes 0→1 as the hold timer counts down to fire.
+  static void _drawHoldUI(Canvas canvas, double cx, double cy, double aimAngle,
+      PvpGunType gunType, Color color, double holdFraction) {
+    // Charge progress arc (fills clockwise as weapon readies)
+    canvas.drawArc(
+      Rect.fromCircle(center: Offset(cx, cy), radius: 26),
+      -pi / 2,
+      2 * pi * holdFraction,
+      false,
+      Paint()
+        ..color = color.withOpacity(0.85)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3.5
+        ..strokeCap = StrokeCap.round,
+    );
+    // Dim background ring (shows full circle so player sees how much is left)
+    canvas.drawArc(
+      Rect.fromCircle(center: Offset(cx, cy), radius: 26),
+      -pi / 2 + 2 * pi * holdFraction,
+      2 * pi * (1.0 - holdFraction),
+      false,
+      Paint()
+        ..color = color.withOpacity(0.18)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3.5,
+    );
+
+    // Aim arrow extending from orb toward target
+    final arrowStart = Offset(cx + cos(aimAngle) * 28, cy + sin(aimAngle) * 28);
+    final arrowEnd   = Offset(cx + cos(aimAngle) * 55, cy + sin(aimAngle) * 55);
+    canvas.drawLine(
+      arrowStart, arrowEnd,
+      Paint()
+        ..color = color.withOpacity(0.7)
+        ..strokeWidth = 2.0
+        ..strokeCap = StrokeCap.round,
+    );
+    // Arrowhead
+    final headAngle1 = aimAngle + pi * 0.85;
+    final headAngle2 = aimAngle - pi * 0.85;
+    canvas.drawLine(
+      arrowEnd,
+      Offset(arrowEnd.dx + cos(headAngle1) * 8, arrowEnd.dy + sin(headAngle1) * 8),
+      Paint()..color = color.withOpacity(0.7)..strokeWidth = 2.0..strokeCap = StrokeCap.round,
+    );
+    canvas.drawLine(
+      arrowEnd,
+      Offset(arrowEnd.dx + cos(headAngle2) * 8, arrowEnd.dy + sin(headAngle2) * 8),
+      Paint()..color = color.withOpacity(0.7)..strokeWidth = 2.0..strokeCap = StrokeCap.round,
+    );
+
+  }
+
+  // Draws the gun icon inside the ball during the hold phase.
+  // Separated so it can be called after the hold-UI to overlay the image.
+  void _drawGunIconOnBall(Canvas canvas, double cx, double cy,
+      PvpGunType gunType, Color color) {
+    final img = gameRef.gunImage(gunType);
+    if (img != null) {
+      // Render uploaded gun image centered on ball
+      final side = orbRadius * 1.6;
+      final dst = Rect.fromCenter(
+          center: Offset(cx, cy), width: side, height: side);
+      canvas.drawImageRect(
+        img,
+        Rect.fromLTWH(0, 0, img.width.toDouble(), img.height.toDouble()),
+        dst,
+        Paint()..filterQuality = FilterQuality.medium,
+      );
+    } else {
+      // Canvas fallback: scaled-down gun shape
+      canvas.save();
+      canvas.translate(cx, cy);
+      canvas.scale(0.48, 0.48);
+      canvas.translate(-16, 0);
+      _drawGunShape(canvas, 0, gunType, color);
+      canvas.restore();
+    }
+  }
+
+  // Gun shapes — canvas is pre-translated to orb center and rotated toward
+  // target. Barrel extends in the +x direction starting at x = orbRadius (r).
+  static void _drawGunShape(
+      Canvas canvas, double r, PvpGunType type, Color color) {
+    switch (type) {
+      case PvpGunType.pistol:
+        _drawPistol(canvas, r, color);
+      case PvpGunType.shotgun:
+        _drawShotgun(canvas, r, color);
+      case PvpGunType.sniper:
+        _drawSniper(canvas, r, color);
+      case PvpGunType.machineGun:
+        _drawMachineGun(canvas, r, color);
+      case PvpGunType.rocket:
+        _drawRocketLauncher(canvas, r, color);
+      case PvpGunType.grenade:
+        _drawGrenadeLauncher(canvas, r, color);
+      case PvpGunType.burst:
+        _drawBurstRifle(canvas, r, color);
+      case PvpGunType.minigun:
+        _drawMinigun(canvas, r, color);
+      case PvpGunType.railgun:
+        _drawRailgun(canvas, r, color);
+    }
+  }
+
+  static Paint _gp(Color c, {double opacity = 0.95}) =>
+      Paint()..color = c.withOpacity(opacity);
+  static Paint _gDark() => Paint()..color = Colors.black.withOpacity(0.5);
+  static Paint _gHighlight() => Paint()..color = Colors.white.withOpacity(0.55);
+  static Paint _gStroke(Color c, double w) => Paint()
+    ..color = c
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = w;
+  static RRect _rr(double x, double y, double w, double h, double rad) =>
+      RRect.fromRectAndRadius(Rect.fromLTWH(x, y, w, h), Radius.circular(rad));
+
+  // Pistol: compact body + medium barrel + downward grip
+  static void _drawPistol(Canvas canvas, double r, Color c) {
+    // Body
+    canvas.drawRRect(_rr(r + 1, -4, 15, 8, 2), _gp(c));
+    // Barrel
+    canvas.drawRect(Rect.fromLTWH(r + 16, -2.5, 13, 5), _gp(c));
+    // Slide detail line
+    canvas.drawLine(
+        Offset(r + 3, -4.5), Offset(r + 14, -4.5), _gDark()..strokeWidth = 1.5);
+    // Grip
+    canvas.drawRRect(_rr(r + 4, 4, 6, 9, 1.5), _gp(c, opacity: 0.75));
+    // Barrel top highlight
+    canvas.drawLine(
+        Offset(r + 17, -3), Offset(r + 28, -3), _gHighlight()..strokeWidth = 1);
+  }
+
+  // Shotgun: wide stock + double side-by-side barrel
+  static void _drawShotgun(Canvas canvas, double r, Color c) {
+    // Stock
+    canvas.drawRRect(_rr(r + 1, -5.5, 13, 11, 2.5), _gp(c));
+    // Upper barrel
+    canvas.drawRect(Rect.fromLTWH(r + 14, -5.5, 20, 4.5), _gp(c));
+    // Lower barrel
+    canvas.drawRect(Rect.fromLTWH(r + 14, 1, 20, 4.5), _gp(c));
+    // Gap between barrels
+    canvas.drawLine(
+        Offset(r + 14, -0.5), Offset(r + 34, -0.5), _gDark()..strokeWidth = 1.5);
+    // Muzzle end-cap line
+    canvas.drawLine(
+        Offset(r + 33, -6), Offset(r + 33, 6), _gDark()..strokeWidth = 2.5);
+  }
+
+  // Sniper: very long thin barrel + scope dot above
+  static void _drawSniper(Canvas canvas, double r, Color c) {
+    // Stock
+    canvas.drawRRect(_rr(r + 1, -3.5, 15, 7, 2), _gp(c));
+    // Long barrel
+    canvas.drawRect(Rect.fromLTWH(r + 16, -1.8, 34, 3.6), _gp(c));
+    // Barrel highlight
+    canvas.drawLine(
+        Offset(r + 17, -2.2), Offset(r + 49, -2.2), _gHighlight()..strokeWidth = 1);
+    // Scope circle
+    canvas.drawCircle(Offset(r + 20, -7), 4, _gp(c));
+    canvas.drawCircle(
+        Offset(r + 20, -7), 4, _gStroke(Colors.white.withOpacity(0.5), 0.8));
+    // Scope crosshair
+    canvas.drawLine(
+        Offset(r + 17, -7), Offset(r + 23, -7), _gDark()..strokeWidth = 0.9);
+    canvas.drawLine(
+        Offset(r + 20, -10.5), Offset(r + 20, -3.5), _gDark()..strokeWidth = 0.9);
+  }
+
+  // Machine gun: body + medium barrel + box magazine below
+  static void _drawMachineGun(Canvas canvas, double r, Color c) {
+    // Body
+    canvas.drawRRect(_rr(r + 1, -4.5, 20, 9, 2), _gp(c));
+    // Barrel
+    canvas.drawRect(Rect.fromLTWH(r + 21, -2.5, 16, 5), _gp(c));
+    // Box magazine (below body)
+    canvas.drawRRect(_rr(r + 8, 4.5, 9, 11, 1.5), _gp(c, opacity: 0.8));
+    // Vent slots on barrel
+    for (int i = 0; i < 3; i++) {
+      final x = r + 22.0 + i * 4.5;
+      canvas.drawLine(Offset(x, -4.5), Offset(x, -2.5), _gDark()..strokeWidth = 1);
+    }
+  }
+
+  // Rocket launcher: wide round tube + open muzzle ring
+  static void _drawRocketLauncher(Canvas canvas, double r, Color c) {
+    // Main tube
+    canvas.drawRRect(_rr(r + 2, -7, 30, 14, 6), _gp(c));
+    // Muzzle ring (hollow opening)
+    canvas.drawCircle(
+        Offset(r + 32, 0), 6.5, _gStroke(Colors.white.withOpacity(0.6), 2));
+    canvas.drawCircle(Offset(r + 32, 0), 4.5, _gp(Colors.black, opacity: 0.55));
+    // Handle grip under tube
+    canvas.drawRRect(_rr(r + 8, 7, 8, 8, 1.5), _gp(c, opacity: 0.7));
+    // Top highlight
+    canvas.drawLine(
+        Offset(r + 3, -5.5), Offset(r + 30, -5.5), _gHighlight()..strokeWidth = 1.2);
+  }
+
+  // Grenade launcher: short body + fat round barrel
+  static void _drawGrenadeLauncher(Canvas canvas, double r, Color c) {
+    // Short body
+    canvas.drawRRect(_rr(r + 1, -4.5, 13, 9, 2.5), _gp(c));
+    // Fat round barrel
+    canvas.drawRRect(_rr(r + 14, -6, 16, 12, 5.5), _gp(c));
+    // Barrel bore (dark inner circle)
+    canvas.drawCircle(Offset(r + 30, 0), 4.5, _gp(Colors.black, opacity: 0.55));
+    // Grip
+    canvas.drawRRect(_rr(r + 4, 4.5, 6, 8, 1.5), _gp(c, opacity: 0.7));
+  }
+
+  // Burst rifle: body + 3 stacked parallel barrels at the muzzle
+  static void _drawBurstRifle(Canvas canvas, double r, Color c) {
+    // Body
+    canvas.drawRRect(_rr(r + 1, -5, 20, 10, 2), _gp(c));
+    // 3 stacked muzzle barrels
+    for (int i = 0; i < 3; i++) {
+      canvas.drawRect(
+          Rect.fromLTWH(r + 21, -5.0 + i * 3.5, 15, 2.5), _gp(c));
+    }
+    // Separator lines between barrels
+    canvas.drawLine(
+        Offset(r + 21, -1.5), Offset(r + 36, -1.5), _gDark()..strokeWidth = 0.8);
+    canvas.drawLine(
+        Offset(r + 21, 2.0), Offset(r + 36, 2.0), _gDark()..strokeWidth = 0.8);
+  }
+
+  // Minigun: rotating drum hub + 3 barrels at 120° spacing
+  static void _drawMinigun(Canvas canvas, double r, Color c) {
+    // 3 barrels radiating from the hub
+    for (int i = 0; i < 3; i++) {
+      canvas.save();
+      canvas.translate(r + 6, 0);
+      canvas.rotate(i * 2 * pi / 3);
+      canvas.drawRect(Rect.fromLTWH(5, -2, 20, 4), _gp(c));
+      canvas.restore();
+    }
+    // Drum hub
+    canvas.drawCircle(Offset(r + 6, 0), 6.5, _gp(c, opacity: 0.9));
+    canvas.drawCircle(
+        Offset(r + 6, 0), 6.5, _gStroke(Colors.white.withOpacity(0.4), 1.2));
+    // Center bolt
+    canvas.drawCircle(
+        Offset(r + 6, 0), 2.5, Paint()..color = Colors.white.withOpacity(0.7));
+  }
+
+  // Railgun: rectangular frame + two parallel rails + glowing tip
+  static void _drawRailgun(Canvas canvas, double r, Color c) {
+    // Frame
+    canvas.drawRRect(_rr(r + 1, -4.5, 38, 9, 1.5), _gp(c, opacity: 0.6));
+    // Top rail
+    canvas.drawRect(Rect.fromLTWH(r + 2, -3.5, 36, 2.5), _gp(c));
+    // Bottom rail
+    canvas.drawRect(Rect.fromLTWH(r + 2, 1, 36, 2.5), _gp(c));
+    // Energy channel (dark gap between rails)
+    canvas.drawRect(
+        Rect.fromLTWH(r + 2, -1, 36, 2), _gp(Colors.black, opacity: 0.4));
+    // Glowing tip
+    canvas.drawCircle(
+      Offset(r + 40, 0),
+      5.5,
+      Paint()
+        ..color = c.withOpacity(0.75)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
+    );
   }
 }
