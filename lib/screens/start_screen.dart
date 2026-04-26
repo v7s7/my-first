@@ -48,6 +48,7 @@ class _StartScreenState extends State<StartScreen> {
 
   static const List<int> _hpPresets = [
     100000, 500000, 1000000, 5000000, 10000000,
+    100000000, 1000000000,
   ];
 
   bool get _isPvp      => _selectedMode.isPvp;
@@ -178,6 +179,7 @@ class _StartScreenState extends State<StartScreen> {
   }
 
   void _openOrbSheet() {
+    String category = 'ALL';
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF0E0E1E),
@@ -185,74 +187,177 @@ class _StartScreenState extends State<StartScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       isScrollControlled: true,
-      builder: (_) => _BottomSheetWrap(
-        title: 'ORB TYPE',
-        child: ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          itemCount: OrbRegistry.all.length,
-          itemBuilder: (_, i) {
-            final b = OrbRegistry.all[i];
-            final selected = _selectedOrb.id == b.id;
-            final color = b.color;
-            return GestureDetector(
-              onTap: () {
-                setState(() => _selectedOrb = b);
-                _savePrefs();
-                Navigator.pop(context);
-              },
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: selected
-                      ? Color.fromARGB(35, color.red, color.green, color.blue)
-                      : const Color(0x08FFFFFF),
-                  border: Border.all(
-                    color: selected ? color : const Color(0x18FFFFFF),
-                    width: selected ? 2 : 1,
+      builder: (_) => StatefulBuilder(
+        builder: (ctx, setSheetState) {
+          final orbs = category == 'ALL'
+              ? OrbRegistry.all
+              : OrbRegistry.all.where((b) => _orbCategoryFor(b.id) == category).toList();
+          return _BottomSheetWrap(
+            title: 'ORB TYPE',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // ── Category filter chips ────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: ['ALL', 'CLASSIC', 'NEW', 'MATH'].map((cat) {
+                        final sel = category == cat;
+                        final catColor = cat == 'MATH'
+                            ? const Color(0xFFFFCC44)
+                            : cat == 'NEW'
+                                ? const Color(0xFF44FF88)
+                                : cat == 'CLASSIC'
+                                    ? const Color(0xFF00FFEE)
+                                    : const Color(0xAAFFFFFF);
+                        return GestureDetector(
+                          onTap: () => setSheetState(() => category = cat),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 150),
+                            margin: const EdgeInsets.only(right: 8),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              color: sel
+                                  ? Color.fromARGB(45, catColor.red,
+                                      catColor.green, catColor.blue)
+                                  : const Color(0x0AFFFFFF),
+                              border: Border.all(
+                                color: sel
+                                    ? catColor
+                                    : const Color(0x22FFFFFF),
+                                width: sel ? 1.5 : 1,
+                              ),
+                            ),
+                            child: Text(
+                              cat,
+                              style: TextStyle(
+                                color: sel
+                                    ? catColor
+                                    : const Color(0x55FFFFFF),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1.5,
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
                   ),
                 ),
-                child: Row(
-                  children: [
-                    _GlowCircle(color: color, size: 28),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            b.name,
-                            style: TextStyle(
-                              color: selected ? color : const Color(0xCCFFFFFF),
-                              fontSize: 13,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 1,
-                            ),
+                // ── Orb 2-column grid ────────────────────────────────────────
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  gridDelegate:
+                      const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                    childAspectRatio: 1.65,
+                  ),
+                  itemCount: orbs.length,
+                  itemBuilder: (_, i) {
+                    final b        = orbs[i];
+                    final selected = _selectedOrb.id == b.id;
+                    final color    = b.color;
+                    final isMath   = _orbCategoryFor(b.id) == 'MATH';
+                    final isNew    = _orbCategoryFor(b.id) == 'NEW';
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() => _selectedOrb = b);
+                        _savePrefs();
+                        Navigator.pop(context);
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        padding: const EdgeInsets.all(11),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: selected
+                              ? Color.fromARGB(
+                                  40, color.red, color.green, color.blue)
+                              : const Color(0x08FFFFFF),
+                          border: Border.all(
+                            color: selected
+                                ? color
+                                : const Color(0x18FFFFFF),
+                            width: selected ? 2 : 1,
                           ),
-                          Text(
-                            b.description,
-                            style: const TextStyle(
-                              color: Color(0x55FFFFFF),
-                              fontSize: 10,
-                              height: 1.3,
+                          boxShadow: selected
+                              ? [
+                                  BoxShadow(
+                                    color: Color.fromARGB(55, color.red,
+                                        color.green, color.blue),
+                                    blurRadius: 12,
+                                  ),
+                                ]
+                              : null,
+                        ),
+                        child: Row(
+                          children: [
+                            _GlowCircle(color: color, size: 38),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          b.name,
+                                          style: TextStyle(
+                                            color: selected
+                                                ? color
+                                                : const Color(0xCCFFFFFF),
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w900,
+                                            letterSpacing: 0.3,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      if (isMath)
+                                        _OrbTag(
+                                            label: 'Σ',
+                                            color: const Color(0xFFFFCC44))
+                                      else if (isNew)
+                                        _OrbTag(
+                                            label: '★',
+                                            color: const Color(0xFF44FF88)),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    b.description,
+                                    style: const TextStyle(
+                                      color: Color(0x55FFFFFF),
+                                      fontSize: 9,
+                                      height: 1.3,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
                             ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    if (selected)
-                      Icon(Icons.check_circle, color: color, size: 18),
-                  ],
+                    );
+                  },
                 ),
-              ),
-            );
-          },
-        ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -287,28 +392,123 @@ class _StartScreenState extends State<StartScreen> {
   }
 
   void _openHpSheet() {
+    final customCtrl = TextEditingController();
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF0E0E1E),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
+      isScrollControlled: true,
       builder: (_) => _BottomSheetWrap(
         title: _isPvp ? 'ORB HP' : 'BOSS HP',
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: _hpPresets.map((hp) => _HpChip(
-              hp: hp,
-              selected: _selectedHp == hp,
-              onTap: () {
-                setState(() => _selectedHp = hp);
-                _savePrefs();
-                Navigator.pop(context);
-              },
-            )).toList(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // ── Preset chips ─────────────────────────────────────────────
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: _hpPresets.map((hp) => _HpChip(
+                  hp: hp,
+                  selected: _selectedHp == hp,
+                  onTap: () {
+                    setState(() => _selectedHp = hp);
+                    _savePrefs();
+                    Navigator.pop(context);
+                  },
+                )).toList(),
+              ),
+              const SizedBox(height: 24),
+              // ── Custom HP input ──────────────────────────────────────────
+              const Text(
+                'CUSTOM HP',
+                style: TextStyle(
+                  color: Color(0x66FFFFFF),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 2,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: customCtrl,
+                      keyboardType: TextInputType.number,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: 'e.g. 9999999999999',
+                        hintStyle: const TextStyle(
+                          color: Color(0x33FFFFFF),
+                          fontSize: 13,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 14),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide:
+                              const BorderSide(color: Color(0x33FFFFFF)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(
+                              color: Color(0xFFFF6633), width: 1.5),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  GestureDetector(
+                    onTap: () {
+                      final raw = customCtrl.text
+                          .replaceAll(',', '')
+                          .replaceAll(' ', '');
+                      final val = int.tryParse(raw);
+                      if (val != null && val >= 1) {
+                        setState(() =>
+                            _selectedHp = val.clamp(1, 999999999999999));
+                        _savePrefs();
+                        Navigator.pop(context);
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 18, vertical: 15),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF6633),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        'SET',
+                        style: TextStyle(
+                          color: Color(0xFF060610),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Max: 999,999,999,999,999  ·  Supports K / M / B / T display',
+                style: TextStyle(
+                  color: Color(0x33FFFFFF),
+                  fontSize: 9,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -743,9 +943,23 @@ class _StartScreenState extends State<StartScreen> {
   }
 
   static String _fmtHp(int n) {
-    if (n >= 1000000) return '${(n / 1000000).toStringAsFixed(0)}M';
-    if (n >= 1000) return '${(n / 1000).toStringAsFixed(0)}K';
+    if (n >= 1000000000000) return '${(n / 1000000000000).toStringAsFixed(1)}T';
+    if (n >= 1000000000)    return '${(n / 1000000000).toStringAsFixed(1)}B';
+    if (n >= 1000000)       return '${(n / 1000000).toStringAsFixed(n >= 100000000 ? 0 : 1)}M';
+    if (n >= 1000)          return '${(n / 1000).toStringAsFixed(0)}K';
     return '$n';
+  }
+
+  static String _orbCategoryFor(String id) {
+    const mathIds    = {'fibonacci', 'prime', 'pi', 'golden', 'factorial'};
+    const classicIds = {
+      'basic', 'laser', 'combo', 'chain', 'fire', 'prismatic',
+      'nova', 'void', 'hook', 'splitter', 'zapper', 'clone',
+      'blackhole', 'mine', 'ice', 'firetrap',
+    };
+    if (mathIds.contains(id))    return 'MATH';
+    if (classicIds.contains(id)) return 'CLASSIC';
+    return 'NEW';
   }
 }
 
@@ -1028,8 +1242,14 @@ class _ModeCard extends StatelessWidget {
       case 'survival':  return '💀';
       case 'blitz':     return '🔥';
       case 'endless':   return '∞';
-      case 'pvp_duel':  return '🥊';
-      default:          return '🎮';
+      case 'pvp_duel':   return '🥊';
+      case 'rush':       return '⚡';
+      case 'trio':       return '⚽';
+      case 'overtime':   return '♻️';
+      case 'gauntlet':   return '🗡️';
+      case 'dual_blitz': return '💥';
+      case 'titan':      return '👹';
+      default:           return '🎮';
     }
   }
 
@@ -1117,6 +1337,9 @@ class _ArenaCard extends StatelessWidget {
       case ArenaPreset.pillarsBig:   return const Color(0xFF0088FF);
       case ArenaPreset.corridors:    return const Color(0xFFFF44AA);
       case ArenaPreset.maze:         return const Color(0xFF44FF88);
+      case ArenaPreset.bumpers:      return const Color(0xFFFFCC00);
+      case ArenaPreset.cross:        return const Color(0xFFFF6666);
+      case ArenaPreset.ring:         return const Color(0xFFAA88FF);
     }
   }
 
@@ -1181,16 +1404,20 @@ class _HpChip extends StatelessWidget {
   static const Color _accent = Color(0xFFFF6633);
 
   static const Map<int, String> _difficulty = {
-    100000:   'EASY',
-    500000:   'MEDIUM',
-    1000000:  'NORMAL',
-    5000000:  'HARD',
-    10000000: 'INSANE',
+    100000:      'EASY',
+    500000:      'MEDIUM',
+    1000000:     'NORMAL',
+    5000000:     'HARD',
+    10000000:    'INSANE',
+    100000000:   'GOD MODE',
+    1000000000:  'IMPOSSIBLE',
   };
 
   static String _fmt(int n) {
-    if (n >= 1000000) return '${(n / 1000000).toStringAsFixed(0)}M';
-    if (n >= 1000) return '${(n / 1000).toStringAsFixed(0)}K';
+    if (n >= 1000000000000) return '${(n / 1000000000000).toStringAsFixed(1)}T';
+    if (n >= 1000000000)    return '${(n / 1000000000).toStringAsFixed(1)}B';
+    if (n >= 1000000)       return '${(n / 1000000).toStringAsFixed(n >= 100000000 ? 0 : 1)}M';
+    if (n >= 1000)          return '${(n / 1000).toStringAsFixed(0)}K';
     return '$n';
   }
 
@@ -1275,6 +1502,37 @@ class _GlowCirclePainter extends CustomPainter {
   bool shouldRepaint(_GlowCirclePainter old) => old.color != color;
 }
 
+// ── Orb category tag badge ─────────────────────────────────────────────────
+
+class _OrbTag extends StatelessWidget {
+  final String label;
+  final Color color;
+  const _OrbTag({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(4),
+        color: Color.fromARGB(50, color.red, color.green, color.blue),
+        border: Border.all(
+          color: color.withOpacity(0.65),
+          width: 1,
+        ),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 8,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    );
+  }
+}
+
 // ── Arena preview painter ───────────────────────────────────────────────────
 
 class _ArenaPreviewPainter extends CustomPainter {
@@ -1330,6 +1588,29 @@ class _ArenaPreviewPainter extends CustomPainter {
         canvas.drawLine(Offset(l + bW * 0.44, t + bH * 0.30), Offset(l + bW * 0.44, t + bH * 0.56), wallPaint);
         canvas.drawLine(Offset(l + bW * 0.56, t + bH * 0.44), Offset(l + bW * 0.56, t + bH * 0.70), wallPaint);
         canvas.drawLine(Offset(l + bW * 0.56, t + bH * 0.70), Offset(l + bW - 1, t + bH * 0.70), wallPaint);
+      case ArenaPreset.bumpers:
+        for (final bx in [l + bW * 0.20, l + bW * 0.80]) {
+          for (final by in [t + bH * 0.20, t + bH * 0.80]) {
+            canvas.drawRect(Rect.fromCenter(center: Offset(bx, by), width: 8, height: 8), pillPaint);
+          }
+        }
+        canvas.drawRect(
+          Rect.fromCenter(center: Offset(l + bW * 0.50, t + bH * 0.50), width: 8, height: 8),
+          pillPaint,
+        );
+      case ArenaPreset.cross:
+        canvas.drawLine(Offset(l + 1, t + bH * 0.50), Offset(l + bW * 0.36, t + bH * 0.50), wallPaint);
+        canvas.drawLine(Offset(l + bW * 0.64, t + bH * 0.50), Offset(l + bW - 1, t + bH * 0.50), wallPaint);
+        canvas.drawLine(Offset(l + bW * 0.50, t + 1), Offset(l + bW * 0.50, t + bH * 0.36), wallPaint);
+        canvas.drawLine(Offset(l + bW * 0.50, t + bH * 0.64), Offset(l + bW * 0.50, t + bH - 1), wallPaint);
+      case ArenaPreset.ring:
+        canvas.drawRect(
+          Rect.fromLTRB(l + bW * 0.28, t + bH * 0.28, l + bW * 0.72, t + bH * 0.72),
+          Paint()
+            ..color = color
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.8,
+        );
       default:
         break;
     }

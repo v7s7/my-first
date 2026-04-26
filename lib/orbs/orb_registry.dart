@@ -25,6 +25,11 @@ import 'reflect_orb.dart';
 import 'phantom_orb.dart';
 import 'crystal_orb.dart';
 import 'chain_bomb_orb.dart';
+import 'fibonacci_orb.dart';
+import 'prime_orb.dart';
+import 'pi_orb.dart';
+import 'golden_orb.dart';
+import 'factorial_orb.dart';
 
 /// The single place where orb types are declared.
 ///
@@ -63,6 +68,11 @@ class OrbRegistry {
     PhantomOrb(),
     CrystalOrb(),
     ChainBombOrb(),
+    FibonacciOrb(),
+    PrimeOrb(),
+    PiOrb(),
+    GoldenOrb(),
+    FactorialOrb(),
   ];
 
   static OrbBehavior findById(String id) =>
