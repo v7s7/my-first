@@ -477,7 +477,7 @@ class PlayerOrb extends PositionComponent {
     canvas.translate(cx, cy);
     canvas.rotate(aimAngle);
     if (img != null) {
-      const gunH = 40.0;
+      const gunH = 52.0;
       final iw = img.width.toDouble();
       final ih = img.height.toDouble();
       final gunW = ih > 0 ? gunH * (iw / ih) : gunH * 2.0;
