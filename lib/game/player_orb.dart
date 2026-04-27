@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui' as ui;
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
@@ -365,25 +366,21 @@ class PlayerOrb extends PositionComponent {
       );
     }
 
-    // Weapon: gun when a pickup is active (pointing at target), sword otherwise
+    // Weapon: gun image when a pickup is active (pointing at target), sword otherwise
     final aimAngle = _getAimAngle();
     if (aimAngle != null) {
       final gunType = gameRef.mode.isPvp
           ? (gameRef.activeGunType ?? PvpGunType.pistol)
           : PvpGunType.pistol;
+      final gunImg = gameRef.gunImage(gunType);
 
       if (gameRef.revolverIsHolding && gameRef.revolverShooterIndex == orbIndex) {
-        // Hold phase: charge arc + aim arrow + gun icon on ball
+        // Hold phase: charge-arc + gun image at edge (fading in)
         _drawHoldUI(canvas, cx, cy, aimAngle, gunType, color,
-            gameRef.revolverHoldFraction);
-        _drawGunIconOnBall(canvas, cx, cy, gunType, color);
+            gameRef.revolverHoldFraction, orbRadius, gunImg);
       } else {
-        // Firing phase: gun at orb edge pointing at target
-        canvas.save();
-        canvas.translate(cx, cy);
-        canvas.rotate(aimAngle);
-        _drawGunShape(canvas, orbRadius, gunType, color);
-        canvas.restore();
+        // Firing phase: gun image at orb edge pointing at target
+        _drawGunAtEdge(canvas, cx, cy, aimAngle, orbRadius, gunType, gunImg, color);
       }
     } else if (gameRef.mode.isPvp) {
       // No gun active — spinning melee sword
@@ -439,10 +436,10 @@ class PlayerOrb extends PositionComponent {
     return null;
   }
 
-  // Hold-phase UI: weapon icon on the ball + aiming arrow + charge progress ring.
-  // holdFraction goes 0→1 as the hold timer counts down to fire.
+  // Hold-phase UI: charge-progress ring + gun image at edge fading in.
   static void _drawHoldUI(Canvas canvas, double cx, double cy, double aimAngle,
-      PvpGunType gunType, Color color, double holdFraction) {
+      PvpGunType gunType, Color color, double holdFraction,
+      double r, ui.Image? gunImg) {
     // Charge progress arc (fills clockwise as weapon readies)
     canvas.drawArc(
       Rect.fromCircle(center: Offset(cx, cy), radius: 26),
@@ -455,7 +452,7 @@ class PlayerOrb extends PositionComponent {
         ..strokeWidth = 3.5
         ..strokeCap = StrokeCap.round,
     );
-    // Dim background ring (shows full circle so player sees how much is left)
+    // Dim background ring
     canvas.drawArc(
       Rect.fromCircle(center: Offset(cx, cy), radius: 26),
       -pi / 2 + 2 * pi * holdFraction,
@@ -466,58 +463,37 @@ class PlayerOrb extends PositionComponent {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 3.5,
     );
-
-    // Aim arrow extending from orb toward target
-    final arrowStart = Offset(cx + cos(aimAngle) * 28, cy + sin(aimAngle) * 28);
-    final arrowEnd   = Offset(cx + cos(aimAngle) * 55, cy + sin(aimAngle) * 55);
-    canvas.drawLine(
-      arrowStart, arrowEnd,
-      Paint()
-        ..color = color.withOpacity(0.7)
-        ..strokeWidth = 2.0
-        ..strokeCap = StrokeCap.round,
-    );
-    // Arrowhead
-    final headAngle1 = aimAngle + pi * 0.85;
-    final headAngle2 = aimAngle - pi * 0.85;
-    canvas.drawLine(
-      arrowEnd,
-      Offset(arrowEnd.dx + cos(headAngle1) * 8, arrowEnd.dy + sin(headAngle1) * 8),
-      Paint()..color = color.withOpacity(0.7)..strokeWidth = 2.0..strokeCap = StrokeCap.round,
-    );
-    canvas.drawLine(
-      arrowEnd,
-      Offset(arrowEnd.dx + cos(headAngle2) * 8, arrowEnd.dy + sin(headAngle2) * 8),
-      Paint()..color = color.withOpacity(0.7)..strokeWidth = 2.0..strokeCap = StrokeCap.round,
-    );
-
+    // Gun at edge, fades in as charge builds
+    _drawGunAtEdge(canvas, cx, cy, aimAngle, r, gunType, gunImg, color,
+        opacity: 0.45 + 0.55 * holdFraction);
   }
 
-  // Draws the gun icon inside the ball during the hold phase.
-  // Separated so it can be called after the hold-UI to overlay the image.
-  void _drawGunIconOnBall(Canvas canvas, double cx, double cy,
-      PvpGunType gunType, Color color) {
-    final img = gameRef.gunImage(gunType);
+  // Draws the gun PNG image at the orb edge rotated toward the aim direction.
+  // Falls back to canvas gun shape when image is unavailable.
+  static void _drawGunAtEdge(Canvas canvas, double cx, double cy,
+      double aimAngle, double r, PvpGunType gunType, ui.Image? img, Color color,
+      {double opacity = 1.0}) {
+    canvas.save();
+    canvas.translate(cx, cy);
+    canvas.rotate(aimAngle);
     if (img != null) {
-      // Render uploaded gun image centered on ball
-      final side = orbRadius * 1.6;
-      final dst = Rect.fromCenter(
-          center: Offset(cx, cy), width: side, height: side);
+      const gunH = 40.0;
+      final iw = img.width.toDouble();
+      final ih = img.height.toDouble();
+      final gunW = ih > 0 ? gunH * (iw / ih) : gunH * 2.0;
+      // Grip/stock starts just past the orb edge; barrel extends outward (+x)
       canvas.drawImageRect(
         img,
-        Rect.fromLTWH(0, 0, img.width.toDouble(), img.height.toDouble()),
-        dst,
-        Paint()..filterQuality = FilterQuality.medium,
+        Rect.fromLTWH(0, 0, iw, ih),
+        Rect.fromLTWH(r + 2.0, -gunH / 2, gunW, gunH),
+        Paint()
+          ..filterQuality = FilterQuality.medium
+          ..color = Colors.white.withOpacity(opacity),
       );
     } else {
-      // Canvas fallback: scaled-down gun shape
-      canvas.save();
-      canvas.translate(cx, cy);
-      canvas.scale(0.48, 0.48);
-      canvas.translate(-16, 0);
-      _drawGunShape(canvas, 0, gunType, color);
-      canvas.restore();
+      _drawGunShape(canvas, r, gunType, color);
     }
+    canvas.restore();
   }
 
   // Gun shapes — canvas is pre-translated to orb center and rotated toward

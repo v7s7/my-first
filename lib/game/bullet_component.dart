@@ -86,7 +86,7 @@ class BulletComponent extends PositionComponent with HasGameRef<BossBallGame> {
         shape: _BShape.round,
       );
 
-  /// PVP shotgun pellet — short range, fires in a spread pattern.
+  /// PVP shotgun pellet — spread pattern, homing to ensure pellets reach.
   factory BulletComponent.shotgunPellet({
     required Vector2 position,
     required Vector2 target,
@@ -101,7 +101,6 @@ class BulletComponent extends PositionComponent with HasGameRef<BossBallGame> {
         color: const Color(0xFFFF6600),
         speed: 900.0,
         hitRadius: 22.0,
-        maxRange: 480.0,
         spreadAngleRad: spreadAngleRad,
         homing: true,
         shape: _BShape.pellet,
