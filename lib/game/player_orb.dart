@@ -274,6 +274,11 @@ class PlayerOrb extends PositionComponent {
     final squash = _bounceSquashTimer > 0 ? 1.15 : 1.0;
     final stretch = _bounceSquashTimer > 0 ? 0.88 : 1.0;
 
+    // Visual radius may grow beyond physics radius for math orbs (non-PVP only)
+    final displayRadius = gameRef.mode.isPvp
+        ? orbRadius
+        : orbRadius + behavior.visualGrowth;
+
     canvas.save();
     canvas.translate(cx, cy);
     canvas.scale(squash, stretch);
@@ -285,7 +290,7 @@ class PlayerOrb extends PositionComponent {
     if (isFrozen) {
       canvas.drawCircle(
         Offset(cx, cy),
-        orbRadius + 4,
+        displayRadius + 4,
         Paint()..color = const Color(0x5588CCFF),
       );
     }
@@ -293,7 +298,7 @@ class PlayerOrb extends PositionComponent {
     // Main sphere body — solid color OR custom face image
     final faceImg = gameRef.orbImage(orbIndex);
     if (faceImg != null) {
-      final dst = Rect.fromCircle(center: Offset(cx, cy), radius: orbRadius);
+      final dst = Rect.fromCircle(center: Offset(cx, cy), radius: displayRadius);
       canvas.save();
       canvas.clipPath(Path()..addOval(dst));
       canvas.drawImageRect(
@@ -304,12 +309,12 @@ class PlayerOrb extends PositionComponent {
       );
       canvas.restore();
     } else {
-      canvas.drawCircle(Offset(cx, cy), orbRadius, Paint()..color = color);
+      canvas.drawCircle(Offset(cx, cy), displayRadius, Paint()..color = color);
     }
 
     canvas.drawCircle(
       Offset(cx, cy),
-      orbRadius,
+      displayRadius,
       Paint()
         ..color = Colors.white.withOpacity(0.35)
         ..style = PaintingStyle.stroke
@@ -320,7 +325,7 @@ class PlayerOrb extends PositionComponent {
     if (gameRef.magnetTimer > 0) {
       canvas.drawCircle(
         Offset(cx, cy),
-        orbRadius + 8,
+        displayRadius + 8,
         Paint()
           ..color = const Color(0xAAFF44CC)
           ..style = PaintingStyle.stroke
@@ -332,7 +337,7 @@ class PlayerOrb extends PositionComponent {
     if (gameRef.rapidTimer > 0) {
       canvas.drawCircle(
         Offset(cx, cy),
-        orbRadius + 14,
+        displayRadius + 14,
         Paint()
           ..color = const Color(0xAAFF6600)
           ..style = PaintingStyle.stroke
@@ -346,7 +351,7 @@ class PlayerOrb extends PositionComponent {
     if (gameRef.isOrbShielded(orbIndex)) {
       canvas.drawCircle(
         Offset(cx, cy),
-        orbRadius + 11,
+        displayRadius + 11,
         Paint()
           ..color = const Color(0xCC44AAFF)
           ..style = PaintingStyle.stroke
@@ -358,7 +363,7 @@ class PlayerOrb extends PositionComponent {
     if (gameRef.isOrbGhosted(orbIndex)) {
       canvas.drawCircle(
         Offset(cx, cy),
-        orbRadius + 10,
+        displayRadius + 10,
         Paint()
           ..color = const Color(0x6688FFFF)
           ..style = PaintingStyle.stroke
@@ -410,7 +415,7 @@ class PlayerOrb extends PositionComponent {
     }
 
     if (!gameRef.mode.isPvp) {
-      behavior.renderOverlay(canvas, orbRadius, cx, cy);
+      behavior.renderOverlay(canvas, displayRadius, cx, cy);
     }
   }
 

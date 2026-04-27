@@ -28,6 +28,10 @@ class FactorialOrb extends OrbBehavior {
   double _hitTimer  = 0;
   static const double _hitDur = 0.45;
 
+  // Ball grows 2.5 px per bounce (up to 12.5 px at max charge)
+  @override
+  double get visualGrowth => _n * 2.5;
+
   @override
   void onAttach(PlayerOrb orb) { _n = 0; _time = 0; _hit = false; }
 
@@ -80,34 +84,28 @@ class FactorialOrb extends OrbBehavior {
       );
     }
 
-    // Live equation badge: "n!" with small digits
-    final nFact = _factorials[_n];
-    final tp = TextPainter(
+    // Current damage value on ball center
+    final curDmg = 1000 * _factorials[_n];
+    final dmgStr = _n == _maxN ? '120K★' : '${_n}!=${_fmtDmg(curDmg)}';
+    final dmgTp = TextPainter(
       text: TextSpan(
-        children: [
-          TextSpan(
-            text: '${_n}!',
-            style: TextStyle(
-              color: const Color(0xFFFF44AA).withOpacity(0.85),
-              fontSize: 11,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          TextSpan(
-            text: '=${nFact}K',
-            style: const TextStyle(
-              color: Color(0x66FFFFFF),
-              fontSize: 8,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
+        text: dmgStr,
+        style: TextStyle(
+          color: Colors.white.withOpacity(0.95),
+          fontSize: 10.5 + _n * 0.6,
+          fontWeight: FontWeight.w900,
+          height: 1.0,
+          shadows: const [
+            Shadow(color: Color(0xCC000000), offset: Offset(1, 1), blurRadius: 2),
+            Shadow(color: Color(0xFFFF44AA), blurRadius: 8),
+          ],
+        ),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
-    tp.paint(canvas, Offset(cx + radius + 3, cy - 7));
+    dmgTp.paint(canvas, Offset(cx - dmgTp.width / 2, cy - dmgTp.height / 2));
 
-    // Max charge inner glow
+    // Max-charge inner glow
     if (_n >= _maxN) {
       canvas.drawCircle(
         Offset(cx, cy),
@@ -134,5 +132,11 @@ class FactorialOrb extends OrbBehavior {
         );
       }
     }
+  }
+
+  static String _fmtDmg(int dmg) {
+    if (dmg >= 1000000) return '${(dmg / 1000000).toStringAsFixed(1)}M';
+    if (dmg >= 1000) return '${dmg ~/ 1000}K';
+    return '$dmg';
   }
 }

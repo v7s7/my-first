@@ -42,6 +42,10 @@ abstract class OrbBehavior {
 
   // ── Rendering ─────────────────────────────────────────────────────────────
 
+  /// Extra visual radius added to the ball body each frame (non-PVP only).
+  /// Override to make the ball grow/shrink based on the orb's own rule.
+  double get visualGrowth => 0.0;
+
   /// Draw orb-specific visuals on top of the shared base sphere.
   ///
   /// The canvas is already translated so (0, 0) is the top-left of the

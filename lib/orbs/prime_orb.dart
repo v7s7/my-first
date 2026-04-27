@@ -29,6 +29,11 @@ class PrimeOrb extends OrbBehavior {
   double _flashTimer = 0;
   static const double _flashDur = 0.4;
 
+  // Ball slowly grows per hit, max 10 px; pulses larger on prime hits
+  @override
+  double get visualGrowth =>
+      (_hitCount * 0.5).clamp(0.0, 10.0) + (_flash && _isPrime ? 3.0 : 0.0);
+
   static bool _checkPrime(int n) {
     if (n < 2) return false;
     if (n == 2) return true;
@@ -106,21 +111,45 @@ class PrimeOrb extends OrbBehavior {
       );
     }
 
-    // Hit counter badge
-    final tp = TextPainter(
+    // Damage value on ball center (show next hit's damage)
+    final nextIsPrime = _checkPrime(_hitCount + 1);
+    final nextDmg = nextIsPrime ? _primeDamage : _baseDamage;
+    final dmgStr = nextIsPrime ? '20K★' : '5K';
+    final dmgTp = TextPainter(
       text: TextSpan(
-        text: '#$_hitCount',
+        text: dmgStr,
         style: TextStyle(
-          color: _isPrime
-              ? const Color(0xFF44FFCC)
-              : const Color(0x66FFFFFF),
-          fontSize: 9,
+          color: Colors.white.withOpacity(0.95),
+          fontSize: nextIsPrime ? 13.0 : 11.0,
           fontWeight: FontWeight.w900,
+          height: 1.0,
+          shadows: [
+            const Shadow(color: Color(0xCC000000), offset: Offset(1, 1), blurRadius: 2),
+            Shadow(
+              color: nextIsPrime
+                  ? const Color(0xFF44FFCC)
+                  : const Color(0xFF44FFCC).withOpacity(0.5),
+              blurRadius: 8,
+            ),
+          ],
         ),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
-    tp.paint(canvas, Offset(cx + radius + 4, cy - 6));
+    dmgTp.paint(canvas, Offset(cx - dmgTp.width / 2, cy - dmgTp.height / 2));
+    // Hit counter badge (small, above damage label)
+    final cntTp = TextPainter(
+      text: TextSpan(
+        text: '#$_hitCount',
+        style: TextStyle(
+          color: const Color(0xFF44FFCC).withOpacity(0.6),
+          fontSize: 7,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    cntTp.paint(canvas, Offset(cx - cntTp.width / 2, cy - dmgTp.height / 2 - cntTp.height - 1));
 
     // Prime burst
     if (_flash) {
