@@ -58,6 +58,8 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
     super.update(dt);
     _time += dt;
 
+    if (!gameRef.playing) return;
+
     _checkPhaseTransitions();
 
     // Attack timer — phases 2 and 3 only
@@ -297,5 +299,52 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
       )..layout();
       tp.paint(canvas, Offset(-tp.width / 2, radius * 0.48));
     }
+
+    // HP bar below the boss ball
+    const bBarW = 90.0;
+    const bBarH = 8.0;
+    final bBarY = radius + 10.0;
+    final barFillColor = phase >= 3
+        ? const Color(0xFFFF2244)
+        : phase == 2
+            ? const Color(0xFFFF4488)
+            : const Color(0xFF6A5AFF);
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+          Rect.fromLTWH(-bBarW / 2, bBarY, bBarW, bBarH),
+          const Radius.circular(4)),
+      Paint()..color = const Color(0x55FFFFFF),
+    );
+    if (hpRatio > 0) {
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+            Rect.fromLTWH(-bBarW / 2, bBarY, bBarW * hpRatio, bBarH),
+            const Radius.circular(4)),
+        Paint()..color = barFillColor.withOpacity(0.9),
+      );
+    }
+
+    // HP text below the bar
+    final hpStr = _fmtHp(gameRef.bossHp);
+    final hpTp = TextPainter(
+      text: TextSpan(
+        text: hpStr,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          height: 1.0,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    hpTp.paint(canvas, Offset(-hpTp.width / 2, bBarY + bBarH + 2));
+  }
+
+  String _fmtHp(int hp) {
+    if (hp >= 1000000) return '${(hp / 1000000).toStringAsFixed(1)}M';
+    if (hp >= 1000) return '${(hp / 1000).toStringAsFixed(0)}K';
+    return '$hp';
   }
 }

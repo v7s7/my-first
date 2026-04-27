@@ -53,7 +53,9 @@ class ArenaConfig {
   factory ArenaConfig.fromScreen(Vector2 screenSize, ArenaPreset preset,
       {bool square = false}) {
     final w = screenSize.x * preset.fraction;
-    final h = square ? w : screenSize.y * preset.fraction;
+    final h = (square && preset != ArenaPreset.full)
+        ? w
+        : screenSize.y * preset.fraction;
     final l = (screenSize.x - w) / 2;
     final t = (screenSize.y - h) / 2;
     return ArenaConfig._(

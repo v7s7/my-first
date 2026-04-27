@@ -404,6 +404,7 @@ class BossBallGame extends FlameGame with TapCallbacks {
             Vector2((_rng.nextDouble() - 0.5) * 40, -30),
         damage: finalDamage,
         isSmall: false,
+        labelColor: isCrit ? const Color(0xFFFF4422) : const Color(0xFFFF2244),
         driftX: (_rng.nextDouble() - 0.5) * 60,
       ));
     } else {
@@ -422,6 +423,7 @@ class BossBallGame extends FlameGame with TapCallbacks {
           ),
           damage: finalDamage,
           isSmall: true,
+          labelColor: const Color(0xFFFF2244),
           driftX: (_rng.nextDouble() - 0.5) * 40,
         ));
       }
