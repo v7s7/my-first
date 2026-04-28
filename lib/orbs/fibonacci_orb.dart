@@ -23,6 +23,10 @@ class FibonacciOrb extends OrbBehavior {
   double _hitTimer = 0;
   static const double _hitDur = 0.35;
 
+  // Ball grows 2 px per Fibonacci step (up to 14 px at step 7)
+  @override
+  double get visualGrowth => _step * 2.0;
+
   @override
   void onAttach(PlayerOrb orb) { _step = 0; _time = 0; _hit = false; }
 
@@ -98,21 +102,26 @@ class FibonacciOrb extends OrbBehavior {
       );
     }
 
-    // Step label (F_n)
-    if (_step < _seq.length) {
-      final tp = TextPainter(
-        text: TextSpan(
-          text: 'F${_step + 1}',
-          style: const TextStyle(
-            color: Color(0xFFFFCC44),
-            fontSize: 9,
-            fontWeight: FontWeight.w900,
-          ),
+    // Next damage value shown on ball center
+    final nextDmg = _seq[_step];
+    final dmgStr = _step == _seq.length - 1 ? '21K★' : _fmtDmg(nextDmg);
+    final dmgTp = TextPainter(
+      text: TextSpan(
+        text: dmgStr,
+        style: TextStyle(
+          color: Colors.white.withOpacity(0.95),
+          fontSize: 11.0 + _step * 0.5,
+          fontWeight: FontWeight.w900,
+          height: 1.0,
+          shadows: const [
+            Shadow(color: Color(0xCC000000), offset: Offset(1, 1), blurRadius: 2),
+            Shadow(color: Color(0xFFFFCC44), blurRadius: 8),
+          ],
         ),
-        textDirection: TextDirection.ltr,
-      )..layout();
-      tp.paint(canvas, Offset(cx + radius + 3, cy - 6));
-    }
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    dmgTp.paint(canvas, Offset(cx - dmgTp.width / 2, cy - dmgTp.height / 2));
 
     // Hit burst
     if (_hit) {
@@ -127,5 +136,11 @@ class FibonacciOrb extends OrbBehavior {
           ..maskFilter = MaskFilter.blur(BlurStyle.normal, 10 * (1.0 - p)),
       );
     }
+  }
+
+  static String _fmtDmg(int dmg) {
+    if (dmg >= 1000000) return '${(dmg / 1000000).toStringAsFixed(1)}M';
+    if (dmg >= 1000) return '${dmg ~/ 1000}K';
+    return '$dmg';
   }
 }

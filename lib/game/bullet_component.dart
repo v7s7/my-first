@@ -86,7 +86,7 @@ class BulletComponent extends PositionComponent with HasGameRef<BossBallGame> {
         shape: _BShape.round,
       );
 
-  /// PVP shotgun pellet — short range, fires in a spread pattern.
+  /// PVP shotgun pellet — spread pattern, homing to ensure pellets reach.
   factory BulletComponent.shotgunPellet({
     required Vector2 position,
     required Vector2 target,
@@ -101,7 +101,6 @@ class BulletComponent extends PositionComponent with HasGameRef<BossBallGame> {
         color: const Color(0xFFFF6600),
         speed: 900.0,
         hitRadius: 22.0,
-        maxRange: 480.0,
         spreadAngleRad: spreadAngleRad,
         homing: true,
         shape: _BShape.pellet,
@@ -282,6 +281,7 @@ class BulletComponent extends PositionComponent with HasGameRef<BossBallGame> {
       }
     }
 
+    final prevPos = position.clone();
     final step = _velocity * dt;
     position += step;
     _distTraveled += step.length;
@@ -291,10 +291,21 @@ class BulletComponent extends PositionComponent with HasGameRef<BossBallGame> {
       return;
     }
 
+    // Swept check: did the bullet's path this frame pass through the hit circle?
+    // Catches fast bullets (sniper/railgun) that can tunnel through the target
+    // between frames with a simple point-distance check.
     final tgt = _currentTargetPos;
-    if (tgt != null && position.distanceTo(tgt) < _hitRadius) {
+    if (tgt != null && _sweepHit(prevPos, position, tgt, _hitRadius)) {
       _impact();
     }
+  }
+
+  static bool _sweepHit(Vector2 from, Vector2 to, Vector2 center, double r) {
+    final seg = to - from;
+    final lenSq = seg.dot(seg);
+    if (lenSq < 0.001) return from.distanceTo(center) < r;
+    final t = ((center - from).dot(seg) / lenSq).clamp(0.0, 1.0);
+    return (from + seg * t).distanceTo(center) < r;
   }
 
   void _impact() {

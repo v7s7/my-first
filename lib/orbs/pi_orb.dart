@@ -34,6 +34,10 @@ class PiOrb extends OrbBehavior {
   double _flashTimer = 0;
   static const double _flashDur = 0.35;
 
+  // Ball size tracks current digit: digit 0 → same size, digit 9 → +13.5 px
+  @override
+  double get visualGrowth => _lastDigit * 1.5;
+
   @override
   void onAttach(PlayerOrb orb) {
     _digitIndex = 0;
@@ -108,19 +112,26 @@ class PiOrb extends OrbBehavior {
     )..layout();
     tpPi.paint(canvas, Offset(cx - tpPi.width / 2, cy - tpPi.height / 2));
 
-    // Show last digit used (top-right badge)
-    final tpD = TextPainter(
+    // Current damage on ball center (digit × 2K)
+    final curDmg = _lastDigit * _dmgPerDigit;
+    final dmgStr = '${_fmtDmg(curDmg)}';
+    final dmgTp = TextPainter(
       text: TextSpan(
-        text: '$_lastDigit',
+        text: dmgStr,
         style: TextStyle(
-          color: const Color(0xFF66AAFF).withOpacity(_flash ? 1.0 : 0.65),
-          fontSize: 11,
+          color: Colors.white.withOpacity(0.95),
+          fontSize: 10.0 + _lastDigit * 0.4,
           fontWeight: FontWeight.w900,
+          height: 1.0,
+          shadows: const [
+            Shadow(color: Color(0xCC000000), offset: Offset(1, 1), blurRadius: 2),
+            Shadow(color: Color(0xFF66AAFF), blurRadius: 8),
+          ],
         ),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
-    tpD.paint(canvas, Offset(cx + radius + 3, cy - 7));
+    dmgTp.paint(canvas, Offset(cx - dmgTp.width / 2, cy - dmgTp.height / 2 + 3));
 
     // Flash on 9 (max digit)
     if (_flash && _lastDigit >= 8) {
@@ -135,5 +146,11 @@ class PiOrb extends OrbBehavior {
           ..maskFilter = MaskFilter.blur(BlurStyle.normal, 10 * (1.0 - p)),
       );
     }
+  }
+
+  static String _fmtDmg(int dmg) {
+    if (dmg >= 1000000) return '${(dmg / 1000000).toStringAsFixed(1)}M';
+    if (dmg >= 1000) return '${dmg ~/ 1000}K';
+    return '$dmg';
   }
 }
