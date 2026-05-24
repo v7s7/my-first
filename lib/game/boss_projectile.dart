@@ -49,6 +49,9 @@ class BossProjectile extends PositionComponent with HasGameRef<BossBallGame> {
       position.y = arena.innerBottom; _velocity.y = -_velocity.y.abs();
     }
 
+    // Bounce off internal obstacles (pillars, maze walls, etc.)
+    arena.bounceOffObstacles(position, _velocity, _hitRadius);
+
     for (final orb in gameRef.orbs) {
       if (position.distanceTo(orb.position) < _hitRadius + orb.orbRadius) {
         _hit = true;

@@ -154,6 +154,9 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
       if (velocity.y > 0) velocity.y = -velocity.y;
     }
 
+    // Internal obstacle bounce (pillars, maze walls, etc.)
+    arena.bounceOffObstacles(position, velocity, radius);
+
     // Speed clamp
     if (_frozenTimer <= 0) {
       final spd = velocity.length;
