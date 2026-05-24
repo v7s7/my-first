@@ -668,7 +668,10 @@ class _StartScreenState extends State<StartScreen> {
                   ],
                 )
               : _isDualBall
-                  ? Row(
+                  ? FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         _FighterSlot(
@@ -705,8 +708,12 @@ class _StartScreenState extends State<StartScreen> {
                               : null,
                         ),
                       ],
+                      ),
                     )
-                  : Row(
+                  : FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         _FighterSlot(
@@ -732,6 +739,7 @@ class _StartScreenState extends State<StartScreen> {
                               : null,
                         ),
                       ],
+                      ),
                     ),
         ],
       ),

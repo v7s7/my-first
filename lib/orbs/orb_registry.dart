@@ -76,5 +76,5 @@ class OrbRegistry {
   ];
 
   static OrbBehavior findById(String id) =>
-      all.firstWhere((b) => b.id == id);
+      all.firstWhere((b) => b.id == id, orElse: () => all.first);
 }
