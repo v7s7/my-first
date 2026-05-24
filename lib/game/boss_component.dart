@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 import 'boss_ball_game.dart';
+import 'damage_number.dart';
 
 class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
   double radius = 60.0;
@@ -35,6 +36,30 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
   bool _phase3Triggered = false;
   double _attackTimer   = 0.0;
   double _phaseFlashTimer = 0.0;
+  double _tauntTimer = 7.0;
+
+  static const List<String> _phase1Taunts = [
+    'YOU CALL THAT A HIT?',
+    'IS THAT ALL YOU GOT?',
+    'PATHETIC!',
+    'TRY HARDER!',
+    'I BARELY FELT THAT!',
+    'NICE TRY... NOT.',
+  ];
+  static const List<String> _phase2Taunts = [
+    'GETTING ANGRY...',
+    "YOU'LL REGRET THIS!",
+    "I'M GETTING SERIOUS!",
+    'FEEL MY WRATH!',
+    'YOU CANNOT WIN!',
+  ];
+  static const List<String> _phase3Taunts = [
+    'THIS ENDS NOW!',
+    "YOU'VE DOOMED YOURSELF!",
+    "I'LL DESTROY YOU!",
+    'NO MORE MERCY!',
+    'WITNESS MY POWER!!!',
+  ];
 
   double get _attackInterval => phase == 3 ? 2.2 : 3.8;
 
@@ -62,9 +87,30 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
 
     _checkPhaseTransitions();
 
+    // Boss taunts — random speech bubbles
+    if (gameRef.playing && !isFrozen) {
+      _tauntTimer -= dt;
+      if (_tauntTimer <= 0) {
+        final interval = phase == 1 ? 9.0 : (phase == 2 ? 6.0 : 4.0);
+        _tauntTimer = interval + _rng.nextDouble() * 4.0;
+        final taunts = phase == 3
+            ? _phase3Taunts
+            : (phase == 2 ? _phase2Taunts : _phase1Taunts);
+        final taunt = taunts[_rng.nextInt(taunts.length)];
+        gameRef.add(DamageNumber(
+          position: position.clone() + Vector2(0, -(radius + 40)),
+          damage: 0,
+          label: '"$taunt"',
+          labelColor: const Color(0xFFFF6688),
+          isSmall: false,
+          driftX: 0,
+        ));
+      }
+    }
+
     // Attack timer — phases 2 and 3 only
     if (phase > 1) {
-      _attackTimer -= dt;
+      _attackTimer -= dt * gameRef.timeWarpMultiplier;
       if (_attackTimer <= 0) {
         _attackTimer = _attackInterval;
         gameRef.spawnBossAttack(position.clone(), phase);
@@ -83,11 +129,12 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
       }
     }
 
-    // Movement (phase-speed-scaled, plus any Endless wave boost)
+    // Movement (phase-speed-scaled, wave boost, time warp)
+    final warpMult = gameRef.timeWarpMultiplier;
     if (_frozenTimer <= 0) {
-      position += velocity * _speedMultiplier * waveSpeedBoost * dt;
+      position += velocity * _speedMultiplier * waveSpeedBoost * dt * warpMult;
     } else {
-      position += velocity * dt;
+      position += velocity * dt * warpMult;
     }
 
     // Wall bounces

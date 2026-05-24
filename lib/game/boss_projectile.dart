@@ -35,7 +35,7 @@ class BossProjectile extends PositionComponent with HasGameRef<BossBallGame> {
     _time += dt;
     if (_life <= 0) { removeFromParent(); return; }
 
-    position += _velocity * dt;
+    position += _velocity * dt * gameRef.timeWarpMultiplier;
 
     final arena = gameRef.arenaConfig;
     if (position.x < arena.innerLeft) {

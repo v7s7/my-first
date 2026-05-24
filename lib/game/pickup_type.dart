@@ -23,6 +23,7 @@ enum PickupType {
   overdrive, // 🚀 next 3 hits deal 5× damage
   meteor,    // ☄️ 600K instant nuke — rarest drop
   freezeBomb, // ❄️💣 freeze 6s + 300K instant damage
+  timeWarp,   // 🕰️ bullet time — boss & projectiles slow to 20% for 3s
 }
 
 extension PickupTypeInfo on PickupType {
@@ -49,6 +50,7 @@ extension PickupTypeInfo on PickupType {
       case PickupType.overdrive: return '🚀';
       case PickupType.meteor:    return '☄️';
       case PickupType.freezeBomb:return '🧊💣';
+      case PickupType.timeWarp: return '🕰️';
     }
   }
 
@@ -75,6 +77,7 @@ extension PickupTypeInfo on PickupType {
       case PickupType.overdrive: return 'OVERDRIVE';
       case PickupType.meteor:    return 'METEOR';
       case PickupType.freezeBomb:return 'FREEZE BOMB';
+      case PickupType.timeWarp: return 'TIME WARP';
     }
   }
 
@@ -101,6 +104,7 @@ extension PickupTypeInfo on PickupType {
       case PickupType.overdrive: return const Color(0xFFFF8800);
       case PickupType.meteor:    return const Color(0xFFFF4400);
       case PickupType.freezeBomb:return const Color(0xFF44CCFF);
+      case PickupType.timeWarp: return const Color(0xFF4488FF);
     }
   }
 
@@ -128,6 +132,7 @@ extension PickupTypeInfo on PickupType {
       case PickupType.overdrive: return 1;
       case PickupType.meteor:    return 1;
       case PickupType.freezeBomb:return 1;
+      case PickupType.timeWarp: return 1;
     }
   }
 

@@ -161,6 +161,7 @@ class HudComponent extends PositionComponent {
     _renderBossHpBar(canvas);
     _renderCombo(canvas);
     _renderPickupEffects(canvas);
+    _renderRageMeter(canvas);
   }
 
   void _renderBossHpBar(Canvas canvas) {
@@ -479,21 +480,54 @@ class HudComponent extends PositionComponent {
           color: const Color(0xFF44FFEE),
           progress: gameRef.barrierHitsRemaining / 4.0));
     }
+    if (gameRef.tripleHitsRemaining > 0) {
+      indicators.add(_EffectIndicator(
+          emoji: '🎯', label: '×3  (${gameRef.tripleHitsRemaining})',
+          color: const Color(0xFFFF44FF),
+          progress: gameRef.tripleHitsRemaining / 5.0));
+    }
+    if (gameRef.overdriveHitsRemaining > 0) {
+      indicators.add(_EffectIndicator(
+          emoji: '🚀', label: '×5  (${gameRef.overdriveHitsRemaining})',
+          color: const Color(0xFFFF8800),
+          progress: gameRef.overdriveHitsRemaining / 3.0));
+    }
+    if (gameRef.timeWarpTimer > 0) {
+      indicators.add(_EffectIndicator(
+          emoji: '🕰️', label: 'TIME WARP',
+          color: const Color(0xFF4488FF),
+          progress: gameRef.timeWarpTimer / 3.0));
+    }
 
     if (indicators.isEmpty) return;
 
-    const pillW     = 110.0;
-    const pillH     = 32.0;
-    const gap       = 8.0;
+    const pillW     = 96.0;
+    const pillH     = 30.0;
+    const gap       = 6.0;
     const bottomPad = 14.0;
+    const maxPerRow = 4;
 
-    final totalW = indicators.length * pillW + (indicators.length - 1) * gap;
-    double x     = (gameRef.size.x - totalW) / 2;
-    final y      = gameRef.size.y - pillH - bottomPad;
+    final rowCount  = indicators.length > maxPerRow ? 2 : 1;
+    final show      = indicators.length.clamp(0, maxPerRow * 2);
 
-    for (final ind in indicators) {
+    for (int idx = 0; idx < show; idx++) {
+      final row  = idx ~/ maxPerRow;
+      final col  = idx % maxPerRow;
+
+      final countInRow = (idx < maxPerRow
+          ? show.clamp(0, maxPerRow)
+          : show - maxPerRow).clamp(1, maxPerRow);
+      final rowW  = countInRow * pillW + (countInRow - 1) * gap;
+      final startX = (gameRef.size.x - rowW) / 2;
+
+      final x = startX + col * (pillW + gap);
+      final y = gameRef.size.y - bottomPad
+          - (rowCount - row) * pillH
+          - (rowCount - row - 1) * gap;
+
+      final ind  = indicators[idx];
       final rect = RRect.fromRectAndRadius(
-          Rect.fromLTWH(x, y, pillW, pillH), const Radius.circular(16));
+          Rect.fromLTWH(x, y, pillW, pillH), const Radius.circular(14));
 
       canvas.drawRRect(rect, Paint()..color = const Color(0xCC0A0A20));
       canvas.drawRRect(rect,
@@ -514,7 +548,7 @@ class HudComponent extends PositionComponent {
         text: TextSpan(
           text: '${ind.emoji} ${ind.label}',
           style: TextStyle(
-              fontSize: 13,
+              fontSize: 12,
               fontWeight: FontWeight.w700,
               color: Colors.white.withOpacity(0.92)),
         ),
@@ -522,9 +556,60 @@ class HudComponent extends PositionComponent {
       )..layout(maxWidth: pillW - 8);
       tp.paint(canvas,
           Offset(x + (pillW - tp.width) / 2, y + (pillH - 4 - tp.height) / 2));
-
-      x += pillW + gap;
     }
+  }
+
+  void _renderRageMeter(Canvas canvas) {
+    if (gameRef.mode.isPvp) return;
+    final rage     = gameRef.rageEnergy;
+    final isActive = gameRef.isRageActive;
+    if (rage < 0.02 && !isActive) return;
+
+    const meterW   = 88.0;
+    const meterH   = 6.0;
+    const rightPad = 14.0;
+    const bottomPad = 56.0;
+    final x = gameRef.size.x - meterW - rightPad;
+    final y = gameRef.size.y - bottomPad;
+
+    final rageColor = isActive
+        ? const Color(0xFFFF2200)
+        : (rage >= 1.0 ? const Color(0xFFFFD700) : const Color(0xFFFF6600));
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+          Rect.fromLTWH(x, y, meterW, meterH), const Radius.circular(3)),
+      Paint()..color = const Color(0x44FFFFFF),
+    );
+
+    final fillFrac = isActive
+        ? (gameRef.rageTimer / 4.0).clamp(0.0, 1.0)
+        : rage.clamp(0.0, 1.0);
+    if (fillFrac > 0) {
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+            Rect.fromLTWH(x, y, meterW * fillFrac, meterH),
+            const Radius.circular(3)),
+        Paint()..color = rageColor.withOpacity(isActive ? 0.9 : 0.8),
+      );
+    }
+
+    final rageLabel = isActive
+        ? '🔥 FURY  ${gameRef.rageTimer.ceil()}s'
+        : (rage >= 1.0 ? '🔥 TAP! FURY READY' : '🔥 ${(rage * 100).round()}%');
+    final tp = TextPainter(
+      text: TextSpan(
+        text: rageLabel,
+        style: TextStyle(
+          color: rageColor,
+          fontSize: 9,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 0.5,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tp.paint(canvas, Offset(x + meterW - tp.width, y + meterH + 3));
   }
 
   // ── Utilities ─────────────────────────────────────────────────────────────

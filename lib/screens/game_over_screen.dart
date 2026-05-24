@@ -234,6 +234,8 @@ class _GameOverScreenState extends State<GameOverScreen> {
                         customBossHp: game.customBossHp,
                         orbImageBytes: game.orbImageBytes,
                         bossImageBytes: game.bossImageBytes,
+                        pvpOrbColors: game.pvpOrbColors,
+                        pvpAllowedItems: game.pvpAllowedItems,
                       ),
                     ),
                   ),

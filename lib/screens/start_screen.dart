@@ -1645,7 +1645,7 @@ class _TutorialDialogState extends State<_TutorialDialog> {
     _TutPage(
       icon: Icons.auto_awesome,
       color: Color(0xFFFFDD00),
-      title: '16 UNIQUE ORBS',
+      title: '31 UNIQUE ORBS',
       body:
           'Each orb has a special power. Ice freezes the boss for 2× damage, Combo multiplies on wall bounces, Laser fires beams...',
     ),

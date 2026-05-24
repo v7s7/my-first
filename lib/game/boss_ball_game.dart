@@ -93,6 +93,16 @@ class BossBallGame extends FlameGame with TapCallbacks {
   int    _barrierHitsRemaining  = 0;
   int    _tripleHitsRemaining   = 0;
   int    _overdriveHitsRemaining = 0;
+
+  // Time Warp
+  double _timeWarpTimer = 0.0;
+
+  // Rage / Fury system
+  double _rageEnergy     = 0.0;
+  bool   _rageActive     = false;
+  double _rageTimer      = 0.0;
+  static const double rageDuration = 4.0;
+
   List<double> _ghostTimers      = [0.0, 0.0];
   List<double> _pvpShieldTimers  = [0.0, 0.0];
   int    _revolverBurstsLeft    = 0;
@@ -114,6 +124,10 @@ class BossBallGame extends FlameGame with TapCallbacks {
   int    get barrierHitsRemaining   => _barrierHitsRemaining;
   int    get tripleHitsRemaining    => _tripleHitsRemaining;
   int    get overdriveHitsRemaining => _overdriveHitsRemaining;
+  double get timeWarpTimer  => _timeWarpTimer;
+  double get rageEnergy     => _rageEnergy;
+  bool   get isRageActive   => _rageActive;
+  double get rageTimer      => _rageTimer;
   bool isOrbGhosted(int index) =>
       index < _ghostTimers.length && _ghostTimers[index] > 0;
   bool isOrbShielded(int index) =>
@@ -170,7 +184,7 @@ class BossBallGame extends FlameGame with TapCallbacks {
   // ── Arena background reference (for hit pulse) ────────────────────────────
   ArenaBackground? _arenaBackground;
 
-  // Stacked damage multiplier from all active buffs (capped at 8×)
+  // Stacked damage multiplier from all active buffs (capped at 12×, 15× during fury)
   double get _effectiveMultiplier {
     double m = 1.0;
     if (_shieldTimer > 0) m *= 2.0;
@@ -178,8 +192,12 @@ class BossBallGame extends FlameGame with TapCallbacks {
     if (_barrierHitsRemaining > 0) m *= 3.0;
     if (_tripleHitsRemaining > 0) m *= 3.0;
     if (_overdriveHitsRemaining > 0) m *= 5.0;
-    return m.clamp(1.0, 12.0);
+    if (_rageActive) m *= 3.0;
+    return m.clamp(1.0, _rageActive ? 15.0 : 12.0);
   }
+
+  /// Multiplier applied to boss and projectile speed during Time Warp (0.2 when active, else 1.0).
+  double get timeWarpMultiplier => _timeWarpTimer > 0 ? 0.2 : 1.0;
 
   BossBallGame({
     required this.orbBehavior,
@@ -379,6 +397,11 @@ class BossBallGame extends FlameGame with TapCallbacks {
       finalDamage = boostedBase * 2;
     }
 
+    // Fill rage meter on boss hits (non-PVP)
+    if (!isLaserTick && !mode.isPvp && !_rageActive) {
+      _rageEnergy = (_rageEnergy + (isCrit ? 0.10 : 0.04)).clamp(0.0, 1.0);
+    }
+
     bossHp = (bossHp - finalDamage).clamp(0, bossMaxHp);
     totalDamage += finalDamage;
 
@@ -398,7 +421,8 @@ class BossBallGame extends FlameGame with TapCallbacks {
       triggerShake(intensity: shakePower, duration: isCrit ? 0.3 : 0.18);
       _hitFlashTimer = isCrit ? 0.14 : 0.07;
       _arenaBackground?.pulse((finalDamage / bossMaxHp).clamp(0.0, 1.0) * 4);
-      spawnFireExplosion(orb.position.clone());
+      spawnFireExplosion(boss!.position.clone() +
+          Vector2((_rng.nextDouble() - 0.5) * 40, (_rng.nextDouble() - 0.5) * 40));
       add(DamageNumber(
         position: boss!.position.clone() +
             Vector2((_rng.nextDouble() - 0.5) * 40, -30),
@@ -757,6 +781,18 @@ class BossBallGame extends FlameGame with TapCallbacks {
         _spawnRevolverBullet();
       }
     }
+
+    if (_timeWarpTimer > 0) {
+      _timeWarpTimer -= dt;
+      if (_timeWarpTimer < 0) _timeWarpTimer = 0;
+    }
+    if (_rageTimer > 0) {
+      _rageTimer -= dt;
+      if (_rageTimer <= 0) {
+        _rageActive = false;
+        _rageTimer  = 0;
+      }
+    }
   }
 
   void _maybeSpawnPickup(double dt) {
@@ -859,6 +895,11 @@ class BossBallGame extends FlameGame with TapCallbacks {
         onOrbHitBoss(300000);
         boss?.freezeBoss(6.0);
         triggerShake(intensity: 70, duration: 0.5);
+      case PickupType.timeWarp:
+        _timeWarpTimer = 3.0;
+        triggerShake(intensity: 22, duration: 0.3);
+        _phaseFlashTimer = 0.3;
+        _phaseFlashColor = const Color(0xFF4488FF);
       case PickupType.mystery:
         onPickupCollected(PickupTypeInfo.randomNonMystery(_rng));
     }
@@ -941,6 +982,9 @@ class BossBallGame extends FlameGame with TapCallbacks {
           _orbs[opponentIndex].freeze(6.0);
         }
         triggerShake(intensity: 70, duration: 0.5);
+      case PickupType.timeWarp:
+        _timeWarpTimer = 3.0;
+        triggerShake(intensity: 22, duration: 0.3);
       case PickupType.mystery:
         _onPickupCollectedPvp(
             PickupTypeInfo.randomNonMystery(_rng), collectorIndex);
@@ -1016,6 +1060,29 @@ class BossBallGame extends FlameGame with TapCallbacks {
   void _incrementCombo() {
     _comboCount++;
     _comboDecayTimer = _comboDecayTime;
+
+    String? label;
+    Color?  color;
+    switch (_comboCount) {
+      case 5:   label = '★  KILLING SPREE!';  color = const Color(0xFFFF8800);
+      case 10:  label = '★  DOMINATING!';     color = const Color(0xFFFF4400);
+      case 20:  label = '★  UNSTOPPABLE!';    color = const Color(0xFFFF2200);
+      case 50:  label = '★  GODLIKE!!';       color = const Color(0xFFFFD700);
+      case 100: label = '★  LEGENDARY!!!';    color = const Color(0xFFFF00FF);
+    }
+    if (label != null && boss != null) {
+      add(DamageNumber(
+        position: arenaConfig.center.clone() + Vector2(0, -90),
+        damage: 0,
+        label: label,
+        labelColor: color,
+        isSmall: false,
+        driftX: 0,
+      ));
+      triggerShake(intensity: 22, duration: 0.28);
+      _phaseFlashTimer = 0.22;
+      _phaseFlashColor = color!;
+    }
   }
 
   void _tickCombo(double dt) {
@@ -1216,11 +1283,42 @@ class BossBallGame extends FlameGame with TapCallbacks {
     super.update(dt);
   }
 
+  // ── Fury activation ───────────────────────────────────────────────────────
+
+  void _activateFury() {
+    _rageActive = true;
+    _rageTimer  = rageDuration;
+    _rageEnergy = 0.0;
+    _phaseFlashTimer = 0.45;
+    _phaseFlashColor = const Color(0xFFFF4400);
+    triggerShake(intensity: 50, duration: 0.45);
+    HapticFeedback.heavyImpact();
+    SoundManager.instance.playPhaseChange();
+    if (orbs.isNotEmpty) {
+      add(DamageNumber(
+        position: orb.position.clone() + Vector2(0, -70),
+        damage: 0,
+        label: '🔥  FURY MODE!',
+        labelColor: const Color(0xFFFF4400),
+        isSmall: false,
+        driftX: 0,
+      ));
+    }
+  }
+
   // ── Tap-to-nudge ──────────────────────────────────────────────────────────
 
   @override
   void onTapDown(TapDownEvent event) {
-    if (!playing || mode.isPvp) return;
+    if (!playing) return;
+
+    // Fury activation takes priority when rage bar is full
+    if (!mode.isPvp && _rageEnergy >= 1.0 && !_rageActive) {
+      _activateFury();
+      return;
+    }
+
+    if (mode.isPvp) return;
     final tapPos = event.localPosition;
     PlayerOrb? nearest;
     double bestDist = double.infinity;
@@ -1269,6 +1367,24 @@ class BossBallGame extends FlameGame with TapCallbacks {
       canvas.drawRect(
         Rect.fromLTWH(0, 0, size.x, size.y),
         Paint()..color = _phaseFlashColor.withOpacity(alpha),
+      );
+    }
+
+    // Time warp blue overlay
+    if (_timeWarpTimer > 0) {
+      final alpha = (_timeWarpTimer / 3.0).clamp(0.0, 1.0) * 0.14;
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, size.x, size.y),
+        Paint()..color = const Color(0xFF2244BB).withOpacity(alpha),
+      );
+    }
+
+    // Fury mode red pulse overlay
+    if (_rageActive) {
+      final pulse = sin(totalTime * 14) * 0.5 + 0.5;
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, size.x, size.y),
+        Paint()..color = const Color(0xFFFF2200).withOpacity(0.04 + pulse * 0.05),
       );
     }
   }
