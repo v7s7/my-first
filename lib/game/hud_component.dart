@@ -162,6 +162,7 @@ class HudComponent extends PositionComponent {
     _renderCombo(canvas);
     _renderPickupEffects(canvas);
     _renderRageMeter(canvas);
+    _renderRicochetCharge(canvas);
   }
 
   void _renderBossHpBar(Canvas canvas) {
@@ -498,6 +499,18 @@ class HudComponent extends PositionComponent {
           color: const Color(0xFF4488FF),
           progress: gameRef.timeWarpTimer / 3.0));
     }
+    if (!gameRef.mode.isPvp && gameRef.burnStacks > 0) {
+      indicators.add(_EffectIndicator(
+          emoji: '🔥', label: 'BURN ×${gameRef.burnStacks}',
+          color: const Color(0xFFFF6600),
+          progress: gameRef.burnStacks / 5.0));
+    }
+    if (!gameRef.mode.isPvp && gameRef.isBossBerserk) {
+      indicators.add(_EffectIndicator(
+          emoji: '💢', label: 'BERSERK ${gameRef.bossBerserkTimer.ceil()}s',
+          color: const Color(0xFFFF2200),
+          progress: gameRef.bossBerserkTimer / 6.0));
+    }
 
     if (indicators.isEmpty) return;
 
@@ -557,6 +570,54 @@ class HudComponent extends PositionComponent {
       tp.paint(canvas,
           Offset(x + (pillW - tp.width) / 2, y + (pillH - 4 - tp.height) / 2));
     }
+  }
+
+  void _renderRicochetCharge(Canvas canvas) {
+    if (gameRef.mode.isPvp) return;
+    final count = gameRef.ricochetCount;
+    if (count == 0) return;
+
+    const meterW   = 88.0;
+    const meterH   = 6.0;
+    const leftPad  = 14.0;
+    const bottomPad = 56.0;
+    final x = leftPad;
+    final y = gameRef.size.y - bottomPad;
+
+    const maxCount  = 8;
+    final frac      = (count / maxCount).clamp(0.0, 1.0);
+    final isOvercharged = count >= maxCount;
+    final barColor  = isOvercharged
+        ? const Color(0xFFFFFF88)
+        : const Color(0xFFFF9900);
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+          Rect.fromLTWH(x, y, meterW, meterH), const Radius.circular(3)),
+      Paint()..color = const Color(0x44FFFFFF),
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+          Rect.fromLTWH(x, y, meterW * frac, meterH), const Radius.circular(3)),
+      Paint()..color = barColor.withOpacity(0.88),
+    );
+
+    final label = isOvercharged
+        ? '⚡ OVERCHARGE!'
+        : '⚡ ${count}× CHARGE';
+    final tp = TextPainter(
+      text: TextSpan(
+        text: label,
+        style: TextStyle(
+          color: barColor,
+          fontSize: 9,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 0.5,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tp.paint(canvas, Offset(x, y + meterH + 3));
   }
 
   void _renderRageMeter(Canvas canvas) {

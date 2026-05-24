@@ -28,9 +28,10 @@ class PlayerOrb extends PositionComponent {
   late Vector2 velocity;
 
   final Random _rng = Random();
-  double _hitCooldownTimer = 0.0;
+  double _hitCooldownTimer  = 0.0;
   double _bounceSquashTimer = 0.0;
-  double _frozenTimer = 0.0;
+  double _frozenTimer       = 0.0;
+  double _renderTime        = 0.0;
 
   // Weapon spin angle — independent of velocity direction; spins continuously
   double _weaponAngle = 0.0;
@@ -120,6 +121,7 @@ class PlayerOrb extends PositionComponent {
       }
     }
 
+    _renderTime += dt;
     if (_hitCooldownTimer > 0) _hitCooldownTimer -= dt;
     if (_bounceSquashTimer > 0) _bounceSquashTimer -= dt;
 
@@ -211,6 +213,7 @@ class PlayerOrb extends PositionComponent {
       _bounceSquashTimer = 0.08;
       gameRef.triggerShake(intensity: 1.5, duration: 0.05);
       behavior.onWallBounce(this);
+      gameRef.onOrbWallBounce();
     }
 
     if (arena.bounceOffObstacles(position, velocity, orbRadius)) {
@@ -219,6 +222,7 @@ class PlayerOrb extends PositionComponent {
       _bounceSquashTimer = 0.08;
       gameRef.triggerShake(intensity: 1.5, duration: 0.05);
       behavior.onWallBounce(this);
+      gameRef.onOrbWallBounce();
     }
   }
 
@@ -285,6 +289,37 @@ class PlayerOrb extends PositionComponent {
     canvas.translate(-cx, -cy);
 
     final color = customColor ?? behavior.color;
+
+    // Ricochet Overcharge glow
+    if (!gameRef.mode.isPvp) {
+      final rc = gameRef.ricochetCount;
+      if (rc >= 5) {
+        final isOvercharged = rc >= 8;
+        final glowColor = isOvercharged
+            ? const Color(0xFFFFFF88)
+            : const Color(0xFFFF9900);
+        final pulse = sin(_renderTime * (isOvercharged ? 14.0 : 9.0)) * 0.35 + 0.65;
+        canvas.drawCircle(
+          Offset(cx, cy),
+          displayRadius + 10 + (isOvercharged ? sin(_renderTime * 20) * 3 : 0),
+          Paint()
+            ..color = glowColor.withOpacity(0.55 * pulse)
+            ..maskFilter = MaskFilter.blur(
+                BlurStyle.normal, isOvercharged ? 14.0 : 9.0),
+        );
+        if (isOvercharged) {
+          // Spark ring at overcharge
+          canvas.drawCircle(
+            Offset(cx, cy),
+            displayRadius + 4,
+            Paint()
+              ..color = Colors.white.withOpacity(0.45 * pulse)
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 2.5,
+          );
+        }
+      }
+    }
 
     // Frozen overlay
     if (isFrozen) {

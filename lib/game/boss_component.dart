@@ -14,6 +14,28 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
   late Vector2 velocity;
   final _rng = Random();
 
+  // ── Armor plate system ────────────────────────────────────────────────────
+  final List<double> _armorAngles = [];
+  double _armorShiftTimer   = 0.0;
+  int    _armorBlockedHits  = 0;
+  static const double _armorArcHalf      = pi / 6;   // ±30° = 60° total per plate
+  static const double _armorShiftInterval = 8.0;
+  static const int    _armorBlocksToShift = 2;
+
+  // ── Berserk state ─────────────────────────────────────────────────────────
+  bool   _isBerserk        = false;
+  double berserkSpeedBoost = 1.0;
+
+  void enterBerserk() {
+    _isBerserk        = true;
+    berserkSpeedBoost = 1.6;
+  }
+
+  void exitBerserk() {
+    _isBerserk        = false;
+    berserkSpeedBoost = 1.0;
+  }
+
   // ── Freeze mechanic ───────────────────────────────────────────────────────
   double _frozenTimer = 0.0;
   bool get isFrozen => _frozenTimer > 0;
@@ -119,6 +141,9 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
 
     if (_phaseFlashTimer > 0) _phaseFlashTimer -= dt;
 
+    // Armor plate rotation
+    _tickArmor(dt);
+
     // Freeze deceleration
     if (_frozenTimer > 0) {
       _frozenTimer -= dt;
@@ -129,10 +154,10 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
       }
     }
 
-    // Movement (phase-speed-scaled, wave boost, time warp)
+    // Movement (phase-speed-scaled, wave boost, berserk boost, time warp)
     final warpMult = gameRef.timeWarpMultiplier;
     if (_frozenTimer <= 0) {
-      position += velocity * _speedMultiplier * waveSpeedBoost * dt * warpMult;
+      position += velocity * _speedMultiplier * waveSpeedBoost * berserkSpeedBoost * dt * warpMult;
     } else {
       position += velocity * dt * warpMult;
     }
@@ -170,6 +195,64 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
             : velocity.normalized() * minSpeed;
       }
     }
+  }
+
+  // ── Armor plate helpers ───────────────────────────────────────────────────
+
+  void _tickArmor(double dt) {
+    if (!gameRef.playing || isFrozen) return;
+    final targetCount = phase == 3 ? 3 : (phase == 2 ? 2 : 1);
+    while (_armorAngles.length < targetCount) {
+      _armorAngles.add(_rng.nextDouble() * 2 * pi);
+    }
+    // Trim if phase dropped (shouldn't normally happen)
+    while (_armorAngles.length > targetCount) _armorAngles.removeLast();
+
+    _armorShiftTimer += dt;
+    if (_armorShiftTimer >= _armorShiftInterval) {
+      _armorShiftTimer = 0;
+      _shiftArmor();
+    }
+  }
+
+  void _shiftArmor() {
+    _armorBlockedHits = 0;
+    for (int i = 0; i < _armorAngles.length; i++) {
+      double newAngle;
+      int tries = 0;
+      do {
+        newAngle = _rng.nextDouble() * 2 * pi;
+        tries++;
+      } while (tries < 8 && _armorAngles.any((a) {
+        double d = (newAngle - a).abs();
+        while (d > pi) d = (2 * pi - d).abs();
+        return d < _armorArcHalf * 2.5;
+      }));
+      _armorAngles[i] = newAngle;
+    }
+  }
+
+  /// Returns true if [orbPosition] is within any armor arc, consuming a block
+  /// credit (shifts armor after [_armorBlocksToShift] blocks).
+  bool checkAndConsumeArmor(Vector2 orbPosition) {
+    if (_armorAngles.isEmpty) return false;
+    final impactAngle = atan2(
+      orbPosition.y - position.y,
+      orbPosition.x - position.x,
+    );
+    for (int i = 0; i < _armorAngles.length; i++) {
+      double diff = impactAngle - _armorAngles[i];
+      while (diff >  pi) diff -= 2 * pi;
+      while (diff < -pi) diff += 2 * pi;
+      if (diff.abs() < _armorArcHalf) {
+        _armorBlockedHits++;
+        if (_armorBlockedHits >= _armorBlocksToShift) {
+          _armorShiftTimer = _armorShiftInterval; // force shift next tick
+        }
+        return true;
+      }
+    }
+    return false;
   }
 
   void _checkPhaseTransitions() {
@@ -302,6 +385,75 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
           ..style = PaintingStyle.stroke
           ..strokeWidth = 3.0
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4));
+
+    // Afterburn overlay (scales with burn stacks)
+    final burnCount = gameRef.burnStacks;
+    if (burnCount > 0) {
+      final burnAlpha = 0.18 + burnCount * 0.09;
+      final burnPulse = sin(_time * (7.0 + burnCount * 1.5)) * 0.3 + 0.7;
+      canvas.drawCircle(
+        Offset.zero,
+        radius + 10,
+        Paint()
+          ..color = const Color(0xFFFF5500).withOpacity(burnAlpha * burnPulse)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 18),
+      );
+    }
+
+    // Berserk aura
+    if (_isBerserk) {
+      final bAlpha = 0.28 + sin(_time * 11) * 0.15;
+      canvas.drawCircle(
+        Offset.zero,
+        radius + 18 + sin(_time * 7) * 5,
+        Paint()
+          ..color = Colors.red.withOpacity(bAlpha)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.solid, 14),
+      );
+      // Berserk label above boss
+      final btp = TextPainter(
+        text: const TextSpan(
+          text: '💢 BERSERK',
+          style: TextStyle(
+            color: Color(0xFFFF2200),
+            fontSize: 10,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 1.0,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      btp.paint(canvas, Offset(-btp.width / 2, -(radius + 30)));
+    }
+
+    // Armor plate arcs (rendered on top of boss body)
+    for (final angle in _armorAngles) {
+      // Glow backing
+      canvas.drawArc(
+        Rect.fromCircle(center: Offset.zero, radius: radius + 5),
+        angle - _armorArcHalf,
+        _armorArcHalf * 2,
+        false,
+        Paint()
+          ..color = const Color(0xFF88BBFF).withOpacity(0.55)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 10.0
+          ..strokeCap = StrokeCap.round
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
+      );
+      // Bright core arc
+      canvas.drawArc(
+        Rect.fromCircle(center: Offset.zero, radius: radius + 5),
+        angle - _armorArcHalf,
+        _armorArcHalf * 2,
+        false,
+        Paint()
+          ..color = const Color(0xFFCCDDFF).withOpacity(0.88)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3.5
+          ..strokeCap = StrokeCap.round,
+      );
+    }
 
     // Ice overlay
     if (isFrozen) {
