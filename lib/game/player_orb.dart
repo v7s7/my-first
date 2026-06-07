@@ -30,6 +30,8 @@ class PlayerOrb extends PositionComponent {
   final Random _rng = Random();
   double _hitCooldownTimer  = 0.0;
   double _bounceSquashTimer = 0.0;
+  double _hitPopTimer       = 0.0;
+  static const double _hitPopDuration = 0.13;
   double _frozenTimer       = 0.0;
   double _renderTime        = 0.0;
 
@@ -43,6 +45,14 @@ class PlayerOrb extends PositionComponent {
 
   void freeze(double duration) {
     if (duration > _frozenTimer) _frozenTimer = duration;
+  }
+
+  /// Shoves the orb in [direction] with [force] and triggers a recoil pop —
+  /// used when the boss's projectile strikes the orb.
+  void applyKnockback(Vector2 direction, double force) {
+    velocity += direction * force;
+    if (velocity.length > maxSpeed) velocity = velocity.normalized() * maxSpeed;
+    _hitPopTimer = _hitPopDuration;
   }
 
   /// World-space position of the spinning weapon tip (used for PVP hit detection).
@@ -124,6 +134,7 @@ class PlayerOrb extends PositionComponent {
     _renderTime += dt;
     if (_hitCooldownTimer > 0) _hitCooldownTimer -= dt;
     if (_bounceSquashTimer > 0) _bounceSquashTimer -= dt;
+    if (_hitPopTimer > 0) _hitPopTimer -= dt;
 
     if (_frozenTimer <= 0) {
       behavior.onUpdate(dt, this);
@@ -212,6 +223,7 @@ class PlayerOrb extends PositionComponent {
       velocity = velocity.normalized() * speed;
       _bounceSquashTimer = 0.08;
       gameRef.triggerShake(intensity: 1.5, duration: 0.05);
+      gameRef.onOrbWallImpact(position.clone(), customColor ?? behavior.color);
       behavior.onWallBounce(this);
       gameRef.onOrbWallBounce();
     }
@@ -221,6 +233,7 @@ class PlayerOrb extends PositionComponent {
       if (velocity.length > 0.01) velocity = velocity.normalized() * speed;
       _bounceSquashTimer = 0.08;
       gameRef.triggerShake(intensity: 1.5, duration: 0.05);
+      gameRef.onOrbWallImpact(position.clone(), customColor ?? behavior.color);
       behavior.onWallBounce(this);
       gameRef.onOrbWallBounce();
     }
@@ -266,6 +279,7 @@ class PlayerOrb extends PositionComponent {
         hitCooldown * (gameRef.rapidTimer > 0 ? 0.5 : 1.0);
     if (_hitCooldownTimer <= 0) {
       _hitCooldownTimer = effectiveCooldown;
+      _hitPopTimer = _hitPopDuration;
       behavior.onBossHit(this);
     }
   }
@@ -278,6 +292,11 @@ class PlayerOrb extends PositionComponent {
     final squash = _bounceSquashTimer > 0 ? 1.15 : 1.0;
     final stretch = _bounceSquashTimer > 0 ? 0.88 : 1.0;
 
+    // Punchy outward pop on every successful hit (boss or knockback impact)
+    final hitPop = _hitPopTimer > 0
+        ? 1.0 + (_hitPopTimer / _hitPopDuration) * 0.16
+        : 1.0;
+
     // Visual radius may grow beyond physics radius for math orbs (non-PVP only)
     final displayRadius = gameRef.mode.isPvp
         ? orbRadius
@@ -285,7 +304,7 @@ class PlayerOrb extends PositionComponent {
 
     canvas.save();
     canvas.translate(cx, cy);
-    canvas.scale(squash, stretch);
+    canvas.scale(squash * hitPop, stretch * hitPop);
     canvas.translate(-cx, -cy);
 
     final color = customColor ?? behavior.color;
@@ -319,6 +338,26 @@ class PlayerOrb extends PositionComponent {
           );
         }
       }
+    }
+
+    // Idle energy breathing glow — only shown when no other state-glow is
+    // active, so the orb still feels "alive" between hits and pickups.
+    final hasStateGlow = isFrozen ||
+        (!gameRef.mode.isPvp &&
+            (gameRef.ricochetCount >= 5 ||
+                gameRef.magnetTimer > 0 ||
+                gameRef.rapidTimer > 0)) ||
+        (gameRef.mode.isPvp &&
+            (gameRef.isOrbShielded(orbIndex) || gameRef.isOrbGhosted(orbIndex)));
+    if (!hasStateGlow) {
+      final breathe = sin(_renderTime * 2.2 + orbIndex * 1.7) * 0.5 + 0.5;
+      canvas.drawCircle(
+        Offset(cx, cy),
+        displayRadius + 4 + breathe * 3,
+        Paint()
+          ..color = color.withOpacity(0.12 + breathe * 0.10)
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, 7 + breathe * 4),
+      );
     }
 
     // Frozen overlay

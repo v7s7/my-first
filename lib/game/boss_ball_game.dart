@@ -214,6 +214,11 @@ class BossBallGame extends FlameGame with TapCallbacks {
   double _phaseFlashTimer = 0.0;
   Color  _phaseFlashColor = Colors.white;
 
+  // ── Camera punch-in (quick zoom on big moments) ───────────────────────────
+  double _zoomTimer    = 0.0;
+  double _zoomDuration = 0.18;
+  double _zoomStrength = 0.0;
+
   // ── Arena background reference (for hit pulse) ────────────────────────────
   ArenaBackground? _arenaBackground;
 
@@ -549,8 +554,13 @@ class BossBallGame extends FlameGame with TapCallbacks {
       triggerShake(intensity: shakePower, duration: isCrit ? 0.3 : 0.18);
       _hitFlashTimer = isCrit ? 0.14 : 0.07;
       _arenaBackground?.pulse((finalDamage / bossMaxHp).clamp(0.0, 1.0) * 4);
-      spawnFireExplosion(boss!.position.clone() +
-          Vector2((_rng.nextDouble() - 0.5) * 40, (_rng.nextDouble() - 0.5) * 40));
+      final hitPos = boss!.position.clone() +
+          Vector2((_rng.nextDouble() - 0.5) * 40, (_rng.nextDouble() - 0.5) * 40);
+      spawnFireExplosion(hitPos);
+      if (isCrit) {
+        spawnCritBurst(hitPos);
+        triggerZoomPunch(strength: 0.05, duration: 0.22);
+      }
       add(DamageNumber(
         position: boss!.position.clone() +
             Vector2((_rng.nextDouble() - 0.5) * 40, -30),
@@ -1342,6 +1352,7 @@ class BossBallGame extends FlameGame with TapCallbacks {
   void onBossPhaseChange(int phase) {
     final shakeIntensity = phase == 3 ? 70.0 : 45.0;
     triggerShake(intensity: shakeIntensity, duration: 0.5);
+    triggerZoomPunch(strength: phase == 3 ? 0.09 : 0.06, duration: 0.4);
     HapticFeedback.heavyImpact();
     SoundManager.instance.playPhaseChange();
     _phaseFlashTimer = 0.6;
@@ -1414,6 +1425,131 @@ class BossBallGame extends FlameGame with TapCallbacks {
     }
   }
 
+  /// Quick camera zoom-in that eases back to normal — used to punctuate big
+  /// moments (crits, phase changes, berserk) without obscuring the action.
+  void triggerZoomPunch({required double strength, double duration = 0.18}) {
+    if (strength > _zoomStrength) {
+      _zoomStrength = strength;
+      _zoomDuration = duration;
+      _zoomTimer = duration;
+    }
+  }
+
+  /// Small radial shower of glowing sparks — used for wall impacts, pickup
+  /// collection flourishes, and bullet impact snaps.
+  void spawnSparkBurst(
+    Vector2 position,
+    Color color, {
+    int count = 12,
+    double speed = 220,
+    double life = 0.32,
+    double size = 3.2,
+  }) {
+    add(
+      ParticleSystemComponent(
+        position: position,
+        particle: Particle.generate(
+          count: count,
+          lifespan: life,
+          generator: (i) {
+            final angle = (i / count) * 2 * pi + (_rng.nextDouble() - 0.5) * 0.5;
+            final spd = Vector2(cos(angle), sin(angle)) *
+                (speed * (0.55 + _rng.nextDouble() * 0.65));
+            return AcceleratedParticle(
+              acceleration: spd * -1.6,
+              speed: spd,
+              child: ComputedParticle(
+                renderer: (canvas, particle) {
+                  final fade = 1.0 - particle.progress;
+                  canvas.drawCircle(
+                    Offset.zero,
+                    size * fade,
+                    Paint()
+                      ..color = color.withOpacity(fade * 0.85)
+                      ..blendMode = BlendMode.screen
+                      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.5),
+                  );
+                },
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  /// Radiant white-gold starburst spawned on critical hits — a brighter,
+  /// punchier flourish than the standard fire explosion.
+  void spawnCritBurst(Vector2 position) {
+    // Fast bright ring flash
+    add(
+      ParticleSystemComponent(
+        position: position,
+        particle: Particle.generate(
+          count: 1,
+          lifespan: 0.24,
+          generator: (_) => ComputedParticle(
+            renderer: (canvas, particle) {
+              final fade = 1.0 - particle.progress;
+              final r = 16 + 78 * particle.progress;
+              canvas.drawCircle(
+                Offset.zero,
+                r,
+                Paint()
+                  ..color = const Color(0xFFFFEE99).withOpacity(fade * 0.75)
+                  ..style = PaintingStyle.stroke
+                  ..strokeWidth = 4.0 * fade
+                  ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+    // Radiating gold/white streaks
+    const streaks = 12;
+    add(
+      ParticleSystemComponent(
+        position: position,
+        particle: Particle.generate(
+          count: streaks,
+          lifespan: 0.4,
+          generator: (i) {
+            final angle = (i / streaks) * 2 * pi;
+            final dir = Vector2(cos(angle), sin(angle));
+            return AcceleratedParticle(
+              acceleration: dir * -300,
+              speed: dir * 460,
+              child: ComputedParticle(
+                renderer: (canvas, particle) {
+                  final fade = 1.0 - particle.progress;
+                  canvas.drawLine(
+                    Offset.zero,
+                    Offset(-dir.x * 16 * fade, -dir.y * 16 * fade),
+                    Paint()
+                      ..color = Color.lerp(Colors.white,
+                              const Color(0xFFFFCC33), particle.progress)!
+                          .withOpacity(fade)
+                      ..strokeWidth = 3.0 * fade
+                      ..strokeCap = StrokeCap.round
+                      ..blendMode = BlendMode.screen,
+                  );
+                },
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  /// Plays the wall-bounce sound and spawns a small spark shower at the
+  /// impact point — fired for every wall/obstacle bounce regardless of mode.
+  void onOrbWallImpact(Vector2 position, Color color) {
+    SoundManager.instance.playWall();
+    spawnSparkBurst(position, color, count: 8, speed: 170, life: 0.24, size: 2.4);
+  }
+
   // ── Game loop ──────────────────────────────────────────────────────────────
 
   @override
@@ -1421,6 +1557,10 @@ class BossBallGame extends FlameGame with TapCallbacks {
     if (_shakeTimer > 0) {
       _shakeTimer -= dt;
       if (_shakeTimer <= 0) _shakeIntensity = 0.0;
+    }
+    if (_zoomTimer > 0) {
+      _zoomTimer -= dt;
+      if (_zoomTimer <= 0) _zoomStrength = 0.0;
     }
     if (!playing) {
       super.update(dt);
@@ -1484,6 +1624,7 @@ class BossBallGame extends FlameGame with TapCallbacks {
       spawnBossAttack(boss!.position.clone(), boss!.phase);
     }
     triggerShake(intensity: 55, duration: 0.5);
+    triggerZoomPunch(strength: 0.07, duration: 0.4);
     _phaseFlashTimer = 0.55;
     _phaseFlashColor = const Color(0xFFFF0000);
     HapticFeedback.heavyImpact();
@@ -1556,11 +1697,26 @@ class BossBallGame extends FlameGame with TapCallbacks {
 
   @override
   void render(Canvas canvas) {
-    if (_shakeTimer > 0) {
-      final dx = (_rng.nextDouble() - 0.5) * 2.0 * _shakeIntensity;
-      final dy = (_rng.nextDouble() - 0.5) * 2.0 * _shakeIntensity;
+    final shaking = _shakeTimer > 0;
+    final zooming = _zoomTimer > 0;
+
+    if (shaking || zooming) {
       canvas.save();
-      canvas.translate(dx, dy);
+      if (shaking) {
+        final dx = (_rng.nextDouble() - 0.5) * 2.0 * _shakeIntensity;
+        final dy = (_rng.nextDouble() - 0.5) * 2.0 * _shakeIntensity;
+        canvas.translate(dx, dy);
+      }
+      if (zooming) {
+        // Eases from punched-in back to normal scale over the punch duration.
+        final t = (_zoomTimer / _zoomDuration).clamp(0.0, 1.0);
+        final zoom = 1.0 + _zoomStrength * t;
+        final cx = size.x / 2;
+        final cy = size.y / 2;
+        canvas.translate(cx, cy);
+        canvas.scale(zoom);
+        canvas.translate(-cx, -cy);
+      }
       super.render(canvas);
       canvas.restore();
     } else {
