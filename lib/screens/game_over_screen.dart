@@ -129,7 +129,9 @@ class _GameOverScreenState extends State<GameOverScreen> {
     return Material(
       color: const Color(0xCC050510),
       child: Center(
-        child: Column(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+          child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Mode badge
@@ -234,6 +236,8 @@ class _GameOverScreenState extends State<GameOverScreen> {
                         customBossHp: game.customBossHp,
                         orbImageBytes: game.orbImageBytes,
                         bossImageBytes: game.bossImageBytes,
+                        pvpOrbColors: game.pvpOrbColors,
+                        pvpAllowedItems: game.pvpAllowedItems,
                       ),
                     ),
                   ),
@@ -251,6 +255,7 @@ class _GameOverScreenState extends State<GameOverScreen> {
               ],
             ),
           ],
+          ),
         ),
       ),
     );

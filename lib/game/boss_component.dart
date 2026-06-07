@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 import 'boss_ball_game.dart';
+import 'damage_number.dart';
 
 class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
   double radius = 60.0;
@@ -12,6 +13,28 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
 
   late Vector2 velocity;
   final _rng = Random();
+
+  // ── Armor plate system ────────────────────────────────────────────────────
+  final List<double> _armorAngles = [];
+  double _armorShiftTimer   = 0.0;
+  int    _armorBlockedHits  = 0;
+  static const double _armorArcHalf      = pi / 6;   // ±30° = 60° total per plate
+  static const double _armorShiftInterval = 8.0;
+  static const int    _armorBlocksToShift = 2;
+
+  // ── Berserk state ─────────────────────────────────────────────────────────
+  bool   _isBerserk        = false;
+  double berserkSpeedBoost = 1.0;
+
+  void enterBerserk() {
+    _isBerserk        = true;
+    berserkSpeedBoost = 1.6;
+  }
+
+  void exitBerserk() {
+    _isBerserk        = false;
+    berserkSpeedBoost = 1.0;
+  }
 
   // ── Freeze mechanic ───────────────────────────────────────────────────────
   double _frozenTimer = 0.0;
@@ -35,6 +58,30 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
   bool _phase3Triggered = false;
   double _attackTimer   = 0.0;
   double _phaseFlashTimer = 0.0;
+  double _tauntTimer = 7.0;
+
+  static const List<String> _phase1Taunts = [
+    'YOU CALL THAT A HIT?',
+    'IS THAT ALL YOU GOT?',
+    'PATHETIC!',
+    'TRY HARDER!',
+    'I BARELY FELT THAT!',
+    'NICE TRY... NOT.',
+  ];
+  static const List<String> _phase2Taunts = [
+    'GETTING ANGRY...',
+    "YOU'LL REGRET THIS!",
+    "I'M GETTING SERIOUS!",
+    'FEEL MY WRATH!',
+    'YOU CANNOT WIN!',
+  ];
+  static const List<String> _phase3Taunts = [
+    'THIS ENDS NOW!',
+    "YOU'VE DOOMED YOURSELF!",
+    "I'LL DESTROY YOU!",
+    'NO MORE MERCY!',
+    'WITNESS MY POWER!!!',
+  ];
 
   double get _attackInterval => phase == 3 ? 2.2 : 3.8;
 
@@ -62,9 +109,30 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
 
     _checkPhaseTransitions();
 
+    // Boss taunts — random speech bubbles
+    if (gameRef.playing && !isFrozen) {
+      _tauntTimer -= dt;
+      if (_tauntTimer <= 0) {
+        final interval = phase == 1 ? 9.0 : (phase == 2 ? 6.0 : 4.0);
+        _tauntTimer = interval + _rng.nextDouble() * 4.0;
+        final taunts = phase == 3
+            ? _phase3Taunts
+            : (phase == 2 ? _phase2Taunts : _phase1Taunts);
+        final taunt = taunts[_rng.nextInt(taunts.length)];
+        gameRef.add(DamageNumber(
+          position: position.clone() + Vector2(0, -(radius + 40)),
+          damage: 0,
+          label: '"$taunt"',
+          labelColor: const Color(0xFFFF6688),
+          isSmall: false,
+          driftX: 0,
+        ));
+      }
+    }
+
     // Attack timer — phases 2 and 3 only
     if (phase > 1) {
-      _attackTimer -= dt;
+      _attackTimer -= dt * gameRef.timeWarpMultiplier;
       if (_attackTimer <= 0) {
         _attackTimer = _attackInterval;
         gameRef.spawnBossAttack(position.clone(), phase);
@@ -72,6 +140,9 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
     }
 
     if (_phaseFlashTimer > 0) _phaseFlashTimer -= dt;
+
+    // Armor plate rotation
+    _tickArmor(dt);
 
     // Freeze deceleration
     if (_frozenTimer > 0) {
@@ -83,11 +154,12 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
       }
     }
 
-    // Movement (phase-speed-scaled, plus any Endless wave boost)
+    // Movement (phase-speed-scaled, wave boost, berserk boost, time warp)
+    final warpMult = gameRef.timeWarpMultiplier;
     if (_frozenTimer <= 0) {
-      position += velocity * _speedMultiplier * waveSpeedBoost * dt;
+      position += velocity * _speedMultiplier * waveSpeedBoost * berserkSpeedBoost * dt * warpMult;
     } else {
-      position += velocity * dt;
+      position += velocity * dt * warpMult;
     }
 
     // Wall bounces
@@ -107,6 +179,9 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
       if (velocity.y > 0) velocity.y = -velocity.y;
     }
 
+    // Internal obstacle bounce (pillars, maze walls, etc.)
+    arena.bounceOffObstacles(position, velocity, radius);
+
     // Speed clamp
     if (_frozenTimer <= 0) {
       final spd = velocity.length;
@@ -120,6 +195,64 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
             : velocity.normalized() * minSpeed;
       }
     }
+  }
+
+  // ── Armor plate helpers ───────────────────────────────────────────────────
+
+  void _tickArmor(double dt) {
+    if (!gameRef.playing || isFrozen) return;
+    final targetCount = phase == 3 ? 3 : (phase == 2 ? 2 : 1);
+    while (_armorAngles.length < targetCount) {
+      _armorAngles.add(_rng.nextDouble() * 2 * pi);
+    }
+    // Trim if phase dropped (shouldn't normally happen)
+    while (_armorAngles.length > targetCount) _armorAngles.removeLast();
+
+    _armorShiftTimer += dt;
+    if (_armorShiftTimer >= _armorShiftInterval) {
+      _armorShiftTimer = 0;
+      _shiftArmor();
+    }
+  }
+
+  void _shiftArmor() {
+    _armorBlockedHits = 0;
+    for (int i = 0; i < _armorAngles.length; i++) {
+      double newAngle;
+      int tries = 0;
+      do {
+        newAngle = _rng.nextDouble() * 2 * pi;
+        tries++;
+      } while (tries < 8 && _armorAngles.any((a) {
+        double d = (newAngle - a).abs();
+        while (d > pi) d = (2 * pi - d).abs();
+        return d < _armorArcHalf * 2.5;
+      }));
+      _armorAngles[i] = newAngle;
+    }
+  }
+
+  /// Returns true if [orbPosition] is within any armor arc, consuming a block
+  /// credit (shifts armor after [_armorBlocksToShift] blocks).
+  bool checkAndConsumeArmor(Vector2 orbPosition) {
+    if (_armorAngles.isEmpty) return false;
+    final impactAngle = atan2(
+      orbPosition.y - position.y,
+      orbPosition.x - position.x,
+    );
+    for (int i = 0; i < _armorAngles.length; i++) {
+      double diff = impactAngle - _armorAngles[i];
+      while (diff >  pi) diff -= 2 * pi;
+      while (diff < -pi) diff += 2 * pi;
+      if (diff.abs() < _armorArcHalf) {
+        _armorBlockedHits++;
+        if (_armorBlockedHits >= _armorBlocksToShift) {
+          _armorShiftTimer = _armorShiftInterval; // force shift next tick
+        }
+        return true;
+      }
+    }
+    return false;
   }
 
   void _checkPhaseTransitions() {
@@ -252,6 +385,75 @@ class BossComponent extends PositionComponent with HasGameRef<BossBallGame> {
           ..style = PaintingStyle.stroke
           ..strokeWidth = 3.0
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4));
+
+    // Afterburn overlay (scales with burn stacks)
+    final burnCount = gameRef.burnStacks;
+    if (burnCount > 0) {
+      final burnAlpha = 0.18 + burnCount * 0.09;
+      final burnPulse = sin(_time * (7.0 + burnCount * 1.5)) * 0.3 + 0.7;
+      canvas.drawCircle(
+        Offset.zero,
+        radius + 10,
+        Paint()
+          ..color = const Color(0xFFFF5500).withOpacity(burnAlpha * burnPulse)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 18),
+      );
+    }
+
+    // Berserk aura
+    if (_isBerserk) {
+      final bAlpha = 0.28 + sin(_time * 11) * 0.15;
+      canvas.drawCircle(
+        Offset.zero,
+        radius + 18 + sin(_time * 7) * 5,
+        Paint()
+          ..color = Colors.red.withOpacity(bAlpha)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.solid, 14),
+      );
+      // Berserk label above boss
+      final btp = TextPainter(
+        text: const TextSpan(
+          text: '💢 BERSERK',
+          style: TextStyle(
+            color: Color(0xFFFF2200),
+            fontSize: 10,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 1.0,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      btp.paint(canvas, Offset(-btp.width / 2, -(radius + 30)));
+    }
+
+    // Armor plate arcs (rendered on top of boss body)
+    for (final angle in _armorAngles) {
+      // Glow backing
+      canvas.drawArc(
+        Rect.fromCircle(center: Offset.zero, radius: radius + 5),
+        angle - _armorArcHalf,
+        _armorArcHalf * 2,
+        false,
+        Paint()
+          ..color = const Color(0xFF88BBFF).withOpacity(0.55)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 10.0
+          ..strokeCap = StrokeCap.round
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
+      );
+      // Bright core arc
+      canvas.drawArc(
+        Rect.fromCircle(center: Offset.zero, radius: radius + 5),
+        angle - _armorArcHalf,
+        _armorArcHalf * 2,
+        false,
+        Paint()
+          ..color = const Color(0xFFCCDDFF).withOpacity(0.88)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3.5
+          ..strokeCap = StrokeCap.round,
+      );
+    }
 
     // Ice overlay
     if (isFrozen) {

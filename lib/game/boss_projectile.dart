@@ -35,7 +35,7 @@ class BossProjectile extends PositionComponent with HasGameRef<BossBallGame> {
     _time += dt;
     if (_life <= 0) { removeFromParent(); return; }
 
-    position += _velocity * dt;
+    position += _velocity * dt * gameRef.timeWarpMultiplier;
 
     final arena = gameRef.arenaConfig;
     if (position.x < arena.innerLeft) {
@@ -48,6 +48,9 @@ class BossProjectile extends PositionComponent with HasGameRef<BossBallGame> {
     } else if (position.y > arena.innerBottom) {
       position.y = arena.innerBottom; _velocity.y = -_velocity.y.abs();
     }
+
+    // Bounce off internal obstacles (pillars, maze walls, etc.)
+    arena.bounceOffObstacles(position, _velocity, _hitRadius);
 
     for (final orb in gameRef.orbs) {
       if (position.distanceTo(orb.position) < _hitRadius + orb.orbRadius) {

@@ -668,7 +668,10 @@ class _StartScreenState extends State<StartScreen> {
                   ],
                 )
               : _isDualBall
-                  ? Row(
+                  ? FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         _FighterSlot(
@@ -705,8 +708,12 @@ class _StartScreenState extends State<StartScreen> {
                               : null,
                         ),
                       ],
+                      ),
                     )
-                  : Row(
+                  : FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         _FighterSlot(
@@ -732,6 +739,7 @@ class _StartScreenState extends State<StartScreen> {
                               : null,
                         ),
                       ],
+                      ),
                     ),
         ],
       ),
@@ -1645,7 +1653,7 @@ class _TutorialDialogState extends State<_TutorialDialog> {
     _TutPage(
       icon: Icons.auto_awesome,
       color: Color(0xFFFFDD00),
-      title: '16 UNIQUE ORBS',
+      title: '31 UNIQUE ORBS',
       body:
           'Each orb has a special power. Ice freezes the boss for 2× damage, Combo multiplies on wall bounces, Laser fires beams...',
     ),

@@ -22,6 +22,7 @@ import 'pickup_item_component.dart';
 import 'pickup_type.dart';
 import 'player_orb.dart';
 import 'hud_component.dart';
+import 'gravity_anomaly_zone.dart';
 import 'shockwave_ring_component.dart';
 import 'vortex_pickup_zone.dart';
 
@@ -93,6 +94,39 @@ class BossBallGame extends FlameGame with TapCallbacks {
   int    _barrierHitsRemaining  = 0;
   int    _tripleHitsRemaining   = 0;
   int    _overdriveHitsRemaining = 0;
+
+  // Time Warp
+  double _timeWarpTimer = 0.0;
+
+  // Rage / Fury system
+  double _rageEnergy     = 0.0;
+  bool   _rageActive     = false;
+  double _rageTimer      = 0.0;
+  static const double rageDuration = 4.0;
+
+  // ── Feature: Ricochet Overcharge ──────────────────────────────────────────
+  int    _ricochetCount = 0;
+  double _ricochetTimer = 0.0;
+  static const int    _ricochetBoostAt      = 5;
+  static const int    _ricochetOverchargeAt = 8;
+  static const double _ricochetWindowSec    = 3.0;
+
+  // ── Feature: Afterburn DoT ────────────────────────────────────────────────
+  int    _burnStacks     = 0;
+  double _burnTickTimer  = 0.0;
+  double _burnDecayTimer = 0.0;
+  static const double _burnTickInterval   = 0.30;
+  static const double _burnDecayInterval  = 5.0;
+  static const int    _maxBurnStacks      = 5;
+  static const int    _burnDamagePerStack = 1500;
+
+  // ── Feature: Boss Berserk ─────────────────────────────────────────────────
+  int    _bossConsecutiveHits = 0;
+  bool   _bossBerserkActive   = false;
+  double _bossBerserkTimer    = 0.0;
+  static const int    _berserkThreshold = 12;
+  static const double _berserkDuration  = 6.0;
+
   List<double> _ghostTimers      = [0.0, 0.0];
   List<double> _pvpShieldTimers  = [0.0, 0.0];
   int    _revolverBurstsLeft    = 0;
@@ -114,6 +148,19 @@ class BossBallGame extends FlameGame with TapCallbacks {
   int    get barrierHitsRemaining   => _barrierHitsRemaining;
   int    get tripleHitsRemaining    => _tripleHitsRemaining;
   int    get overdriveHitsRemaining => _overdriveHitsRemaining;
+  double get timeWarpTimer  => _timeWarpTimer;
+  double get rageEnergy     => _rageEnergy;
+  bool   get isRageActive   => _rageActive;
+  double get rageTimer      => _rageTimer;
+  // Ricochet overcharge
+  int    get ricochetCount       => _ricochetCount;
+  bool   get ricochetBoosted     => _ricochetCount >= _ricochetBoostAt;
+  bool   get ricochetOvercharged => _ricochetCount >= _ricochetOverchargeAt;
+  // Afterburn
+  int    get burnStacks          => _burnStacks;
+  // Boss berserk
+  bool   get isBossBerserk       => _bossBerserkActive;
+  double get bossBerserkTimer    => _bossBerserkTimer;
   bool isOrbGhosted(int index) =>
       index < _ghostTimers.length && _ghostTimers[index] > 0;
   bool isOrbShielded(int index) =>
@@ -170,7 +217,7 @@ class BossBallGame extends FlameGame with TapCallbacks {
   // ── Arena background reference (for hit pulse) ────────────────────────────
   ArenaBackground? _arenaBackground;
 
-  // Stacked damage multiplier from all active buffs (capped at 8×)
+  // Stacked damage multiplier from all active buffs (capped at 12×, 15× during fury)
   double get _effectiveMultiplier {
     double m = 1.0;
     if (_shieldTimer > 0) m *= 2.0;
@@ -178,8 +225,12 @@ class BossBallGame extends FlameGame with TapCallbacks {
     if (_barrierHitsRemaining > 0) m *= 3.0;
     if (_tripleHitsRemaining > 0) m *= 3.0;
     if (_overdriveHitsRemaining > 0) m *= 5.0;
-    return m.clamp(1.0, 12.0);
+    if (_rageActive) m *= 3.0;
+    return m.clamp(1.0, _rageActive ? 15.0 : 12.0);
   }
+
+  /// Multiplier applied to boss and projectile speed during Time Warp (0.2 when active, else 1.0).
+  double get timeWarpMultiplier => _timeWarpTimer > 0 ? 0.2 : 1.0;
 
   BossBallGame({
     required this.orbBehavior,
@@ -354,6 +405,25 @@ class BossBallGame extends FlameGame with TapCallbacks {
     );
   }
 
+  // ── Wall bounce callback (Ricochet Overcharge) ────────────────────────────
+
+  void onOrbWallBounce() {
+    if (!playing || mode.isPvp) return;
+    _ricochetCount++;
+    _ricochetTimer = _ricochetWindowSec;
+  }
+
+  PlayerOrb? _closestOrbToBoss() {
+    if (boss == null || _orbs.isEmpty) return null;
+    PlayerOrb closest = _orbs.first;
+    double bestDist = closest.position.distanceTo(boss!.position);
+    for (int i = 1; i < _orbs.length; i++) {
+      final d = _orbs[i].position.distanceTo(boss!.position);
+      if (d < bestDist) { bestDist = d; closest = _orbs[i]; }
+    }
+    return closest;
+  }
+
   // ── Boss damage callback ───────────────────────────────────────────────────
 
   void onOrbHitBoss(int baseDamage, {bool isLaserTick = false}) {
@@ -361,6 +431,31 @@ class BossBallGame extends FlameGame with TapCallbacks {
     final mult =
         isLaserTick ? 1.0 : _effectiveMultiplier * comboMultiplier;
     final boostedBase = (baseDamage * mult).round();
+
+    // ── Armor plate check (before combo/crit to avoid rewarding blocks) ──────
+    if (!isLaserTick) {
+      final attacker = _closestOrbToBoss();
+      if (attacker != null && boss!.checkAndConsumeArmor(attacker.position)) {
+        final blockedDmg = (boostedBase * 0.08).round().clamp(1, boostedBase);
+        bossHp = (bossHp - blockedDmg).clamp(0, bossMaxHp);
+        totalDamage += blockedDmg;
+        add(DamageNumber(
+          position: boss!.position.clone() +
+              Vector2((_rng.nextDouble() - 0.5) * 40, -30),
+          damage: 0,
+          label: '🛡 BLOCKED',
+          labelColor: const Color(0xFF88BBFF),
+          isSmall: true,
+          driftX: (_rng.nextDouble() - 0.5) * 40,
+        ));
+        if (mode.winOnBossKill && bossHp <= 0 && !bossDestroyed) {
+          bossDestroyed = true;
+          playing = false;
+          Future.delayed(Duration.zero, () => overlays.add('GameOver'));
+        }
+        return;
+      }
+    }
 
     if (!isLaserTick) _incrementCombo();
 
@@ -377,6 +472,62 @@ class BossBallGame extends FlameGame with TapCallbacks {
     if (!isLaserTick && _rng.nextDouble() < 0.20) {
       isCrit = true;
       finalDamage = boostedBase * 2;
+    }
+
+    // ── Ricochet Overcharge multiplier ────────────────────────────────────────
+    if (!isLaserTick && _ricochetCount > 0) {
+      if (_ricochetCount >= _ricochetOverchargeAt) {
+        finalDamage = (finalDamage * 5).round();
+        spawnRocketExplosion(boss!.position.clone());
+        triggerShake(intensity: 80, duration: 0.5);
+        _phaseFlashTimer = 0.4;
+        _phaseFlashColor = const Color(0xFFFFFFDD);
+        add(DamageNumber(
+          position: boss!.position.clone() + Vector2(0, -(boss!.radius + 60)),
+          damage: 0,
+          label: '⚡ OVERCHARGE!',
+          labelColor: const Color(0xFFFFFF88),
+          isSmall: false,
+          driftX: 0,
+        ));
+      } else if (_ricochetCount >= _ricochetBoostAt) {
+        finalDamage = (finalDamage * 2).round();
+        add(DamageNumber(
+          position: boss!.position.clone() + Vector2(0, -(boss!.radius + 45)),
+          damage: 0,
+          label: '⚡ CHARGED ×2',
+          labelColor: const Color(0xFFFFAA44),
+          isSmall: true,
+          driftX: (_rng.nextDouble() - 0.5) * 30,
+        ));
+      }
+      _ricochetCount = 0;
+      _ricochetTimer = 0;
+    }
+
+    // ── Boss Berserk vulnerability ────────────────────────────────────────────
+    if (!isLaserTick && _bossBerserkActive) {
+      finalDamage = (finalDamage * 1.75).round();
+    }
+
+    // Fill rage meter on boss hits (non-PVP)
+    if (!isLaserTick && !mode.isPvp && !_rageActive) {
+      _rageEnergy = (_rageEnergy + (isCrit ? 0.10 : 0.04)).clamp(0.0, 1.0);
+    }
+
+    // ── Afterburn stack ───────────────────────────────────────────────────────
+    if (!isLaserTick && !mode.isPvp) {
+      _burnStacks    = (_burnStacks + 1).clamp(0, _maxBurnStacks);
+      _burnTickTimer  = _burnTickInterval;
+      _burnDecayTimer = _burnDecayInterval;
+    }
+
+    // ── Berserk counter ───────────────────────────────────────────────────────
+    if (!isLaserTick && !mode.isPvp && !_bossBerserkActive) {
+      _bossConsecutiveHits++;
+      if (_bossConsecutiveHits >= _berserkThreshold) {
+        _triggerBossBerserk();
+      }
     }
 
     bossHp = (bossHp - finalDamage).clamp(0, bossMaxHp);
@@ -398,7 +549,8 @@ class BossBallGame extends FlameGame with TapCallbacks {
       triggerShake(intensity: shakePower, duration: isCrit ? 0.3 : 0.18);
       _hitFlashTimer = isCrit ? 0.14 : 0.07;
       _arenaBackground?.pulse((finalDamage / bossMaxHp).clamp(0.0, 1.0) * 4);
-      spawnFireExplosion(orb.position.clone());
+      spawnFireExplosion(boss!.position.clone() +
+          Vector2((_rng.nextDouble() - 0.5) * 40, (_rng.nextDouble() - 0.5) * 40));
       add(DamageNumber(
         position: boss!.position.clone() +
             Vector2((_rng.nextDouble() - 0.5) * 40, -30),
@@ -757,6 +909,53 @@ class BossBallGame extends FlameGame with TapCallbacks {
         _spawnRevolverBullet();
       }
     }
+
+    if (_timeWarpTimer > 0) {
+      _timeWarpTimer -= dt;
+      if (_timeWarpTimer < 0) _timeWarpTimer = 0;
+    }
+    if (_rageTimer > 0) {
+      _rageTimer -= dt;
+      if (_rageTimer <= 0) {
+        _rageActive = false;
+        _rageTimer  = 0;
+      }
+    }
+
+    // Ricochet charge window decay
+    if (_ricochetTimer > 0) {
+      _ricochetTimer -= dt;
+      if (_ricochetTimer <= 0) {
+        _ricochetCount = 0;
+        _ricochetTimer = 0;
+      }
+    }
+
+    // Afterburn DoT ticks
+    if (_burnStacks > 0 && !mode.isPvp) {
+      _burnTickTimer -= dt;
+      if (_burnTickTimer <= 0) {
+        _burnTickTimer = _burnTickInterval;
+        final phase   = boss?.phase ?? 1;
+        final burnDmg = (_burnDamagePerStack * _burnStacks *
+            (phase == 3 ? 0.6 : 1.0)).round();
+        onOrbHitBoss(burnDmg, isLaserTick: true);
+      }
+      _burnDecayTimer -= dt;
+      if (_burnDecayTimer <= 0) {
+        _burnDecayTimer = _burnDecayInterval;
+        if (_burnStacks > 0) _burnStacks--;
+      }
+    }
+
+    // Boss berserk countdown
+    if (_bossBerserkTimer > 0) {
+      _bossBerserkTimer -= dt;
+      if (_bossBerserkTimer <= 0) {
+        _bossBerserkActive = false;
+        boss?.exitBerserk();
+      }
+    }
   }
 
   void _maybeSpawnPickup(double dt) {
@@ -859,6 +1058,19 @@ class BossBallGame extends FlameGame with TapCallbacks {
         onOrbHitBoss(300000);
         boss?.freezeBoss(6.0);
         triggerShake(intensity: 70, duration: 0.5);
+      case PickupType.timeWarp:
+        _timeWarpTimer = 3.0;
+        triggerShake(intensity: 22, duration: 0.3);
+        _phaseFlashTimer = 0.3;
+        _phaseFlashColor = const Color(0xFF4488FF);
+      case PickupType.gravityAnomaly:
+        add(GravityAnomalyZone(
+          position: arenaConfig.center,
+          gameRef: this,
+        ));
+        triggerShake(intensity: 20, duration: 0.25);
+        _phaseFlashTimer = 0.25;
+        _phaseFlashColor = const Color(0xFF44FFCC);
       case PickupType.mystery:
         onPickupCollected(PickupTypeInfo.randomNonMystery(_rng));
     }
@@ -941,6 +1153,15 @@ class BossBallGame extends FlameGame with TapCallbacks {
           _orbs[opponentIndex].freeze(6.0);
         }
         triggerShake(intensity: 70, duration: 0.5);
+      case PickupType.timeWarp:
+        _timeWarpTimer = 3.0;
+        triggerShake(intensity: 22, duration: 0.3);
+      case PickupType.gravityAnomaly:
+        add(GravityAnomalyZone(
+          position: arenaConfig.center,
+          gameRef: this,
+        ));
+        triggerShake(intensity: 20, duration: 0.25);
       case PickupType.mystery:
         _onPickupCollectedPvp(
             PickupTypeInfo.randomNonMystery(_rng), collectorIndex);
@@ -1016,6 +1237,29 @@ class BossBallGame extends FlameGame with TapCallbacks {
   void _incrementCombo() {
     _comboCount++;
     _comboDecayTimer = _comboDecayTime;
+
+    String? label;
+    Color?  color;
+    switch (_comboCount) {
+      case 5:   label = '★  KILLING SPREE!';  color = const Color(0xFFFF8800);
+      case 10:  label = '★  DOMINATING!';     color = const Color(0xFFFF4400);
+      case 20:  label = '★  UNSTOPPABLE!';    color = const Color(0xFFFF2200);
+      case 50:  label = '★  GODLIKE!!';       color = const Color(0xFFFFD700);
+      case 100: label = '★  LEGENDARY!!!';    color = const Color(0xFFFF00FF);
+    }
+    if (label != null && boss != null) {
+      add(DamageNumber(
+        position: arenaConfig.center.clone() + Vector2(0, -90),
+        damage: 0,
+        label: label,
+        labelColor: color,
+        isSmall: false,
+        driftX: 0,
+      ));
+      triggerShake(intensity: 22, duration: 0.28);
+      _phaseFlashTimer = 0.22;
+      _phaseFlashColor = color!;
+    }
   }
 
   void _tickCombo(double dt) {
@@ -1184,6 +1428,17 @@ class BossBallGame extends FlameGame with TapCallbacks {
     }
 
     totalTime += dt;
+
+    // Berserk/burn reset when boss is frozen
+    if (boss != null && boss!.isFrozen) {
+      if (_bossConsecutiveHits > 0) _bossConsecutiveHits = 0;
+      if (_bossBerserkActive) {
+        _bossBerserkActive = false;
+        _bossBerserkTimer  = 0;
+        boss?.exitBerserk();
+      }
+    }
+
     _tickPickupTimers(dt);
     _maybeSpawnPickup(dt);
     _tickCombo(dt);
@@ -1216,11 +1471,69 @@ class BossBallGame extends FlameGame with TapCallbacks {
     super.update(dt);
   }
 
+  // ── Boss Berserk activation ───────────────────────────────────────────────
+
+  void _triggerBossBerserk() {
+    if (boss == null) return;
+    _bossBerserkActive   = true;
+    _bossBerserkTimer    = _berserkDuration;
+    _bossConsecutiveHits = 0;
+    boss!.enterBerserk();
+    // Triple attack salvo
+    for (int i = 0; i < 3; i++) {
+      spawnBossAttack(boss!.position.clone(), boss!.phase);
+    }
+    triggerShake(intensity: 55, duration: 0.5);
+    _phaseFlashTimer = 0.55;
+    _phaseFlashColor = const Color(0xFFFF0000);
+    HapticFeedback.heavyImpact();
+    SoundManager.instance.playPhaseChange();
+    add(DamageNumber(
+      position: boss!.position.clone() + Vector2(0, -(boss!.radius + 55)),
+      damage: 0,
+      label: '💢  BERSERK!',
+      labelColor: const Color(0xFFFF2200),
+      isSmall: false,
+      driftX: 0,
+    ));
+  }
+
+  // ── Fury activation ───────────────────────────────────────────────────────
+
+  void _activateFury() {
+    _rageActive = true;
+    _rageTimer  = rageDuration;
+    _rageEnergy = 0.0;
+    _phaseFlashTimer = 0.45;
+    _phaseFlashColor = const Color(0xFFFF4400);
+    triggerShake(intensity: 50, duration: 0.45);
+    HapticFeedback.heavyImpact();
+    SoundManager.instance.playPhaseChange();
+    if (orbs.isNotEmpty) {
+      add(DamageNumber(
+        position: orb.position.clone() + Vector2(0, -70),
+        damage: 0,
+        label: '🔥  FURY MODE!',
+        labelColor: const Color(0xFFFF4400),
+        isSmall: false,
+        driftX: 0,
+      ));
+    }
+  }
+
   // ── Tap-to-nudge ──────────────────────────────────────────────────────────
 
   @override
   void onTapDown(TapDownEvent event) {
-    if (!playing || mode.isPvp) return;
+    if (!playing) return;
+
+    // Fury activation takes priority when rage bar is full
+    if (!mode.isPvp && _rageEnergy >= 1.0 && !_rageActive) {
+      _activateFury();
+      return;
+    }
+
+    if (mode.isPvp) return;
     final tapPos = event.localPosition;
     PlayerOrb? nearest;
     double bestDist = double.infinity;
@@ -1269,6 +1582,24 @@ class BossBallGame extends FlameGame with TapCallbacks {
       canvas.drawRect(
         Rect.fromLTWH(0, 0, size.x, size.y),
         Paint()..color = _phaseFlashColor.withOpacity(alpha),
+      );
+    }
+
+    // Time warp blue overlay
+    if (_timeWarpTimer > 0) {
+      final alpha = (_timeWarpTimer / 3.0).clamp(0.0, 1.0) * 0.14;
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, size.x, size.y),
+        Paint()..color = const Color(0xFF2244BB).withOpacity(alpha),
+      );
+    }
+
+    // Fury mode red pulse overlay
+    if (_rageActive) {
+      final pulse = sin(totalTime * 14) * 0.5 + 0.5;
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, size.x, size.y),
+        Paint()..color = const Color(0xFFFF2200).withOpacity(0.04 + pulse * 0.05),
       );
     }
   }
