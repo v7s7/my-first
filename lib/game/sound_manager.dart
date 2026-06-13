@@ -2,14 +2,14 @@ import 'package:flame_audio/flame_audio.dart';
 
 /// Manages all in-game sound effects.
 ///
-/// Add the following .ogg files to assets/audio/ to enable sounds:
-///   hit.ogg       — boss hit (normal)
-///   crit.ogg      — critical hit
-///   wall.ogg      — wall bounce
-///   phase.ogg     — boss phase transition
-///   win.ogg       — victory
-///   lose.ogg      — game over / time up
-///   wave.ogg      — endless wave start
+/// Sound effect files live in assets/audio/:
+///   hit.wav       — boss hit (normal)
+///   crit.wav      — critical hit
+///   wall.wav      — wall bounce
+///   phase.wav     — boss phase transition
+///   win.wav       — victory
+///   lose.wav      — game over / time up
+///   wave.wav      — endless wave start
 ///
 /// All methods are silent no-ops if audio files are missing.
 class SoundManager {
@@ -18,13 +18,13 @@ class SoundManager {
 
   bool _ready = false;
 
-  static const _hit   = 'hit.ogg';
-  static const _crit  = 'crit.ogg';
-  static const _wall  = 'wall.ogg';
-  static const _phase = 'phase.ogg';
-  static const _win   = 'win.ogg';
-  static const _lose  = 'lose.ogg';
-  static const _wave  = 'wave.ogg';
+  static const _hit   = 'hit.wav';
+  static const _crit  = 'crit.wav';
+  static const _wall  = 'wall.wav';
+  static const _phase = 'phase.wav';
+  static const _win   = 'win.wav';
+  static const _lose  = 'lose.wav';
+  static const _wave  = 'wave.wav';
 
   Future<void> init() async {
     try {

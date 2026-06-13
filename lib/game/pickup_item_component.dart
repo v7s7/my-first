@@ -63,6 +63,16 @@ class PickupItemComponent extends PositionComponent {
     gameRef.onPickupCollected(type, collectorIndex: collectorIndex);
     gameRef.onPickupExpired(); // decrement active count
 
+    // Sparkle burst flourish in the pickup's own color
+    gameRef.spawnSparkBurst(
+      position.clone(),
+      type.ringColor,
+      count: 16,
+      speed: 240,
+      life: 0.4,
+      size: 3.6,
+    );
+
     // Floating name label
     gameRef.add(DamageNumber(
       position: position.clone() + Vector2(0, -20),

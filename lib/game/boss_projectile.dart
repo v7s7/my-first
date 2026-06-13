@@ -55,6 +55,11 @@ class BossProjectile extends PositionComponent with HasGameRef<BossBallGame> {
     for (final orb in gameRef.orbs) {
       if (position.distanceTo(orb.position) < _hitRadius + orb.orbRadius) {
         _hit = true;
+        final knockDir = (orb.position - position);
+        orb.applyKnockback(
+          knockDir.length > 0.01 ? knockDir.normalized() : Vector2(0, -1),
+          260.0,
+        );
         orb.freeze(_freezeTime);
         gameRef.spawnFreezeExplosion(position.clone());
         gameRef.triggerShake(intensity: 16, duration: 0.25);

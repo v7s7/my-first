@@ -41,6 +41,8 @@ class DamageNumber extends PositionComponent {
     position.x += _driftX * dt;
   }
 
+  static const double _popDuration = 0.13;
+
   @override
   void render(Canvas canvas) {
     final progress = 1.0 - (_life / _totalLife);
@@ -50,6 +52,12 @@ class DamageNumber extends PositionComponent {
             ? 1.0
             : 1.0 - (progress - 0.65) / 0.35)
         .clamp(0.0, 1.0);
+
+    // Pop-in: overshoots past full size then settles — gives hits a punchy feel
+    final age = _totalLife - _life;
+    final pop = age < _popDuration
+        ? Curves.easeOutBack.transform((age / _popDuration).clamp(0.0, 1.0))
+        : 1.0;
 
     final color = labelColor ?? _colorFor(damage);
     final fontSize = isSmall ? 13.0 : 26.0;
@@ -79,7 +87,10 @@ class DamageNumber extends PositionComponent {
       textDirection: TextDirection.ltr,
     )..layout();
 
+    canvas.save();
+    canvas.scale(pop);
     tp.paint(canvas, Offset(-tp.width / 2, -tp.height / 2));
+    canvas.restore();
   }
 
   static Color _colorFor(int d) {
