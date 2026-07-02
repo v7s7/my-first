@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,9 +16,15 @@ class GameOverScreen extends StatefulWidget {
   State<GameOverScreen> createState() => _GameOverScreenState();
 }
 
-class _GameOverScreenState extends State<GameOverScreen> {
+class _GameOverScreenState extends State<GameOverScreen>
+    with SingleTickerProviderStateMixin {
   bool _isNewBest = false;
   bool _loaded = false;
+
+  late final AnimationController _entranceCtrl = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 500),
+  )..forward();
 
   BossBallGame get game => widget.game;
 
@@ -25,6 +32,35 @@ class _GameOverScreenState extends State<GameOverScreen> {
   void initState() {
     super.initState();
     _checkAndSaveBest();
+  }
+
+  @override
+  void dispose() {
+    _entranceCtrl.dispose();
+    super.dispose();
+  }
+
+  /// The winning fighter's photo, if there is one to show.
+  Uint8List? get _winnerPhoto {
+    if (game.mode.isPvp) {
+      final winner = game.pvpWinner;
+      if (winner == null || winner >= game.orbImageBytes.length) return null;
+      return game.orbImageBytes[winner];
+    }
+    if (game.bossDestroyed && game.orbImageBytes.isNotEmpty) {
+      return game.orbImageBytes.first;
+    }
+    return null;
+  }
+
+  Color get _winnerColor {
+    if (game.mode.isPvp) {
+      final winner = game.pvpWinner;
+      if (winner != null && winner < game.pvpOrbColors.length) {
+        return game.pvpOrbColors[winner];
+      }
+    }
+    return const Color(0xFF00FFEE);
   }
 
   Future<void> _share() async {
@@ -121,19 +157,45 @@ class _GameOverScreenState extends State<GameOverScreen> {
     final bool isWin = game.mode.isPvp
         ? game.pvpWinner != null
         : game.bossDestroyed;
-    final titleColor = isWin
-        ? const Color(0xFF00FFEE)
-        : const Color(0xFFFF4433);
-    final titleGlow = isWin ? Colors.cyan : Colors.red;
+    final titleColor = isWin ? _winnerColor : const Color(0xFFFF4433);
+    final titleGlow = titleColor;
+    final winnerPhoto = _winnerPhoto;
 
     return Material(
       color: const Color(0xCC050510),
       child: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-          child: Column(
+          child: ScaleTransition(
+            scale: CurvedAnimation(
+                parent: _entranceCtrl, curve: Curves.easeOutBack),
+            child: FadeTransition(
+              opacity: CurvedAnimation(
+                  parent: _entranceCtrl, curve: const Interval(0, 0.6)),
+              child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            // Winner photo — the reveal moment
+            if (winnerPhoto != null) ...[
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: titleColor, width: 3),
+                  boxShadow: [
+                    BoxShadow(
+                        color: titleColor.withOpacity(0.6),
+                        blurRadius: 32,
+                        spreadRadius: 3),
+                  ],
+                ),
+                child: ClipOval(
+                    child: Image.memory(winnerPhoto, fit: BoxFit.cover)),
+              ),
+              const SizedBox(height: 16),
+            ],
+
             // Mode badge
             Text(
               mode.name,
@@ -257,6 +319,8 @@ class _GameOverScreenState extends State<GameOverScreen> {
               ],
             ),
           ],
+              ),
+            ),
           ),
         ),
       ),

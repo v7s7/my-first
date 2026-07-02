@@ -1279,6 +1279,7 @@ class _FighterSlot extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Stack(
+            clipBehavior: Clip.none,
             children: [
               Container(
                 width: size,
@@ -1327,13 +1328,15 @@ class _FighterSlot extends StatelessWidget {
               // X remove button — only when image is set
               if (hasImage && onRemove != null)
                 Positioned(
-                  top: 0,
-                  right: 0,
+                  top: -6,
+                  right: -6,
                   child: GestureDetector(
                     onTap: onRemove,
+                    behavior: HitTestBehavior.opaque,
                     child: Container(
-                      width: 22,
-                      height: 22,
+                      width: 32,
+                      height: 32,
+                      alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: const Color(0xFFFF2244),
                         shape: BoxShape.circle,
@@ -1345,7 +1348,7 @@ class _FighterSlot extends StatelessWidget {
                       child: const Icon(
                         Icons.close,
                         color: Colors.white,
-                        size: 12,
+                        size: 16,
                       ),
                     ),
                   ),
@@ -1947,27 +1950,34 @@ class _ColorPicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Wrap(
-      spacing: 6,
-      runSpacing: 6,
+      spacing: 10,
+      runSpacing: 10,
       alignment: WrapAlignment.center,
       children: palette.map((c) {
         final isSelected = selected == c;
         return GestureDetector(
           onTap: () => onSelect(c),
+          behavior: HitTestBehavior.opaque,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 120),
-            width: 22,
-            height: 22,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: c,
-              border: Border.all(
-                color: isSelected ? Colors.white : Colors.transparent,
-                width: 2.5,
+            width: 32,
+            height: 32,
+            alignment: Alignment.center,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 120),
+              width: isSelected ? 28 : 22,
+              height: isSelected ? 28 : 22,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: c,
+                border: Border.all(
+                  color: isSelected ? Colors.white : Colors.transparent,
+                  width: 2.5,
+                ),
+                boxShadow: isSelected
+                    ? [BoxShadow(color: c.withOpacity(0.7), blurRadius: 8)]
+                    : null,
               ),
-              boxShadow: isSelected
-                  ? [BoxShadow(color: c.withOpacity(0.7), blurRadius: 8)]
-                  : null,
             ),
           ),
         );
