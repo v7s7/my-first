@@ -80,6 +80,8 @@ class BossBallGame extends FlameGame with TapCallbacks {
   double _shakeTimer = 0.0;
   final Random _rng = Random();
 
+  late final HudComponent _hud;
+
   // ── Pickup system ─────────────────────────────────────────────────────────
   double _pickupSpawnTimer = 10.0;
   int    _activePickups    = 0;
@@ -295,7 +297,8 @@ class BossBallGame extends FlameGame with TapCallbacks {
     _buildWalls();
     if (!mode.isPvp) _buildBoss();
     _buildOrbs();
-    add(HudComponent(gameRef: this));
+    _hud = HudComponent(gameRef: this);
+    add(_hud);
 
     // PVP: set up per-orb HP and per-orb timer lists
     if (mode.isPvp) {
@@ -548,10 +551,15 @@ class BossBallGame extends FlameGame with TapCallbacks {
     }
 
     if (!isLaserTick) {
+      // Only shake for crits / heavy hits — routine bounces used to force a
+      // minimum shake on every single hit, which kept the screen (and the
+      // HP bar) jittering constantly.
       final shakePower = isCrit
           ? 50.0
-          : ((finalDamage / bossMaxHp) * 300).clamp(4.0, 28.0);
-      triggerShake(intensity: shakePower, duration: isCrit ? 0.3 : 0.18);
+          : ((finalDamage / bossMaxHp) * 300).clamp(0.0, 20.0);
+      if (shakePower > 6.0) {
+        triggerShake(intensity: shakePower, duration: isCrit ? 0.3 : 0.15);
+      }
       _hitFlashTimer = isCrit ? 0.14 : 0.07;
       _arenaBackground?.pulse((finalDamage / bossMaxHp).clamp(0.0, 1.0) * 4);
       final hitPos = boss!.position.clone() +
@@ -617,10 +625,14 @@ class BossBallGame extends FlameGame with TapCallbacks {
         (_pvpOrbHp[victimIndex] - damage).clamp(0, pvpOrbMaxHp);
     totalDamage += damage;
 
-    triggerShake(
-      intensity: (damage / pvpOrbMaxHp * 200).clamp(4.0, 40.0),
-      duration: 0.15,
-    );
+    // Only heavy weapons (rocket/railgun/sniper/grenade) shake the screen —
+    // rapid-fire guns (machine gun, minigun) used to force a minimum shake
+    // on every single bullet, making the screen (and HP bars) shudder
+    // non-stop.
+    final pvpShakePower = (damage / pvpOrbMaxHp * 200).clamp(0.0, 40.0);
+    if (pvpShakePower > 8.0) {
+      triggerShake(intensity: pvpShakePower, duration: 0.15);
+    }
 
     final orbPos = victimIndex < _orbs.length
         ? _orbs[victimIndex].position.clone()
@@ -1701,6 +1713,9 @@ class BossBallGame extends FlameGame with TapCallbacks {
     final zooming = _zoomTimer > 0;
 
     if (shaking || zooming) {
+      // HUD stays put — only the arena/orbs/boss shake, so the HP bars and
+      // timer never blur out on mobile screens.
+      _hud.suppressRender = true;
       canvas.save();
       if (shaking) {
         final dx = (_rng.nextDouble() - 0.5) * 2.0 * _shakeIntensity;
@@ -1719,6 +1734,8 @@ class BossBallGame extends FlameGame with TapCallbacks {
       }
       super.render(canvas);
       canvas.restore();
+      _hud.suppressRender = false;
+      _hud.render(canvas);
     } else {
       super.render(canvas);
     }

@@ -12,6 +12,10 @@ class HudComponent extends PositionComponent {
   TextComponent? _orbLabel;
   TextComponent? _dpsText;
 
+  /// Set by [BossBallGame] while it renders the shaken/zoomed scene, so the
+  /// HUD can be repainted separately, unshaken, and stay readable.
+  bool suppressRender = false;
+
   static final TextPaint _timerStyle = TextPaint(
     style: const TextStyle(
       color: Colors.white,
@@ -77,7 +81,7 @@ class HudComponent extends PositionComponent {
     }
 
     // Orb + mode label (below HP bar)
-    final labelY = _barY + 18.0;
+    final labelY = _barY + 22.0;
     _orbLabel = TextComponent(
       text: '',
       textRenderer: TextPaint(
@@ -139,6 +143,7 @@ class HudComponent extends PositionComponent {
 
   @override
   void render(Canvas canvas) {
+    if (suppressRender) return;
     final mode = gameRef.mode;
     if (mode.isPvp) {
       _renderPvpHud(canvas);
@@ -150,7 +155,7 @@ class HudComponent extends PositionComponent {
   // ── Boss fight HUD ─────────────────────────────────────────────────────────
 
   void _renderBossHud(Canvas canvas) {
-    final hudH = _barY + 16 + 18 + (_hasDps ? 18 : 0) + 8.0;
+    final hudH = _barY + 20 + 18 + (_hasDps ? 18 : 0) + 8.0;
     canvas.drawRect(
       Rect.fromLTWH(0, 0, gameRef.size.x, hudH),
       Paint()..color = const Color(0xCC050510),
@@ -172,7 +177,7 @@ class HudComponent extends PositionComponent {
         (gameRef.bossHp / gameRef.bossMaxHp).clamp(0.0, 1.0);
     final phase = gameRef.bossPhase;
 
-    const barH = 14.0;
+    const barH = 18.0;
     const sidePad = 12.0;
     final barY = _barY;
     final barW = w - sidePad * 2;
@@ -236,16 +241,17 @@ class HudComponent extends PositionComponent {
     final hpTp = TextPainter(
       text: TextSpan(
         text: hpStr,
-        style: TextStyle(
-          color: Colors.white.withOpacity(0.88),
-          fontSize: 9,
-          fontWeight: FontWeight.bold,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 11,
+          fontWeight: FontWeight.w900,
+          shadows: [Shadow(color: Colors.black, blurRadius: 3)],
         ),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
     hpTp.paint(
-        canvas, Offset(sidePad + 5, barY + (barH - hpTp.height) / 2));
+        canvas, Offset(sidePad + 6, barY + (barH - hpTp.height) / 2));
 
     // Phase badge (right side of bar)
     if (phase > 1) {
@@ -256,9 +262,10 @@ class HudComponent extends PositionComponent {
           text: 'PHASE $phase',
           style: TextStyle(
             color: phaseColor,
-            fontSize: 9,
+            fontSize: 10,
             fontWeight: FontWeight.w900,
             letterSpacing: 1.5,
+            shadows: const [Shadow(color: Colors.black, blurRadius: 3)],
           ),
         ),
         textDirection: TextDirection.ltr,
@@ -314,7 +321,7 @@ class HudComponent extends PositionComponent {
 
     super.render(canvas);
 
-    const barH   = 18.0;
+    const barH   = 22.0;
     const barY   = 40.0;
     const sidePad = 14.0;
     const barW   = 0.42;
@@ -401,26 +408,35 @@ class HudComponent extends PositionComponent {
         text: label,
         style: TextStyle(
           color: color,
-          fontSize: 9,
+          fontSize: 12,
           fontWeight: FontWeight.w900,
           letterSpacing: 1.5,
+          shadows: const [Shadow(color: Colors.black, blurRadius: 4)],
         ),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
     final labelX = alignRight ? x + w - labelTp.width : x;
-    labelTp.paint(canvas, Offset(labelX, y - labelTp.height - 2));
+    labelTp.paint(canvas, Offset(labelX, y - labelTp.height - 3));
 
+    // HP number sits directly on the bar (high-contrast, always legible
+    // regardless of fill colour or how full/empty the bar is).
     final hpTp = TextPainter(
       text: TextSpan(
         text: _formatHp(hp),
         style: const TextStyle(
-            color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+          color: Colors.white,
+          fontSize: 13,
+          fontWeight: FontWeight.w900,
+          shadows: [
+            Shadow(color: Colors.black, blurRadius: 3),
+            Shadow(color: Colors.black, offset: Offset(0, 1)),
+          ],
+        ),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
-    final hpX = alignRight ? x : x + w - hpTp.width;
-    hpTp.paint(canvas, Offset(hpX, y - hpTp.height - 2));
+    hpTp.paint(canvas, Offset(x + (w - hpTp.width) / 2, y + (h - hpTp.height) / 2));
 
     // Status badges (shield / ghost)
     if (shielded || ghosted) {
