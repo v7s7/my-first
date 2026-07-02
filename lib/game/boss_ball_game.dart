@@ -458,8 +458,7 @@ class BossBallGame extends FlameGame with TapCallbacks {
         ));
         if (mode.winOnBossKill && bossHp <= 0 && !bossDestroyed) {
           bossDestroyed = true;
-          playing = false;
-          Future.delayed(Duration.zero, () => overlays.add('GameOver'));
+          _celebrateWin(boss!.position.clone());
         }
         return;
       }
@@ -601,11 +600,22 @@ class BossBallGame extends FlameGame with TapCallbacks {
 
     if (mode.winOnBossKill && bossHp <= 0 && !bossDestroyed) {
       bossDestroyed = true;
-      playing = false;
-      HapticFeedback.heavyImpact();
-      SoundManager.instance.playWin();
-      Future.delayed(Duration.zero, () => overlays.add('GameOver'));
+      _celebrateWin(boss!.position.clone());
     }
+  }
+
+  /// Punctuates the killing blow — big shake, zoom punch, burst, sound —
+  /// and gives the moment a beat to land before the GameOver overlay cuts
+  /// in, instead of covering the screen the instant HP hits zero.
+  void _celebrateWin(Vector2 position) {
+    playing = false;
+    HapticFeedback.heavyImpact();
+    SoundManager.instance.playWin();
+    triggerShake(intensity: 100, duration: 0.6);
+    triggerZoomPunch(strength: 0.14, duration: 0.55);
+    spawnCritBurst(position);
+    Future.delayed(
+        const Duration(milliseconds: 800), () => overlays.add('GameOver'));
   }
 
   // ── PVP damage callback ────────────────────────────────────────────────────
@@ -648,8 +658,7 @@ class BossBallGame extends FlameGame with TapCallbacks {
 
     if (_pvpOrbHp[victimIndex] <= 0) {
       pvpWinner = 1 - victimIndex;
-      playing = false;
-      Future.delayed(Duration.zero, () => overlays.add('GameOver'));
+      _celebrateWin(orbPos);
     }
   }
 
@@ -1615,7 +1624,8 @@ class BossBallGame extends FlameGame with TapCallbacks {
           playing = false;
           HapticFeedback.heavyImpact();
           SoundManager.instance.playLose();
-          Future.delayed(Duration.zero, () => overlays.add('GameOver'));
+          Future.delayed(
+              const Duration(milliseconds: 500), () => overlays.add('GameOver'));
         }
       }
     }
