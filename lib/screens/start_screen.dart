@@ -8,6 +8,7 @@ import '../orbs/orb_registry.dart';
 import '../modes/game_mode.dart';
 import '../modes/mode_registry.dart';
 import '../game/arena_config.dart';
+import '../game/boss_ball_game.dart' show PvpGunType, PvpGunTypeInfo;
 import '../game/pickup_type.dart';
 import '../widgets/orb_image_picker.dart';
 import 'game_screen.dart';
@@ -45,6 +46,11 @@ class _StartScreenState extends State<StartScreen> {
   Color _pvpColor1 = const Color(0xFF00FFEE);
   Color _pvpColor2 = const Color(0xFFFF4488);
   Set<PickupType> _pvpAllowedItems = Set.from(PickupType.values);
+
+  // Empty set = random from all guns (default/unrestricted).
+  static const int _maxGunsPerLoadout = 3;
+  Set<PvpGunType> _pvpGuns1 = {};
+  Set<PvpGunType> _pvpGuns2 = {};
 
   static const List<int> _hpPresets = [
     100000, 500000, 1000000, 5000000, 10000000,
@@ -123,6 +129,8 @@ class _StartScreenState extends State<StartScreen> {
           bossImageBytes: _isPvp ? null : _bossImage,
           pvpOrbColors:   _isPvp ? [_pvpColor1, _pvpColor2] : [],
           pvpAllowedItems: _isPvp ? _pvpAllowedItems : null,
+          pvpGunLoadout1: _isPvp ? _pvpGuns1 : const {},
+          pvpGunLoadout2: _isPvp ? _pvpGuns2 : const {},
         ),
       ),
     );
@@ -539,6 +547,8 @@ class _StartScreenState extends State<StartScreen> {
                         if (_isPvp) ...[
                           const SizedBox(height: 16),
                           _buildPvpItemsPanel(),
+                          const SizedBox(height: 16),
+                          _buildPvpGunsPanel(),
                         ],
                       ],
                     ),
@@ -947,6 +957,135 @@ class _StartScreenState extends State<StartScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  // ── PVP gun loadout panel ──────────────────────────────────────────────────
+
+  Widget _buildPvpGunsPanel() {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: const Color(0x08FFFFFF),
+        border: Border.all(color: const Color(0x18FFFFFF)),
+      ),
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            'GUN LOADOUT  ·  🔫 REVOLVER PICKUP',
+            style: TextStyle(
+              color: Color(0xAAFFFFFF),
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 2,
+            ),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Pick up to 3 guns each. Leave empty for a fully random draw.',
+            style: TextStyle(color: Color(0x55FFFFFF), fontSize: 10),
+          ),
+          const SizedBox(height: 14),
+          _buildGunLoadoutRow('BALL 1', _pvpColor1, _pvpGuns1, (g) {
+            setState(() {
+              if (_pvpGuns1.contains(g)) {
+                _pvpGuns1.remove(g);
+              } else if (_pvpGuns1.length < _maxGunsPerLoadout) {
+                _pvpGuns1.add(g);
+              }
+            });
+          }),
+          const SizedBox(height: 12),
+          _buildGunLoadoutRow('BALL 2', _pvpColor2, _pvpGuns2, (g) {
+            setState(() {
+              if (_pvpGuns2.contains(g)) {
+                _pvpGuns2.remove(g);
+              } else if (_pvpGuns2.length < _maxGunsPerLoadout) {
+                _pvpGuns2.add(g);
+              }
+            });
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGunLoadoutRow(
+    String label,
+    Color accent,
+    Set<PvpGunType> selected,
+    void Function(PvpGunType) onToggle,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                color: accent,
+                fontSize: 11,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1.5,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              selected.isEmpty
+                  ? '(random)'
+                  : '${selected.length}/$_maxGunsPerLoadout',
+              style: const TextStyle(
+                color: Color(0x55FFFFFF),
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: PvpGunType.values.map((g) {
+            final on = selected.contains(g);
+            final atCap = !on && selected.length >= _maxGunsPerLoadout;
+            final gc = g.color;
+            return GestureDetector(
+              onTap: atCap ? null : () => onToggle(g),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 120),
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  color: on
+                      ? Color.fromARGB(40, gc.red, gc.green, gc.blue)
+                      : const Color(0x08FFFFFF),
+                  border: Border.all(
+                    color: on ? gc.withOpacity(0.8) : const Color(0x22FFFFFF),
+                    width: on ? 1.5 : 1,
+                  ),
+                ),
+                child: Text(
+                  g.shortName,
+                  style: TextStyle(
+                    color: on
+                        ? gc
+                        : (atCap
+                            ? const Color(0x22FFFFFF)
+                            : const Color(0x66FFFFFF)),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 

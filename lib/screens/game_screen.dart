@@ -83,6 +83,10 @@ class GameScreen extends StatelessWidget {
   /// Which items are allowed to spawn (null = all).
   final Set<PickupType>? pvpAllowedItems;
 
+  /// Per-player gun loadouts for the revolver pickup (empty = random pool).
+  final Set<PvpGunType> pvpGunLoadout1;
+  final Set<PvpGunType> pvpGunLoadout2;
+
   const GameScreen({
     super.key,
     required this.orbBehavior,
@@ -93,6 +97,8 @@ class GameScreen extends StatelessWidget {
     this.bossImageBytes,
     this.pvpOrbColors = const [],
     this.pvpAllowedItems,
+    this.pvpGunLoadout1 = const {},
+    this.pvpGunLoadout2 = const {},
   });
 
   @override
@@ -106,6 +112,8 @@ class GameScreen extends StatelessWidget {
       bossImageBytes: bossImageBytes,
       pvpOrbColors: pvpOrbColors,
       pvpAllowedItems: pvpAllowedItems,
+      pvpGunLoadout1: pvpGunLoadout1,
+      pvpGunLoadout2: pvpGunLoadout2,
     );
     return Scaffold(
       backgroundColor: Colors.black,

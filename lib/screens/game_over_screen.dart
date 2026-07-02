@@ -238,6 +238,8 @@ class _GameOverScreenState extends State<GameOverScreen> {
                         bossImageBytes: game.bossImageBytes,
                         pvpOrbColors: game.pvpOrbColors,
                         pvpAllowedItems: game.pvpAllowedItems,
+                        pvpGunLoadout1: game.pvpGunLoadout1,
+                        pvpGunLoadout2: game.pvpGunLoadout2,
                       ),
                     ),
                   ),

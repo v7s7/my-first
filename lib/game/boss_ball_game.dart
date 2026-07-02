@@ -28,6 +28,46 @@ import 'vortex_pickup_zone.dart';
 
 enum PvpGunType { pistol, shotgun, sniper, machineGun, rocket, grenade, burst, minigun, railgun }
 
+extension PvpGunTypeInfo on PvpGunType {
+  /// Short label for loadout pickers / settings UI.
+  String get shortName => switch (this) {
+        PvpGunType.pistol => 'Pistol',
+        PvpGunType.shotgun => 'Shotgun',
+        PvpGunType.sniper => 'Sniper',
+        PvpGunType.machineGun => 'Machine Gun',
+        PvpGunType.rocket => 'Rocket',
+        PvpGunType.grenade => 'Grenade',
+        PvpGunType.burst => 'Burst Rifle',
+        PvpGunType.minigun => 'Minigun',
+        PvpGunType.railgun => 'Railgun',
+      };
+
+  /// Flashier label shown in-match when the gun is drawn.
+  String get burstLabel => switch (this) {
+        PvpGunType.pistol => 'PISTOL  x6',
+        PvpGunType.shotgun => 'SHOTGUN x2',
+        PvpGunType.sniper => 'SNIPER!!!',
+        PvpGunType.machineGun => 'MACHINE GUN',
+        PvpGunType.rocket => 'ROCKET!!!',
+        PvpGunType.grenade => 'GRENADE x3',
+        PvpGunType.burst => 'BURST RIFLE x3',
+        PvpGunType.minigun => 'MINIGUN x25',
+        PvpGunType.railgun => 'RAILGUN!!!',
+      };
+
+  Color get color => switch (this) {
+        PvpGunType.pistol => const Color(0xFFFFCC00),
+        PvpGunType.shotgun => const Color(0xFFFF6600),
+        PvpGunType.sniper => const Color(0xFF00EEFF),
+        PvpGunType.machineGun => const Color(0xFFFF3300),
+        PvpGunType.rocket => const Color(0xFFFF2200),
+        PvpGunType.grenade => const Color(0xFF88FF00),
+        PvpGunType.burst => const Color(0xFFFFAA00),
+        PvpGunType.minigun => const Color(0xFFFF5500),
+        PvpGunType.railgun => const Color(0xFF00FFCC),
+      };
+}
+
 class BossBallGame extends FlameGame with TapCallbacks {
   final OrbBehavior orbBehavior;
   final GameMode mode;
@@ -43,6 +83,11 @@ class BossBallGame extends FlameGame with TapCallbacks {
 
   /// Which pickup types are allowed to spawn. Null = all allowed.
   final Set<PickupType>? pvpAllowedItems;
+
+  /// Per-player gun loadouts for the revolver pickup. Empty = draw from the
+  /// full random pool (default/unrestricted behaviour).
+  final Set<PvpGunType> pvpGunLoadout1;
+  final Set<PvpGunType> pvpGunLoadout2;
 
   late ArenaConfig arenaConfig;
 
@@ -248,6 +293,8 @@ class BossBallGame extends FlameGame with TapCallbacks {
     this.bossImageBytes,
     this.pvpOrbColors = const [],
     this.pvpAllowedItems,
+    this.pvpGunLoadout1 = const {},
+    this.pvpGunLoadout2 = const {},
   });
 
   @override
@@ -769,7 +816,11 @@ class BossBallGame extends FlameGame with TapCallbacks {
   }
 
   void _selectPvpGun(int collectorIndex) {
-    _pvpGunType = PvpGunType.values[_rng.nextInt(PvpGunType.values.length)];
+    // Draw from the collector's own loadout if they set one up; otherwise
+    // fall back to the full random pool (unrestricted / default behaviour).
+    final loadout = collectorIndex == 0 ? pvpGunLoadout1 : pvpGunLoadout2;
+    final pool = loadout.isNotEmpty ? loadout.toList() : PvpGunType.values;
+    _pvpGunType = pool[_rng.nextInt(pool.length)];
     _revolverVictimIndex = 1 - collectorIndex;
     _revolverCollectorIndex = collectorIndex;
     _revolverBurstTimer = 0.0;
@@ -814,37 +865,14 @@ class BossBallGame extends FlameGame with TapCallbacks {
     }
     _revolverHoldTimer = _revolverHoldDuration;
 
-    final gunLabel = switch (_pvpGunType) {
-      PvpGunType.pistol     => 'PISTOL  x6',
-      PvpGunType.shotgun    => 'SHOTGUN x2',
-      PvpGunType.sniper     => 'SNIPER!!!',
-      PvpGunType.machineGun => 'MACHINE GUN',
-      PvpGunType.rocket     => 'ROCKET!!!',
-      PvpGunType.grenade    => 'GRENADE x3',
-      PvpGunType.burst      => 'BURST RIFLE x3',
-      PvpGunType.minigun    => 'MINIGUN x25',
-      PvpGunType.railgun    => 'RAILGUN!!!',
-    };
-    final gunColor = switch (_pvpGunType) {
-      PvpGunType.pistol     => const Color(0xFFFFCC00),
-      PvpGunType.shotgun    => const Color(0xFFFF6600),
-      PvpGunType.sniper     => const Color(0xFF00EEFF),
-      PvpGunType.machineGun => const Color(0xFFFF3300),
-      PvpGunType.rocket     => const Color(0xFFFF2200),
-      PvpGunType.grenade    => const Color(0xFF88FF00),
-      PvpGunType.burst      => const Color(0xFFFFAA00),
-      PvpGunType.minigun    => const Color(0xFFFF5500),
-      PvpGunType.railgun    => const Color(0xFF00FFCC),
-    };
-
     final shooterPos = collectorIndex < _orbs.length
         ? _orbs[collectorIndex].position.clone()
         : Vector2.zero();
     add(DamageNumber(
       position: shooterPos + Vector2(0, -60),
       damage: 0,
-      label: gunLabel,
-      labelColor: gunColor,
+      label: _pvpGunType.burstLabel,
+      labelColor: _pvpGunType.color,
       isSmall: false,
       driftX: 0,
     ));
